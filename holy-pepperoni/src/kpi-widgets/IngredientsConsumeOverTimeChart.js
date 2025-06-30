@@ -39,6 +39,8 @@ const IngredientsConsumeOverTimeChart = () => {
     const [rawData, setRawData] = useState([]);
     const [chartData, setChartData] = useState([]);
     const [loading, setLoading] = useState(true);
+    // New state for outlier detection toggle
+    const [enableOutlierDetection, setEnableOutlierDetection] = useState(false);
 
     // For color generation for multiple lines
     const lineColors = ['#8884d8', '#82ca9d', '#ffc658', '#ff7300', '#0088FE', '#00C49F', '#FFBB28'];
@@ -47,9 +49,8 @@ const IngredientsConsumeOverTimeChart = () => {
     useEffect(() => {
         setLoading(true);
         const params = new URLSearchParams();
-        // Pass granularity regardless
+        // Set granularity and ingredient filters
         params.append('granularity', filters.granularity);
-        // For ingredient filter: if at least one is selected, join them with a comma; otherwise, indicate "all"
         if (filters.ingredient.length > 0) {
             params.append('ingredient', filters.ingredient.join(','));
         } else {
@@ -57,8 +58,8 @@ const IngredientsConsumeOverTimeChart = () => {
         }
         // Expected API behavior:
         // - If a single ingredient is selected: [{ time, total_consumed }, …]
-        // - If "all" or multiple ingredients: [{ time, ingredient_name, total_consumed }, …]
-        axios.get(`${process.env.REACT_APP_API_URL}/api/kpi/ingredients-consumed-over-time?${params.toString()}`)
+        // - Otherwise: [{ time, ingredient_name, total_consumed }, …]
+        axios.get(`${process.env.REACT_APP_API_URL}/api/kpi/ingredients-consume-over-time?${params.toString()}`)
             .then(response => {
                 setRawData(response.data);
                 setLoading(false);
@@ -76,13 +77,14 @@ const IngredientsConsumeOverTimeChart = () => {
             return;
         }
         const timeKey = filters.granularity; // 'week', 'month', 'quarter', or 'year'
-        // If exactly one ingredient is selected, assume rawData is already in { time, total_consumed } format.
-        // Otherwise (none or multiple), pivot the rawData.
+        // When exactly one ingredient is selected
         if (filters.ingredient.length === 1) {
             const mapped = rawData.map(row => ({
                 time: row[timeKey],
                 total_consumed: row.total_consumed
             }));
+            // Sort result by time (assumed orderable)
+            mapped.sort((a, b) => a.time.localeCompare(b.time));
             setChartData(mapped);
         } else {
             // Pivot rawData: group by time and create a key for each ingredient
@@ -92,7 +94,7 @@ const IngredientsConsumeOverTimeChart = () => {
                 if (!pivot[timeValue]) {
                     pivot[timeValue] = { time: timeValue };
                 }
-                // row.ingredient_name is expected from the API when multiple (or all) ingredients are requested
+                // Expecting row.ingredient_name from API
                 pivot[timeValue][row.ingredient_name] = row.total_consumed;
             });
             const pivotArray = Object.values(pivot).sort((a, b) => a.time.localeCompare(b.time));
@@ -100,7 +102,24 @@ const IngredientsConsumeOverTimeChart = () => {
         }
     }, [rawData, filters.ingredient, filters.granularity]);
 
-    // Render filter controls
+    // Calculate mean and standard deviation for outlier detection if one ingredient is selected
+    let mean = null, std = null;
+    if (filters.ingredient.length === 1 && chartData.length > 0) {
+        const series = chartData.map(item => item.total_consumed);
+        mean = series.reduce((sum, val) => sum + val, 0) / series.length;
+        std = Math.sqrt(series.reduce((acc, val) => acc + Math.pow(val - mean, 2), 0) / series.length);
+    }
+
+    // Custom dot renderer to highlight outliers
+    const renderCustomDot = (props) => {
+        const { cx, cy, value } = props;
+        if (value > mean + 2 * std || value < mean - 2 * std) {
+            return <circle cx={cx} cy={cy} r={8} fill="red" stroke="black" />;
+        }
+        return <circle cx={cx} cy={cy} r={4} fill="#8884d8" />;
+    };
+
+    // Render filter controls including outlier detection tickbox
     const handleFilterChange = (e) => {
         const { name, value, options } = e.target;
         if (name === 'ingredient') {
@@ -112,13 +131,10 @@ const IngredientsConsumeOverTimeChart = () => {
         }
     };
 
-    if (loading) {
-        return <div>Loading Ingredients Consumption Chart...</div>;
-    }
-
     return (
         <div style={{ width: '100%', position: 'relative', padding: '20px' }}>
             <div style={{ marginBottom: '20px', textAlign: 'center' }}>
+                {/* Ingredient Filter */}
                 <label style={{ marginRight: '10px' }}>
                     Ingredient:
                     <select
@@ -135,6 +151,7 @@ const IngredientsConsumeOverTimeChart = () => {
                         {/* Add additional ingredient options as needed */}
                     </select>
                 </label>
+                {/* Granularity Filter */}
                 <label style={{ marginLeft: '20px' }}>
                     Granularity:
                     <select
@@ -149,6 +166,17 @@ const IngredientsConsumeOverTimeChart = () => {
                         <option value="year">Year</option>
                     </select>
                 </label>
+                {/* Outlier Detection Toggle */}
+                {filters.ingredient.length === 1 && (
+                    <label style={{ marginLeft: '20px' }}>
+                        <input
+                            type="checkbox"
+                            checked={enableOutlierDetection}
+                            onChange={() => setEnableOutlierDetection(!enableOutlierDetection)}
+                        />
+                        Enable Outlier Detection
+                    </label>
+                )}
                 <button
                     onClick={() => downloadCSV(chartData)}
                     style={{
@@ -165,18 +193,27 @@ const IngredientsConsumeOverTimeChart = () => {
                     Download Report
                 </button>
             </div>
-            <ResponsiveContainer width="100%" height={400}>
-                <LineChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="time" tickFormatter={(tick) => tick} />
-                    <YAxis />
-                    <Tooltip />
-                    <Legend />
-                    {filters.ingredient.length === 1 ? (
-                        <Line type="monotone" dataKey="total_consumed" name="Total Consumed" stroke="#8884d8" />
-                    ) : (
-                        chartData.length > 0
-                            ? Object.keys(chartData[0]).filter(key => key !== 'time').map((ingredient, index) => (
+            {loading ? (
+                <div>Loading Ingredients Consumption Chart...</div>
+            ) : (
+                <ResponsiveContainer width="100%" height={400}>
+                    <LineChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="time" />
+                        <YAxis />
+                        <Tooltip />
+                        <Legend />
+                        {filters.ingredient.length === 1 ? (
+                            <Line
+                                type="monotone"
+                                dataKey="total_consumed"
+                                name="Total Consumed"
+                                stroke="#8884d8"
+                                dot={enableOutlierDetection ? renderCustomDot : undefined}
+                            />
+                        ) : (
+                            // Render a Line for each ingredient when multiple or no ingredients are selected
+                            Object.keys(chartData[0]).filter(key => key !== 'time').map((ingredient, index) => (
                                 <Line
                                     key={ingredient}
                                     type="monotone"
@@ -185,10 +222,10 @@ const IngredientsConsumeOverTimeChart = () => {
                                     stroke={lineColors[index % lineColors.length]}
                                 />
                             ))
-                            : null
-                    )}
-                </LineChart>
-            </ResponsiveContainer>
+                        )}
+                    </LineChart>
+                </ResponsiveContainer>
+            )}
         </div>
     );
 };
