@@ -17,9 +17,11 @@ const lineColors = ['#8884d8', '#82ca9d', '#ff7300', '#0088FE', '#FFBB28', '#aa4
 // Default filters:
 // • selectedProducts: an array of product names to compare. Empty means “all”
 // • yMetric: either "total_quantity" or "total_revenue"
+// • category: product category filter ("all", "vegetarian", "classic", "specialty")
 const defaultFilters = {
     selectedProducts: [],
-    yMetric: 'total_quantity'
+    yMetric: 'total_quantity',
+    category: 'all'
 };
 
 const ProductCohortSalesLineChart = () => {
@@ -33,7 +35,7 @@ const ProductCohortSalesLineChart = () => {
 
     // Fetch raw data from the API.
     // The endpoint is expected to return rows with:
-    // product_name, month_since_launch, total_quantity, total_revenue
+    // product_name, category, month_since_launch, total_quantity, total_revenue
     useEffect(() => {
         setLoading(true);
         axios.get(`${process.env.REACT_APP_API_URL}/api/kpi/product-monthly-sales-since-launch`)
@@ -43,7 +45,7 @@ const ProductCohortSalesLineChart = () => {
                 // Derive available products from data
                 const products = Array.from(new Set(response.data.map(item => item.product_name)));
                 setAvailableProducts(products);
-                // If no product selected, default to first 3 products
+                // If no product is selected, default to first 3 products
                 if (filters.selectedProducts.length === 0) {
                     setFilters(prev => ({ ...prev, selectedProducts: products.slice(0, 3) }));
                 }
@@ -61,12 +63,17 @@ const ProductCohortSalesLineChart = () => {
             setPivotData([]);
             return;
         }
+        // First, filter rawData by category if not "all"
+        const filteredData = filters.category === 'all'
+            ? rawData
+            : rawData.filter(row => row.category === filters.category);
+  
         // Determine the set of products to display: if none selected, use all.
         const productsToShow = filters.selectedProducts.length > 0 ? filters.selectedProducts : availableProducts;
-
-        // Group raw data by month_since_launch
+  
+        // Group filtered data by month_since_launch
         const pivot = {};
-        rawData.forEach(row => {
+        filteredData.forEach(row => {
             const month = Number(row.month_since_launch);
             if (!pivot[month]) {
                 pivot[month] = { month };
@@ -80,7 +87,7 @@ const ProductCohortSalesLineChart = () => {
         // Convert object to sorted array by month
         const pivotArray = Object.values(pivot).sort((a, b) => a.month - b.month);
         setPivotData(pivotArray);
-    }, [rawData, filters.selectedProducts, filters.yMetric, availableProducts]);
+    }, [rawData, filters.selectedProducts, filters.yMetric, availableProducts, filters.category]);
 
     // Handler for multi-select change on products.
     const handleProductChange = (e) => {
@@ -98,6 +105,11 @@ const ProductCohortSalesLineChart = () => {
         setShowAverage(e.target.checked);
     };
 
+    // Handler for category filter.
+    const handleCategoryChange = (e) => {
+        setFilters(prev => ({ ...prev, category: e.target.value }));
+    };
+
     if (loading) {
         return <div>Loading cohort chart...</div>;
     }
@@ -111,10 +123,22 @@ const ProductCohortSalesLineChart = () => {
 
     return (
         <div style={{ width: '100%', padding: '20px' }}>
-            <h2 style={{ textAlign: 'center' }}>
-                Product Cohort Sales Analysis
-            </h2>
+            <h2 style={{ textAlign: 'center' }}>Product Cohort Sales Analysis</h2>
             <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+                <label style={{ marginRight: '20px' }}>
+                    Category:
+                    <select
+                        name="category"
+                        style={{ marginLeft: '10px', padding: '5px' }}
+                        value={filters.category}
+                        onChange={handleCategoryChange}
+                    >
+                        <option value="all">All</option>
+                        <option value="vegetarian">Vegetarian</option>
+                        <option value="classic">Classic</option>
+                        <option value="specialty">Specialty</option>
+                    </select>
+                </label>
                 <label style={{ marginRight: '20px' }}>
                     Select Product(s):
                     <select
