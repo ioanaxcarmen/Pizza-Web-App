@@ -16,9 +16,9 @@ const lineColors = ['#8884d8', '#82ca9d', '#ff7300', '#0088FE', '#FFBB28', '#aa4
 
 // Default filters:
 // • selectedProducts: an array of product names to compare. Empty means “all”
+// • yMetric: either "total_quantity" or "total_revenue"
 const defaultFilters = {
     selectedProducts: [],
-    // yMetric: either "total_quantity" or "total_revenue"
     yMetric: 'total_quantity'
 };
 
@@ -28,6 +28,8 @@ const ProductCohortSalesLineChart = () => {
     const [availableProducts, setAvailableProducts] = useState([]);
     const [pivotData, setPivotData] = useState([]);
     const [loading, setLoading] = useState(true);
+    // New state for showing or hiding the average line
+    const [showAverage, setShowAverage] = useState(true);
 
     // Fetch raw data from the API.
     // The endpoint is expected to return rows with:
@@ -41,7 +43,7 @@ const ProductCohortSalesLineChart = () => {
                 // Derive available products from data
                 const products = Array.from(new Set(response.data.map(item => item.product_name)));
                 setAvailableProducts(products);
-                // If no product selected, default to first 3 products (or all, if desired)
+                // If no product selected, default to first 3 products
                 if (filters.selectedProducts.length === 0) {
                     setFilters(prev => ({ ...prev, selectedProducts: products.slice(0, 3) }));
                 }
@@ -53,8 +55,7 @@ const ProductCohortSalesLineChart = () => {
     }, []);
 
     // Pivot the raw data into an array of objects where each object represents a cohort month.
-    // Example pivoted object:
-    // { month: 1, 'Product A': 10, 'Product B': 5, ... }
+    // Example pivoted object: { month: 1, 'Product A': 10, 'Product B': 5, ... }
     useEffect(() => {
         if (rawData.length === 0) {
             setPivotData([]);
@@ -92,9 +93,21 @@ const ProductCohortSalesLineChart = () => {
         setFilters(prev => ({ ...prev, yMetric: e.target.value }));
     };
 
+    // Handler for average line opt-out/in.
+    const handleAverageToggle = (e) => {
+        setShowAverage(e.target.checked);
+    };
+
     if (loading) {
         return <div>Loading cohort chart...</div>;
     }
+
+    // Extend pivotData with an "average" key computed from selected products.
+    const extendedData = pivotData.map(row => {
+        const values = filters.selectedProducts.map(product => Number(row[product]) || 0);
+        const avg = values.length ? (values.reduce((acc, val) => acc + val, 0) / values.length) : 0;
+        return { ...row, average: avg };
+    });
 
     return (
         <div style={{ width: '100%', padding: '20px' }}>
@@ -118,7 +131,7 @@ const ProductCohortSalesLineChart = () => {
                         ))}
                     </select>
                 </label>
-                <label>
+                <label style={{ marginRight: '20px' }}>
                     Y-Axis Metric:
                     <select
                         name="yMetric"
@@ -130,9 +143,17 @@ const ProductCohortSalesLineChart = () => {
                         <option value="total_revenue">Total Revenue (USD)</option>
                     </select>
                 </label>
+                <label style={{ marginRight: '20px' }}>
+                    <input
+                        type="checkbox"
+                        checked={showAverage}
+                        onChange={handleAverageToggle}
+                    />
+                    Show Average Line
+                </label>
             </div>
             <ResponsiveContainer width="100%" height={400}>
-                <LineChart data={pivotData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+                <LineChart data={extendedData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="month" label={{ value: 'Month Since Launch', position: 'insideBottomRight', offset: -10 }} />
                     <YAxis label={{ value: filters.yMetric === 'total_quantity' ? 'Total Quantity' : 'Total Revenue (USD)', angle: -90, position: 'insideLeft' }} />
@@ -148,6 +169,16 @@ const ProductCohortSalesLineChart = () => {
                             activeDot={{ r: 5 }}
                         />
                     ))}
+                    {showAverage && (
+                        <Line
+                            type="monotone"
+                            dataKey="average"
+                            name="Average"
+                            stroke="#0000FF"
+                            strokeDasharray="5 5"
+                            dot={false}
+                        />
+                    )}
                 </LineChart>
             </ResponsiveContainer>
         </div>
