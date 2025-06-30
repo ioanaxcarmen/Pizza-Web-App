@@ -86,6 +86,7 @@ const CustomerMenuPage = () => {
         <Link to="/customer/top-10" style={styles.button}>Top 10 Customers</Link>
         <Link to="/customer/frequency" style={styles.button}>Customer Order Frequency</Link>
         <Link to="/customer/avg-spend" style={styles.button}>Average Spend Over Time</Link>
+        <Link to="/customer/store-share" style={styles.button}>Customer Share by Store</Link> {/* New button */}
         {/* Add more links for other customer-related KPIs */}
       </div>
       <button

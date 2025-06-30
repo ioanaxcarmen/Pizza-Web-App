@@ -130,7 +130,7 @@ app.get('/api/kpi/top-customers', async (req, res) => {
         binds.state = req.query.state;
     }
     if (req.query.quarter && req.query.quarter !== 'all') {
-        whereClause += ' AND EXTRACT(QUARTER FROM o.ORDERDATE) = :quarter';
+        whereClause += " AND TO_CHAR(o.ORDERDATE, 'Q') = :quarter";
         binds.quarter = req.query.quarter;
     }
     if (req.query.month && req.query.month !== 'all') {
@@ -261,6 +261,88 @@ app.get('/api/kpi/ingredients-consumed-over-time', async (req, res) => {
         if (connection) { try { await connection.close(); } catch (e) { console.error(e); } }
     }
 });
+
+//Customer Share by Store chart
+app.get('/api/kpi/customer-share-by-store', async (req, res) => {
+    let connection;
+    try {
+        const binds = {};
+        // This WHERE clause will be used by our main query and the subquery
+        let whereClause = 'WHERE 1=1'; 
+
+        // --- FILTER LOGIC ---
+        if (req.query.year && req.query.year !== 'all') {
+            whereClause += ' AND EXTRACT(YEAR FROM o.ORDERDATE) = :year';
+            binds.year = req.query.year;
+        }
+        if (req.query.quarter && req.query.quarter !== 'all') {
+            whereClause += ` AND TO_CHAR(o.ORDERDATE, 'Q') = :quarter`;
+            binds.quarter = req.query.quarter;
+        }
+        if (req.query.month && req.query.month !== 'all') {
+            whereClause += ' AND EXTRACT(MONTH FROM o.ORDERDATE) = :month';
+            binds.month = req.query.month;
+        }
+        if (req.query.state && req.query.state !== 'all') {
+            // We need to add an alias 's' to the table in the WHERE clause
+            whereClause += ' AND s.STATE_ABBR = :state';
+            binds.state = req.query.state;
+        }
+        // You can continue to add more filters here...
+
+        // --- THE CORRECTED SQL QUERY ---
+        // We use a WITH clause to create a temporary, filtered set of orders first.
+        const query = `
+            WITH FilteredOrders AS (
+                SELECT o.CUSTOMERID, o.STOREID
+                FROM ORDERS o
+                JOIN STORES s ON o.STOREID = s.STOREID -- Join here to allow filtering by state
+                ${whereClause}
+            )
+            SELECT
+                s.CITY,
+                s.STOREID,
+                COUNT(DISTINCT fo.CUSTOMERID) as ACTIVE_CUSTOMERS,
+                (SELECT COUNT(DISTINCT CUSTOMERID) FROM FilteredOrders) as TOTAL_FILTERED_CUSTOMERS
+            FROM
+                STORES s
+            JOIN
+                FilteredOrders fo ON s.STOREID = fo.STOREID
+            GROUP BY
+                s.CITY, s.STOREID
+            ORDER BY
+                ACTIVE_CUSTOMERS DESC
+        `;
+        
+        connection = await oracledb.getConnection(dbConfig);
+        const result = await connection.execute(query, binds);
+        
+        const chartData = result.rows.map(row => {
+            const city = row[0];
+            const storeId = row[1];
+            const customerCount = row[2];
+            // The denominator is now the correct, filtered total
+            const totalFilteredCustomers = row[3]; 
+            
+            const share = totalFilteredCustomers > 0 ? (customerCount / totalFilteredCustomers) * 100 : 0;
+
+            return {
+                storeName: city,
+                storeId: storeId, // Sending storeId is good practice
+                customerCount: customerCount,
+                share: share.toFixed(2)
+            };
+        });
+
+        res.json(chartData);
+    } catch (err) {
+        console.error("Error fetching customer share by store:", err);
+        res.status(500).json({ error: 'Failed to fetch data.' });
+    } finally {
+        if (connection) { try { await connection.close(); } catch (e) { console.error(e); } }
+    }
+});
+
 
 //Weitere SQL queries hier
 

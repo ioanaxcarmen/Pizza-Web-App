@@ -1,6 +1,7 @@
 import React from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import TopCustomersChart from '../kpi-widgets/TopCustomersChart';
+import StoreCustomerShareChart from '../kpi-widgets/StoreCustomerShareChart';
 import IngredientsConsumeOverTimeChart from '../kpi-widgets/IngredientsConsumeOverTimeChart';
 import TopIngredientsChart from '../kpi-widgets/TopIngredientsChart';
 import StoreKPIRadarChart from '../kpi-widgets/StoreKPIRadarChart';
@@ -77,6 +78,10 @@ const ChartPage = () => {
             case 'top-10':
                 chartComponent = <TopCustomersChart />;
                 pageTitle = "Top 10 Customers by Lifetime Spend";
+                break;
+            case 'store-share':
+                chartComponent = <StoreCustomerShareChart />;
+                pageTitle = "Customer Share by Store";
                 break;
             case 'frequency':
                 chartComponent = <PlaceholderChart kpiName="Customer Order Frequency" />;

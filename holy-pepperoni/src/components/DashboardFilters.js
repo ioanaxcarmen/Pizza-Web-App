@@ -71,17 +71,19 @@ const DashboardFilters = ({ filters, setFilters }) => {
                     <option value="UT">Utah</option>
                 </select>
             </div>
-            <div>
-                <label>Store ID: </label>
-                <input
-                    type="text"
-                    name="storeId"
-                    value={filters.storeId || ""}
-                    onChange={handleFilterChange}
-                    placeholder="Store ID"
-                    style={{ width: 100 }}
-                />
-            </div>
+            {filters.storeId !== undefined && (
+                <div>
+                    <label>Store ID: </label>
+                    <input
+                        type="text"
+                        name="storeId"
+                        value={filters.storeId || ""}
+                        onChange={handleFilterChange}
+                        placeholder="Store ID"
+                        style={{ width: 100 }}
+                    />
+                </div>
+            )}
             <button onClick={handleResetFilters} style={{ height: 36 }}>
                 Reset Filters
             </button>

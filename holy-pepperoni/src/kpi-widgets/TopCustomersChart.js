@@ -56,6 +56,22 @@ const TopCustomersChart = () => {
         setFilters(defaultFilters);
     };
 
+    const handleFilterChange = (e) => {
+        const { name, value } = e.target;
+        let newFilters = { ...filters, [name]: value };
+
+        // Cascading logic: reset lower filters when higher ones change
+        if (name === 'year') {
+            newFilters.quarter = 'all';
+            newFilters.month = 'all';
+        }
+        if (name === 'quarter') {
+            newFilters.month = 'all';
+        }
+
+        setFilters(newFilters);
+    };
+
     if (loading) {
         return <div>Loading Top Customers Chart...</div>;
     }
