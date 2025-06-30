@@ -1,6 +1,10 @@
 import React from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import TopCustomersChart from '../kpi-widgets/TopCustomersChart';
+import IngredientsConsumeOverTimeChart from '../kpi-widgets/IngredientsConsumeOverTimeChart';
+import TopIngredientsChart from '../kpi-widgets/TopIngredientsChart';
+import StoreKPIRadarChart from '../kpi-widgets/StoreKPIRadarChart';
+import ProductCohortSalesLineChart from '../kpi-widgets/ProductCohortSalesLineChart';
 
 // Placeholder for other KPIs
 const PlaceholderChart = ({ kpiName }) => (
@@ -62,30 +66,62 @@ const ChartPage = () => {
     const { kpiId } = useParams();
     const navigate = useNavigate();
 
-    const renderChart = () => {
+    let chartComponent = null;
+    let pageTitle = "";
+    let backPath = "/dashboard"; // default
+
+    // Determine which chart, title, and back path to use
+    if (window.location.pathname.startsWith("/customer")) {
+        backPath = "/customer";
         switch (kpiId) {
             case 'top-10':
-                return <TopCustomersChart />;
+                chartComponent = <TopCustomersChart />;
+                pageTitle = "Top 10 Customers by Lifetime Spend";
+                break;
             case 'frequency':
-                return <PlaceholderChart kpiName="Customer Order Frequency" />;
+                chartComponent = <PlaceholderChart kpiName="Customer Order Frequency" />;
+                pageTitle = "Customer Order Frequency";
+                break;
             case 'avg-spend':
-                return <PlaceholderChart kpiName="Average Spend Over Time" />;
+                chartComponent = <PlaceholderChart kpiName="Average Spend Over Time" />;
+                pageTitle = "Average Spend Over Time";
+                break;
             default:
-                return <div>KPI not found. Please go back.</div>;
+                chartComponent = <div>KPI not found. Please go back.</div>;
+                pageTitle = "KPI Not Found";
         }
-    };
+    } else if (window.location.pathname.startsWith("/ingredients")) {
+        backPath = "/ingredients";
+        switch (kpiId) {
+            case 'consumed-over-time':
+                chartComponent = <IngredientsConsumeOverTimeChart />;
+                pageTitle = "Ingredients Consumed Over Time";
+                break;
+            case 'top-ingredients':
+                chartComponent = <TopIngredientsChart kpiName="Top Ingredients" />;
+                pageTitle = "Top Ingredients";
+                break;
+            case 'cost-trends':
+                chartComponent = <PlaceholderChart kpiName="Ingredient Cost Trends" />;
+                pageTitle = "Ingredient Cost Trends";
+                break;
+            default:
+                chartComponent = <div>KPI not found. Please go back.</div>;
+                pageTitle = "KPI Not Found";
+        }
+    }
 
     return (
         <div style={styles.container}>
-            <div style={styles.header}>Top 10 Customers by Lifetime Spend</div>
+            <div style={styles.header}>{pageTitle}</div>
             <div style={styles.chartArea}>
                 <div style={{ width: "100%", padding: '20px', boxSizing: 'border-box' }}>
-                    {renderChart()}
+                    {chartComponent}
                 </div>
-                <div style={{ height: 40 }} /> {/* Spacer to push button lower */}
+                <div style={{ height: 40 }} />
                 <button
                     style={styles.backButton}
-                    onClick={() => navigate("/customer")}
+                    onClick={() => navigate(backPath)}
                 >
                     Back
                 </button>

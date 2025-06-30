@@ -4,10 +4,7 @@ import Dashboard from "./components/Dashboard";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Product from "./components/Products";
 import Store from "./components/Store";
-// import Customer from "./components/Customer"; // We are replacing this
-import Ingredients from "./components/Ingredients";
-
-// --- Import your new page components ---
+import IngredientMenuPage from "./components/IngredientMenuPage";
 import CustomerMenuPage from "./components/CustomerMenuPage";
 import ChartPage from "./components/ChartPage";
 
@@ -26,8 +23,7 @@ function App() {
         />
         <Route path="/product" element={<Product />} />
         <Route path="/store" element={<Store />} />
-        
-        {/* === UPDATED CUSTOMER ROUTES START HERE === */}
+      
 
         {/* This path now shows the menu of customer KPIs */}
         <Route path="/customer" element={<CustomerMenuPage />} />
@@ -35,9 +31,11 @@ function App() {
         {/* This new dynamic path shows the specific chart the user selects */}
         <Route path="/customer/:kpiId" element={<ChartPage />} />
         
-        {/* === UPDATED CUSTOMER ROUTES END HERE === */}
 
-        <Route path="/ingredients" element={<Ingredients />} />
+        <Route path="/ingredients" element={<IngredientMenuPage />} />
+
+         {/* This new dynamic path shows the specific chart the user selects */}
+        <Route path="/ingredients/:kpiId" element={<ChartPage />} />
       </Routes>
     </Router>
   );

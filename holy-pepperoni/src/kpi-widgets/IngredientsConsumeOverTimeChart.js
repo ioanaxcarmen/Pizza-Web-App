@@ -29,7 +29,7 @@ const downloadCSV = (data) => {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'ingredients_consume_over_time.csv';
+    a.download = 'ingredients_consumed_over_time.csv';
     a.click();
     URL.revokeObjectURL(url);
 };
@@ -58,13 +58,13 @@ const IngredientsConsumeOverTimeChart = () => {
         // Expected API behavior:
         // - If a single ingredient is selected: [{ time, total_consumed }, …]
         // - If "all" or multiple ingredients: [{ time, ingredient_name, total_consumed }, …]
-        axios.get(`${process.env.REACT_APP_API_URL}/api/kpi/ingredients-consume-over-time?${params.toString()}`)
+        axios.get(`${process.env.REACT_APP_API_URL}/api/kpi/ingredients-consumed-over-time?${params.toString()}`)
             .then(response => {
                 setRawData(response.data);
                 setLoading(false);
             })
             .catch(error => {
-                console.error("Error fetching ingredients consume over time data:", error);
+                console.error("Error fetching ingredients consumed over time data:", error);
                 setLoading(false);
             });
     }, [filters]);
@@ -176,16 +176,17 @@ const IngredientsConsumeOverTimeChart = () => {
                     {filters.ingredient.length === 1 ? (
                         <Line type="monotone" dataKey="total_consumed" name="Total Consumed" stroke="#8884d8" />
                     ) : (
-                        // When multiple or no ingredients are selected, render a Line for each ingredient key (excluding "time")
-                        Object.keys(chartData[0]).filter(key => key !== 'time').map((ingredient, index) => (
-                            <Line
-                                key={ingredient}
-                                type="monotone"
-                                dataKey={ingredient}
-                                name={ingredient}
-                                stroke={lineColors[index % lineColors.length]}
-                            />
-                        ))
+                        chartData.length > 0
+                            ? Object.keys(chartData[0]).filter(key => key !== 'time').map((ingredient, index) => (
+                                <Line
+                                    key={ingredient}
+                                    type="monotone"
+                                    dataKey={ingredient}
+                                    name={ingredient}
+                                    stroke={lineColors[index % lineColors.length]}
+                                />
+                            ))
+                            : null
                     )}
                 </LineChart>
             </ResponsiveContainer>

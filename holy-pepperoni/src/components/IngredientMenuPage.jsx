@@ -75,18 +75,18 @@ const styles = {
   }
 };
 
-const CustomerMenuPage = () => {
+const IngredientMenuPage = () => {
   const navigate = useNavigate();
 
   return (
     <div style={styles.container}>
-      <div style={styles.header}>Customer Menu</div>
+      <div style={styles.header}>Ingredients Menu</div>
       <div style={styles.subheading}>Please select a Key Performance Indicator to view.</div>
       <div style={styles.buttonGrid}>
-        <Link to="/customer/top-10" style={styles.button}>Top 10 Customers</Link>
-        <Link to="/customer/frequency" style={styles.button}>Customer Order Frequency</Link>
-        <Link to="/customer/avg-spend" style={styles.button}>Average Spend Over Time</Link>
-        {/* Add more links for other customer-related KPIs */}
+        <Link to="/ingredients/consumed-over-time" style={styles.button}>Ingredients Consumed Over Time</Link>
+        <Link to="/ingredients/top-ingredients" style={styles.button}>Top Ingredients</Link>
+        <Link to="/ingredients/cost-trends" style={styles.button}>Ingredient Cost Trends</Link>
+        {/* Add more links for other ingredient-related KPIs */}
       </div>
       <button
         style={styles.backButton}
@@ -98,4 +98,4 @@ const CustomerMenuPage = () => {
   );
 };
 
-export default CustomerMenuPage;
+export default IngredientMenuPage;

@@ -65,7 +65,7 @@ app.get('/api/sales-by-product', async (req, res) => {
     }
 });
 
-// --- Add your new KPI endpoint here ---
+// --- Add new KPI endpoint here ---
 app.get('/api/kpi/avg-orders-per-customer', async (req, res) => {
     let connection;
 
@@ -86,7 +86,7 @@ app.get('/api/kpi/avg-orders-per-customer', async (req, res) => {
         whereClause += ' AND s.STOREID = :storeId';
         binds.storeId = req.query.storeId;
     }
-    // You can add more filters for quarter, etc. here
+    //add more filters for quarter, etc. here
 
     try {
         connection = await oracledb.getConnection(dbConfig);
@@ -167,6 +167,94 @@ app.get('/api/kpi/top-customers', async (req, res) => {
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: 'Failed to fetch top customers.' });
+    } finally {
+        if (connection) { try { await connection.close(); } catch (e) { console.error(e); } }
+    }
+});
+
+app.get('/api/kpi/ingredients-consumed-over-time', async (req, res) => {
+    let connection;
+    let whereClause = 'WHERE 1=1';
+    const binds = {};
+
+    // Granularity: default to 'month'
+    let granularity = req.query.granularity || 'month';
+    let timeExpr;
+    switch (granularity) {
+        case 'week':
+            timeExpr = "TO_CHAR(o.ORDERDATE, 'IYYY-IW')"; // ISO week
+            break;
+        case 'quarter':
+            timeExpr = "TO_CHAR(o.ORDERDATE, 'YYYY') || '-Q' || TO_CHAR(o.ORDERDATE, 'Q')";
+            break;
+        case 'year':
+            timeExpr = "TO_CHAR(o.ORDERDATE, 'YYYY')";
+            break;
+        case 'month':
+        default:
+            timeExpr = "TO_CHAR(o.ORDERDATE, 'YYYY-MM')";
+    }
+
+    // Ingredient filter
+    if (req.query.ingredient && req.query.ingredient !== 'all') {
+        const ingredientList = req.query.ingredient.split(',').map(i => i.trim());
+        if (ingredientList.length === 1) {
+            whereClause += ' AND i.INGREDIENT_NAME = :ingredient';
+            binds.ingredient = ingredientList[0];
+        } else if (ingredientList.length > 1) {
+            // Use Oracle's IN clause for multiple ingredients
+            const inClause = ingredientList.map((_, idx) => `:ingredient${idx}`).join(',');
+            whereClause += ` AND i.INGREDIENT_NAME IN (${inClause})`;
+            ingredientList.forEach((name, idx) => {
+                binds[`ingredient${idx}`] = name;
+            });
+        }
+    }
+
+    // Optional: Add filters for year, month, etc. (if you want to allow further filtering)
+    if (req.query.year && req.query.year !== 'all') {
+        whereClause += ' AND EXTRACT(YEAR FROM o.ORDERDATE) = :year';
+        binds.year = req.query.year;
+    }
+    if (req.query.month && req.query.month !== 'all') {
+        whereClause += ' AND EXTRACT(MONTH FROM o.ORDERDATE) = :month';
+        binds.month = req.query.month;
+    }
+
+    try {
+        connection = await oracledb.getConnection(dbConfig);
+
+        const query = `
+            SELECT 
+                ${timeExpr} AS time,
+                i.INGREDIENT_NAME,
+                SUM(oi.QUANTITY) AS total_consumed
+            FROM ORDER_INGREDIENTS oi
+            JOIN INGREDIENTS i ON oi.INGREDIENTID = i.ID
+            JOIN ORDERS o ON oi.ORDERID = o.ID
+            ${whereClause}
+            GROUP BY ${timeExpr}, i.INGREDIENT_NAME
+            ORDER BY time, i.INGREDIENT_NAME
+        `;
+
+        const result = await connection.execute(query, binds);
+        console.log("Ingredients Consumed Over Time rows:", result.rows);
+
+        // Format for frontend: [{ time, ingredient_name, total_consumed }, ...]
+        const chartData = result.rows.map(row => ({
+            week: row[0], // for week granularity
+            month: row[0], // for month granularity
+            quarter: row[0], // for quarter granularity
+            year: row[0], // for year granularity
+            ingredient_name: row[1],
+            total_consumed: row[2]
+        }));
+
+        res.json(chartData);
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Failed to fetch ingredients consumed over time.' });
     } finally {
         if (connection) { try { await connection.close(); } catch (e) { console.error(e); } }
     }
