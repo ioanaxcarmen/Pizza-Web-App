@@ -118,7 +118,6 @@ const IngredientsConsumeOverTimeChart = () => {
 
     return (
         <div style={{ width: '100%', position: 'relative', padding: '20px' }}>
-            <h2 style={{ textAlign: 'center' }}>Ingredients Consumption Over Time</h2>
             <div style={{ marginBottom: '20px', textAlign: 'center' }}>
                 <label style={{ marginRight: '10px' }}>
                     Ingredient:

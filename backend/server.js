@@ -115,6 +115,7 @@ app.get('/api/kpi/avg-orders-per-customer', async (req, res) => {
     }
 });
 
+// Top Customers by Lifetime Value chart
 app.get('/api/kpi/top-customers', async (req, res) => {
     let connection;
     let whereClause = 'WHERE 1=1';
@@ -172,6 +173,7 @@ app.get('/api/kpi/top-customers', async (req, res) => {
     }
 });
 
+// Ingredients Consumed Over Time chart
 app.get('/api/kpi/ingredients-consumed-over-time', async (req, res) => {
     let connection;
     let whereClause = 'WHERE 1=1';
@@ -259,6 +261,8 @@ app.get('/api/kpi/ingredients-consumed-over-time', async (req, res) => {
         if (connection) { try { await connection.close(); } catch (e) { console.error(e); } }
     }
 });
+
+//Weitere SQL queries hier
 
 //origianl localhost
 // app.listen(port, () => {
