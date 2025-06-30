@@ -10,7 +10,7 @@ const port = 3001; // The backend will run on this port
 const dbConfig = {
     user: "PIZZA",
     password: "MyPizza123", // The password you created for the PIZZA user
-    connectString: "localhost:1521/XEPDB1"
+    connectString: "localhost:1521/XE"
 };
 
 // A test API endpoint to see if the connection works
@@ -176,78 +176,65 @@ app.get('/api/kpi/top-customers', async (req, res) => {
 // Ingredients Consumed Over Time chart
 app.get('/api/kpi/ingredients-consumed-over-time', async (req, res) => {
     let connection;
-    let whereClause = 'WHERE 1=1';
     const binds = {};
+    let whereClause = 'WHERE 1=1';
 
-    // Granularity: default to 'month'
-    let granularity = req.query.granularity || 'month';
-    let timeExpr;
+    // Take granularity (week, month, quarter, year)
+    const granularity = req.query.granularity || 'month';
+    let timeCol;
     switch (granularity) {
         case 'week':
-            timeExpr = "TO_CHAR(o.ORDERDATE, 'IYYY-IW')"; // ISO week
+            timeCol = 'week';
             break;
         case 'quarter':
-            timeExpr = "TO_CHAR(o.ORDERDATE, 'YYYY') || '-Q' || TO_CHAR(o.ORDERDATE, 'Q')";
+            timeCol = 'quarter';
             break;
         case 'year':
-            timeExpr = "TO_CHAR(o.ORDERDATE, 'YYYY')";
+            timeCol = 'year';
             break;
         case 'month':
         default:
-            timeExpr = "TO_CHAR(o.ORDERDATE, 'YYYY-MM')";
+            timeCol = 'month';
     }
 
-    // Ingredient filter
+    // Ingredients filter
     if (req.query.ingredient && req.query.ingredient !== 'all') {
         const ingredientList = req.query.ingredient.split(',').map(i => i.trim());
         if (ingredientList.length === 1) {
-            whereClause += ' AND i.INGREDIENT_NAME = :ingredient';
+            whereClause += ' AND ingredient_name = :ingredient';
             binds.ingredient = ingredientList[0];
         } else if (ingredientList.length > 1) {
-            // Use Oracle's IN clause for multiple ingredients
             const inClause = ingredientList.map((_, idx) => `:ingredient${idx}`).join(',');
-            whereClause += ` AND i.INGREDIENT_NAME IN (${inClause})`;
+            whereClause += ` AND ingredient_name IN (${inClause})`;
             ingredientList.forEach((name, idx) => {
                 binds[`ingredient${idx}`] = name;
             });
         }
     }
 
-    // Optional: Add filters for year, month, etc. (if you want to allow further filtering)
-    if (req.query.year && req.query.year !== 'all') {
-        whereClause += ' AND EXTRACT(YEAR FROM o.ORDERDATE) = :year';
-        binds.year = req.query.year;
-    }
-    if (req.query.month && req.query.month !== 'all') {
-        whereClause += ' AND EXTRACT(MONTH FROM o.ORDERDATE) = :month';
-        binds.month = req.query.month;
-    }
+   
 
     try {
         connection = await oracledb.getConnection(dbConfig);
 
         const query = `
             SELECT 
-                ${timeExpr} AS time,
-                i.INGREDIENT_NAME,
-                SUM(oi.QUANTITY) AS total_consumed
-            FROM ORDER_INGREDIENTS oi
-            JOIN INGREDIENTS i ON oi.INGREDIENTID = i.ID
-            JOIN ORDERS o ON oi.ORDERID = o.ID
+                ${timeCol} AS time,
+                ingredient_name,
+                total_quantity_used
+            FROM v_most_used_ingredients_time
             ${whereClause}
-            GROUP BY ${timeExpr}, i.INGREDIENT_NAME
-            ORDER BY time, i.INGREDIENT_NAME
+            ORDER BY time, ingredient_name
         `;
 
         const result = await connection.execute(query, binds);
-        console.log("Ingredients Consumed Over Time rows:", result.rows);
 
-        // Format for frontend: [{ time, ingredient_name, total_consumed }, ...]
+        // Format for frontend
         const chartData = result.rows.map(row => ({
-            week: row[0], // for week granularity
-            month: row[0], // for month granularity
-            quarter: row[0], // for quarter granularity
-            year: row[0], // for year granularity
+            week: row[0],
+            month: row[0],
+            quarter: row[0],
+            year: row[0],
             ingredient_name: row[1],
             total_consumed: row[2]
         }));

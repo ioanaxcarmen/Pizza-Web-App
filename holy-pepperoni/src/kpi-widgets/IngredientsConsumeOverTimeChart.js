@@ -59,7 +59,7 @@ const IngredientsConsumeOverTimeChart = () => {
         // Expected API behavior:
         // - If a single ingredient is selected: [{ time, total_consumed }, …]
         // - Otherwise: [{ time, ingredient_name, total_consumed }, …]
-        axios.get(`${process.env.REACT_APP_API_URL}/api/kpi/ingredients-consume-over-time?${params.toString()}`)
+        axios.get(`${process.env.REACT_APP_API_URL}/api/kpi/ingredients-consumed-over-time?${params.toString()}`)
             .then(response => {
                 setRawData(response.data);
                 setLoading(false);
@@ -212,7 +212,8 @@ const IngredientsConsumeOverTimeChart = () => {
                                 dot={enableOutlierDetection ? renderCustomDot : undefined}
                             />
                         ) : (
-                            // Render a Line for each ingredient when multiple or no ingredients are selected
+                          
+                            chartData.length > 0 &&
                             Object.keys(chartData[0]).filter(key => key !== 'time').map((ingredient, index) => (
                                 <Line
                                     key={ingredient}
