@@ -29,7 +29,7 @@ const downloadCSV = (data) => {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'ingredients_consume_over_time.csv';
+    a.download = 'ingredients_consumed_over_time.csv';
     a.click();
     URL.revokeObjectURL(url);
 };
@@ -65,7 +65,7 @@ const IngredientsConsumeOverTimeChart = () => {
                 setLoading(false);
             })
             .catch(error => {
-                console.error("Error fetching ingredients consume over time data:", error);
+                console.error("Error fetching ingredients consumed over time data:", error);
                 setLoading(false);
             });
     }, [filters]);
@@ -133,7 +133,6 @@ const IngredientsConsumeOverTimeChart = () => {
 
     return (
         <div style={{ width: '100%', position: 'relative', padding: '20px' }}>
-            <h2 style={{ textAlign: 'center' }}>Ingredients Consumption Over Time</h2>
             <div style={{ marginBottom: '20px', textAlign: 'center' }}>
                 {/* Ingredient Filter */}
                 <label style={{ marginRight: '10px' }}>
