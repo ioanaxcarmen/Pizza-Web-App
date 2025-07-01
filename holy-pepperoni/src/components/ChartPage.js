@@ -1,10 +1,13 @@
 import React from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import TopCustomersChart from '../kpi-widgets/TopCustomersChart';
+import StoreCustomerShareChart from '../kpi-widgets/StoreCustomerShareChart';
 import IngredientsConsumeOverTimeChart from '../kpi-widgets/IngredientsConsumeOverTimeChart';
 import TopIngredientsChart from '../kpi-widgets/TopIngredientsChart';
 import StoreKPIRadarChart from '../kpi-widgets/StoreKPIRadarChart';
 import ProductCohortSalesLineChart from '../kpi-widgets/ProductCohortSalesLineChart';
+import CustomerOrderFrequencyChart from '../kpi-widgets/CustomerOrderFrequencyChart';
+import AverageSpendLineChart from '../kpi-widgets/AverageSpendLineChart';
 
 // Placeholder for other KPIs
 const PlaceholderChart = ({ kpiName }) => (
@@ -78,12 +81,16 @@ const ChartPage = () => {
                 chartComponent = <TopCustomersChart />;
                 pageTitle = "Top 10 Customers by Lifetime Spend";
                 break;
-            case 'frequency':
-                chartComponent = <PlaceholderChart kpiName="Customer Order Frequency" />;
+            case 'store-share':
+                chartComponent = <StoreCustomerShareChart />;
+                pageTitle = "Customer Share by Store";
+                break;
+            case 'order-frequency':
+                chartComponent = <CustomerOrderFrequencyChart />;
                 pageTitle = "Customer Order Frequency";
                 break;
             case 'avg-spend':
-                chartComponent = <PlaceholderChart kpiName="Average Spend Over Time" />;
+                chartComponent = <AverageSpendLineChart />;
                 pageTitle = "Average Spend Over Time";
                 break;
             default:

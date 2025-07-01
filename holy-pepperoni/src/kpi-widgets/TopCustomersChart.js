@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useSearchParams } from 'react-router-dom'; // <<< 1. IMPORT useSearchParams
 import DashboardFilters from '../components/DashboardFilters';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
@@ -27,7 +28,22 @@ const downloadCSV = (data) => {
 };
 
 const TopCustomersChart = () => {
-    const [filters, setFilters] = useState(defaultFilters);
+    // Use searchParams to read the URL
+    const [searchParams] = useSearchParams();
+
+    // 2. This function checks the URL for filters when the page loads
+    const getInitialFilters = () => {
+        const monthFromUrl = searchParams.get('month');
+        if (monthFromUrl) {
+            // If a month is in the URL, use it to set the initial filter state
+            const year = monthFromUrl.substring(0, 4);
+            const month = parseInt(monthFromUrl.substring(5, 7), 10).toString();
+            return { ...defaultFilters, year: year, month: month };
+        }
+        return defaultFilters;
+    };
+
+    const [filters, setFilters] = useState(getInitialFilters); // <<< 3. SET INITIAL STATE FROM URL
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -54,6 +70,22 @@ const TopCustomersChart = () => {
 
     const handleResetFilters = () => {
         setFilters(defaultFilters);
+    };
+
+    const handleFilterChange = (e) => {
+        const { name, value } = e.target;
+        let newFilters = { ...filters, [name]: value };
+
+        // Cascading logic: reset lower filters when higher ones change
+        if (name === 'year') {
+            newFilters.quarter = 'all';
+            newFilters.month = 'all';
+        }
+        if (name === 'quarter') {
+            newFilters.month = 'all';
+        }
+
+        setFilters(newFilters);
     };
 
     if (loading) {
