@@ -1,70 +1,155 @@
-# Getting Started with Create React App
+# 🍕 Holy Pepperoni Web App Setup Guide
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+This guide walks you through setting up the Oracle database, configuring your project, and running both frontend and backend servers.
 
-## Available Scripts
+## 🚀 Prerequisites
 
-In the project directory, you can run:
+Make sure the following software is installed on your machine:
 
-### `npm start`
+- **Oracle Database 21c Express Edition (XE)**
+- **Node.js and npm**
+- **Git**
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+---
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## 📁 Step 1: Download Project Files
 
-### `npm test`
+Clone or download the project files into a main directory. This should include:
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+- `pizza_schema.dmp` (database dump file)
+- `holy-pepperoni/` (React frontend)
+- `backend/` (Node.js backend)
 
-### `npm run build`
+```bash
+git clone <your_repository_url>
+cd <your_project_folder>
+```
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+---
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+## 🛠️ Step 2: Oracle Database Setup
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+### 1. Create Import Directory
 
-### `npm run eject`
+- Create a folder at `C:\oracle_import`.
+- Place your `pizza_schema.dmp` file inside it.
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+### 2. Create Database User & Directory Object
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+Open **Command Prompt or PowerShell as Administrator**, then connect using `SQL*Plus`:
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+```bash
+sqlplus system/YourAdminPassword@localhost:1521/XEPDB1
+```
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+Execute the following SQL statements:
 
-## Learn More
+```sql
+CREATE USER PIZZA IDENTIFIED BY MyPizza123;
+GRANT CONNECT, RESOURCE, CREATE_MATERIALIZED_VIEW TO PIZZA;
+ALTER USER PIZZA QUOTA UNLIMITED ON USERS;
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+CREATE OR REPLACE DIRECTORY DMP_DIR AS 'C:\oracle_import';
+GRANT READ, WRITE ON DIRECTORY DMP_DIR TO PIZZA;
+EXIT;
+```
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+### 3. Import the Database Dump
 
-### Code Splitting
+In the same Admin terminal:
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+```bash
+impdp PIZZA/MyPizza123@localhost:1521/XEPDB1 DUMPFILE=pizza_schema.dmp DIRECTORY=DMP_DIR LOGFILE=import.log
+```
 
-### Analyzing the Bundle Size
+Wait for it to finish. If there are no critical errors, your database is ready.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+---
 
-### Making a Progressive Web App
+## ⚙️ Step 3: Application Configuration
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+### 1. Backend
 
-### Advanced Configuration
+- Go to the `backend/` directory.
+- Open `server.js`.
+- Make sure the `dbConfig` uses the correct `connectString`:
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+```js
+const dbConfig = {
+  user: "PIZZA",
+  password: "MyPizza123",
+  connectString: "localhost:1521/XEPDB1", // Use the PDB for app data
+  // connectString: "localhost:1521/XE" // Commented out - root container
+};
+```
 
-### Deployment
+### 2. Frontend
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+- Go to the `holy-pepperoni/` directory.
+- Create a `.env` file and add:
 
-### `npm run build` fails to minify
+```env
+REACT_APP_API_URL=http://localhost:3001 --> replace localhost with current IP address to make it accessible from other devices
+```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+---
+
+## ▶️ Step 4: Run the Application
+
+You’ll need **two terminal windows** open.
+
+### Terminal 1 – Start Backend Server
+
+```bash
+cd path/to/your/project/backend
+npm install
+node server.js
+```
+
+✅ You should see:
+```
+Backend server running at http://localhost:3001 
+```
+
+### Terminal 2 – Start Frontend (React)
+
+```bash
+cd path/to/your/project/holy-pepperoni
+npm install
+npm start -- --host 0.0.0.0
+```
+
+✅ A browser window should open automatically.
+
+---
+
+## 🔐 Step 5: Using the Web App
+
+### 1. Log In
+
+Use these Firebase credentials:
+
+- **Email:** `admin@pizza.com`
+- **Password:** `pizza1`
+
+### 2. Navigate
+
+After logging in, use the sidebar menu to go to:
+
+- Products
+- Stores
+- Customers
+- Ingredients
+- Geographical Reports
+
+### 3. Analyze Data
+
+On KPI pages:
+
+- Click buttons to display charts.
+- Use filters to slice data.
+- Click chart elements to drill down into details.
+
+---
+
+## 🧀 Enjoy your pizza-powered insights!
