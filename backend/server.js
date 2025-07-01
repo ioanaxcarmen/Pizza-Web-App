@@ -11,6 +11,7 @@ const dbConfig = {
     user: "PIZZA",
     password: "MyPizza123", // The password you created for the PIZZA user
     connectString: "localhost:1521/XE"
+    //connectString: "localhost:1521/XEPDB1" //use this if you are using the default Oracle XE database
 };
 
 // A test API endpoint to see if the connection works
@@ -349,7 +350,14 @@ app.get('/api/kpi/order-frequency', async (req, res) => {
             whereClause += ' AND s.STATE_ABBR = :state';
             binds.state = req.query.state;
         }
-        // Add any other filters you need here...
+        if (req.query.month) {
+            whereClause += ' AND EXTRACT(MONTH FROM o.ORDERDATE) = :month';
+            binds.month = req.query.month;
+        }
+        if (req.query.storeId) {
+            whereClause += ' AND o.STOREID = :storeId';
+            binds.storeId = req.query.storeId;
+        }
 
         // --- SQL Query using a WITH clause for clarity ---
         // 1. First, we get a list of customers and their order counts within the filtered period.
@@ -419,10 +427,6 @@ app.get('/api/kpi/avg-spend-monthly', async (req, res) => {
         if (req.query.quarter && req.query.quarter !== 'all') {
             whereClause += ` AND v.QUARTER = 'Q' || :quarter`; 
             binds.quarter = req.query.quarter;
-        }
-        if (req.query.state && req.query.state !== 'all') {
-            // This requires a join if state isn't in the view
-            // For simplicity, we'll assume the view has the necessary data or skip this filter
         }
 
         const query = `

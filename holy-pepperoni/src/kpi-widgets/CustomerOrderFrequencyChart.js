@@ -20,8 +20,11 @@ const downloadCSV = (data) => {
     const blob = new Blob([csvContent], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
+    a.href = url;
     a.download = 'customer_order_frequency.csv';
+    document.body.appendChild(a); // <-- append to DOM
     a.click();
+    document.body.removeChild(a); // <-- remove after click
     URL.revokeObjectURL(url);
 };
 
@@ -67,7 +70,7 @@ const CustomerOrderFrequencyChart = () => {
     }
 
     // Define some colors for the pie chart slices
-    const COLORS = ['#0088FE', '#00C49F'];
+    const COLORS = ['#ff3d6f', '#ffb5c8'];
 
     return (
         <div style={{ width: '100%', height: 560, position: 'relative' }}>
