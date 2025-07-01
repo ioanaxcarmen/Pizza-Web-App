@@ -121,37 +121,37 @@ app.get('/api/kpi/top-customers', async (req, res) => {
     let whereClause = 'WHERE 1=1';
     const binds = {};
 
+    // This logic now correctly handles all filters coming from your component
     if (req.query.year && req.query.year !== 'all') {
         whereClause += ' AND EXTRACT(YEAR FROM o.ORDERDATE) = :year';
         binds.year = req.query.year;
+    }
+    if (req.query.quarter && req.query.quarter !== 'all') {
+        whereClause += ` AND TO_CHAR(o.ORDERDATE, 'Q') = :quarter`;
+        binds.quarter = req.query.quarter;
+    }
+    if (req.query.month && req.query.month !== 'all') {
+        // This now correctly uses the simple month number (e.g., 5)
+        whereClause += ' AND EXTRACT(MONTH FROM o.ORDERDATE) = :month';
+        binds.month = req.query.month;
     }
     if (req.query.state && req.query.state !== 'all') {
         whereClause += ' AND s.STATE_ABBR = :state';
         binds.state = req.query.state;
     }
-    if (req.query.quarter && req.query.quarter !== 'all') {
-        whereClause += " AND TO_CHAR(o.ORDERDATE, 'Q') = :quarter";
-        binds.quarter = req.query.quarter;
-    }
-    if (req.query.month && req.query.month !== 'all') {
-        whereClause += ' AND EXTRACT(MONTH FROM o.ORDERDATE) = :month';
-        binds.month = req.query.month;
-    }
-    if (req.query.storeId && req.query.storeId !== 'all' && req.query.storeId !== '') {
-        whereClause += ' AND s.STOREID = :storeId';
-        binds.storeId = req.query.storeId;
-    }
+    // Add other filters like storeId if needed
 
     try {
         connection = await oracledb.getConnection(dbConfig);
 
         const query = `
-            SELECT c.ID, SUM(o.TOTAL) as LIFETIME_VALUE
-            FROM CUSTOMERS c
-            JOIN ORDERS o ON c.ID = o.CUSTOMERID
-            JOIN STORES s ON o.STOREID = s.STOREID
+            SELECT 
+                o.CUSTOMERID, 
+                SUM(o.TOTAL) as LIFETIME_VALUE
+            FROM ORDERS o
+            JOIN STORES s ON o.STOREID = s.STOREID 
             ${whereClause}
-            GROUP BY c.ID
+            GROUP BY o.CUSTOMERID
             ORDER BY LIFETIME_VALUE DESC
             FETCH FIRST 10 ROWS ONLY
         `;
@@ -166,8 +166,8 @@ app.get('/api/kpi/top-customers', async (req, res) => {
         res.json(chartData);
 
     } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: 'Failed to fetch top customers.' });
+        console.error("Error fetching top customers:", err);
+        res.status(500).json({ error: 'Failed to fetch top customers.', details: err.message });
     } finally {
         if (connection) { try { await connection.close(); } catch (e) { console.error(e); } }
     }
@@ -262,7 +262,7 @@ app.get('/api/kpi/ingredients-consumed-over-time', async (req, res) => {
     }
 });
 
-//Customer Share by Store chart
+// Customer Share by Store chart
 app.get('/api/kpi/customer-share-by-store', async (req, res) => {
     let connection;
     try {
@@ -290,8 +290,7 @@ app.get('/api/kpi/customer-share-by-store', async (req, res) => {
         }
         // You can continue to add more filters here...
 
-        // --- THE CORRECTED SQL QUERY ---
-        // We use a WITH clause to create a temporary, filtered set of orders first.
+        //WITH clause to create a temporary, filtered set of orders first.
         const query = `
             WITH FilteredOrders AS (
                 SELECT o.CUSTOMERID, o.STOREID
@@ -462,6 +461,67 @@ app.get('/api/kpi/avg-spend-monthly', async (req, res) => {
     } catch (err) {
         console.error("Error fetching average spend data:", err);
         res.status(500).json({ error: 'Failed to fetch average spend data.' });
+    } finally {
+        if (connection) { try { await connection.close(); } catch (e) { console.error(e); } }
+    }
+});
+
+// Get the detailed order history for a single customer
+app.get('/api/customer-history/:customerId', async (req, res) => {
+    const { customerId } = req.params;
+    let connection;
+
+    try {
+        const binds = { customerId: customerId };
+        // We start the WHERE clause by filtering for the specific customer
+        let whereClause = 'WHERE o.CUSTOMERID = :customerId';
+
+        // --- Add the complete dynamic filter logic ---
+        if (req.query.year && req.query.year !== 'all') {
+            whereClause += ' AND EXTRACT(YEAR FROM o.ORDERDATE) = :year';
+            binds.year = req.query.year;
+        }
+        if (req.query.quarter && req.query.quarter !== 'all') {
+            whereClause += ` AND TO_CHAR(o.ORDERDATE, 'Q') = :quarter`;
+            binds.quarter = req.query.quarter;
+        }
+        if (req.query.month && req.query.month !== 'all') {
+            whereClause += ' AND EXTRACT(MONTH FROM o.ORDERDATE) = :month';
+            binds.month = req.query.month;
+        }
+        if (req.query.state && req.query.state !== 'all') {
+            whereClause += ' AND s.STATE_ABBR = :state';
+            binds.state = req.query.state;
+        }
+
+        const query = `
+            SELECT 
+                p.NAME as PRODUCT_NAME,
+                c.NAME as CATEGORY,
+                ps.NAME as PRODUCT_SIZE,
+                oi.QUANTITY,
+                p.PRICE as PRODUCT_PRICE,
+                o.ORDERDATE
+            FROM ORDERS o
+            JOIN ORDER_ITEMS oi ON o.ID = oi.ORDERID
+            JOIN PRODUCTS p ON oi.SKU = p.SKU
+            JOIN CATEGORIES c ON p.CATEGORY_ID = c.ID
+            JOIN PRODUCTSIZES ps ON p.SIZE_ID = ps.ID
+            JOIN STORES s ON o.STOREID = s.STOREID
+            ${whereClause}
+            ORDER BY o.ORDERDATE DESC
+        `;
+        
+        console.log("Executing Customer History Query:", query, binds); // For debugging
+
+        connection = await oracledb.getConnection(dbConfig);
+        const result = await connection.execute(query, binds, { outFormat: oracledb.OUT_FORMAT_OBJECT });
+        
+        res.json(result.rows);
+
+    } catch (err) {
+        console.error(`Error fetching history for customer ${customerId}:`, err);
+        res.status(500).json({ error: 'Failed to fetch customer history.' });
     } finally {
         if (connection) { try { await connection.close(); } catch (e) { console.error(e); } }
     }

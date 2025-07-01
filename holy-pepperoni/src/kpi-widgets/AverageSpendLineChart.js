@@ -1,27 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import DashboardFilters from '../components/DashboardFilters';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { useNavigate } from 'react-router-dom';
 
-const defaultFilters = {
-    year: 'all',
-    quarter: 'all',
-    month: 'all',
-    state: 'all',
-};
-
 const AverageSpendLineChart = () => {
-    const [filters, setFilters] = useState(defaultFilters);
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
 
     useEffect(() => {
         setLoading(true);
-        const params = new URLSearchParams(filters);
-
-        axios.get(`${process.env.REACT_APP_API_URL}/api/kpi/avg-spend-monthly?${params.toString()}`)
+        axios.get(`${process.env.REACT_APP_API_URL}/api/kpi/avg-spend-monthly`)
             .then(response => {
                 setData(response.data);
                 setLoading(false);
@@ -30,20 +19,27 @@ const AverageSpendLineChart = () => {
                 console.error("Error fetching average spend data:", error);
                 setLoading(false);
             });
-    }, [filters]);
+    }, []);
 
-    const handleFilterChange = (e) => {
-        const { name, value } = e.target;
-        let newFilters = { ...filters, [name]: value };
-        if (name === 'year') newFilters.quarter = 'all';
-        setFilters(newFilters);
-    };
-
-    const handleChartClick = (chartData) => {
-        if (chartData && chartData.activePayload && chartData.activePayload.length) {
-            const clickedMonth = chartData.activePayload[0].payload.month;
-            navigate(`/customer/top-10?month=${clickedMonth}`);
-        }
+    const CustomDot = (props) => {
+        const { cx, cy, payload } = props;
+        return (
+            <circle
+                cx={cx}
+                cy={cy}
+                r={8}
+                fill="#8884d8"
+                stroke="#fff"
+                strokeWidth={2}
+                style={{ cursor: 'pointer' }}
+                onClick={() => {
+                    if (payload && payload.month) {
+                        // Only set the month filter and navigate
+                        navigate(`/customer/top-10?month=${payload.month}`);
+                    }
+                }}
+            />
+        );
     };
 
     if (loading) {
@@ -52,19 +48,23 @@ const AverageSpendLineChart = () => {
 
     return (
         <div style={{ width: '100%', height: 500 }}>
-            <DashboardFilters filters={filters} setFilters={setFilters} handleFilterChange={handleFilterChange} />
             <ResponsiveContainer>
                 <LineChart
                     data={data}
                     margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-                    onClick={handleChartClick}
                 >
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="month" />
                     <YAxis tickFormatter={(value) => `$${value}`} />
                     <Tooltip formatter={(value) => `$${value.toFixed(2)}`} />
                     <Legend />
-                    <Line type="monotone" dataKey="avgSpend" name="Average Spend" stroke="#8884d8" activeDot={{ r: 8 }} />
+                    <Line
+                        type="monotone"
+                        dataKey="avgSpend"
+                        name="Average Spend"
+                        stroke="#8884d8"
+                        dot={<CustomDot />}
+                    />
                 </LineChart>
             </ResponsiveContainer>
         </div>

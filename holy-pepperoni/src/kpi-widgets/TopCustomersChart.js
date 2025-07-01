@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useSearchParams } from 'react-router-dom'; // <<< 1. IMPORT useSearchParams
+import { useSearchParams, useNavigate } from 'react-router-dom'; // 1. IMPORT useNavigate
 import DashboardFilters from '../components/DashboardFilters';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
@@ -28,14 +28,12 @@ const downloadCSV = (data) => {
 };
 
 const TopCustomersChart = () => {
-    // Use searchParams to read the URL
     const [searchParams] = useSearchParams();
+    const navigate = useNavigate();
 
-    // 2. This function checks the URL for filters when the page loads
     const getInitialFilters = () => {
         const monthFromUrl = searchParams.get('month');
         if (monthFromUrl) {
-            // If a month is in the URL, use it to set the initial filter state
             const year = monthFromUrl.substring(0, 4);
             const month = parseInt(monthFromUrl.substring(5, 7), 10).toString();
             return { ...defaultFilters, year: year, month: month };
@@ -43,20 +41,17 @@ const TopCustomersChart = () => {
         return defaultFilters;
     };
 
-    const [filters, setFilters] = useState(getInitialFilters); // <<< 3. SET INITIAL STATE FROM URL
+    const [filters, setFilters] = useState(getInitialFilters);
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         setLoading(true);
-        // Build query string from filters
         const params = new URLSearchParams();
         Object.entries(filters).forEach(([key, value]) => {
             if (value && value !== 'all') params.append(key, value);
         });
 
-        //axios.get(`http://localhost:3001/api/kpi/top-customers?${params.toString()}`)
-        // Use environment variable for API URL
         axios.get(`${process.env.REACT_APP_API_URL}/api/kpi/top-customers?${params.toString()}`)
             .then(response => {
                 setData(response.data);
@@ -76,7 +71,6 @@ const TopCustomersChart = () => {
         const { name, value } = e.target;
         let newFilters = { ...filters, [name]: value };
 
-        // Cascading logic: reset lower filters when higher ones change
         if (name === 'year') {
             newFilters.quarter = 'all';
             newFilters.month = 'all';
@@ -88,13 +82,27 @@ const TopCustomersChart = () => {
         setFilters(newFilters);
     };
 
+    // click handler function
+    const handleBarClick = (data) => {
+        if (data && data.activePayload && data.activePayload.length) {
+            const customerId = data.activePayload[0].payload.name;
+            const params = new URLSearchParams();
+            Object.entries(filters).forEach(([key, value]) => {
+                if (value && value !== 'all' && value !== '') {
+                    params.append(key, value);
+                }
+            });
+            navigate(`/customer/order-history/${customerId}?${params.toString()}`);
+        }
+    };
+
     if (loading) {
         return <div>Loading Top Customers Chart...</div>;
     }
 
     return (
         <div style={{ width: '100%', height: 500, position: 'relative' }}>
-            <DashboardFilters filters={filters} setFilters={setFilters} />
+            <DashboardFilters filters={filters} setFilters={setFilters} handleFilterChange={handleFilterChange} />
             <button
                 onClick={() => downloadCSV(data)}
                 style={{
@@ -131,7 +139,22 @@ const TopCustomersChart = () => {
                     />
                     <Tooltip formatter={(value) => `$${value.toFixed(2)}`} />
                     <Legend />
-                    <Bar dataKey="spend" name="Total Spend" fill="#faa28a" />
+                    <Bar
+                        dataKey="spend"
+                        name="Total Spend"
+                        fill="#faa28a"
+                        onClick={(data, index) => {
+                            if (data && data.name) {
+                                const params = new URLSearchParams();
+                                Object.entries(filters).forEach(([key, value]) => {
+                                    if (value && value !== 'all' && value !== '') {
+                                        params.append(key, value);
+                                    }
+                                });
+                                navigate(`/customer/order-history/${data.name}?${params.toString()}`);
+                            }
+                        }}
+                    />
                 </BarChart>
             </ResponsiveContainer>
         </div>

@@ -7,6 +7,7 @@ import Store from "./components/Store";
 import IngredientMenuPage from "./components/IngredientMenuPage";
 import CustomerMenuPage from "./components/CustomerMenuPage";
 import ChartPage from "./components/ChartPage";
+import CustomerHistoryPage from "./components/CustomerHistoryPage";
 
 function App() {
   return (
@@ -31,6 +32,7 @@ function App() {
         {/* This new dynamic path shows the specific chart the user selects */}
         <Route path="/customer/:kpiId" element={<ChartPage />} />
         
+        <Route path="/customer/order-history/:customerId" element={<CustomerHistoryPage />} />
 
         <Route path="/ingredients" element={<IngredientMenuPage />} />
 
