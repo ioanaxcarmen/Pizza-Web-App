@@ -6,6 +6,8 @@ import IngredientsConsumeOverTimeChart from '../kpi-widgets/IngredientsConsumeOv
 import TopIngredientsChart from '../kpi-widgets/TopIngredientsChart';
 import StoreKPIRadarChart from '../kpi-widgets/StoreKPIRadarChart';
 import ProductCohortSalesLineChart from '../kpi-widgets/ProductCohortSalesLineChart';
+import CustomerOrderFrequencyChart from '../kpi-widgets/CustomerOrderFrequencyChart';
+import AverageSpendLineChart from '../kpi-widgets/AverageSpendLineChart';
 
 // Placeholder for other KPIs
 const PlaceholderChart = ({ kpiName }) => (
@@ -83,12 +85,12 @@ const ChartPage = () => {
                 chartComponent = <StoreCustomerShareChart />;
                 pageTitle = "Customer Share by Store";
                 break;
-            case 'frequency':
-                chartComponent = <PlaceholderChart kpiName="Customer Order Frequency" />;
+            case 'order-frequency':
+                chartComponent = <CustomerOrderFrequencyChart />;
                 pageTitle = "Customer Order Frequency";
                 break;
             case 'avg-spend':
-                chartComponent = <PlaceholderChart kpiName="Average Spend Over Time" />;
+                chartComponent = <AverageSpendLineChart />;
                 pageTitle = "Average Spend Over Time";
                 break;
             default:

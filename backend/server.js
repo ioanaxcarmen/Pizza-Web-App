@@ -343,6 +343,129 @@ app.get('/api/kpi/customer-share-by-store', async (req, res) => {
     }
 });
 
+// Order Frequency KPI: One-Time vs Repeat Buyers
+app.get('/api/kpi/order-frequency', async (req, res) => {
+    let connection;
+    try {
+        const binds = {};
+        let whereClause = 'WHERE 1=1';
+
+        // --- Standard Filter Logic ---
+        if (req.query.year && req.query.year !== 'all') {
+            whereClause += ' AND EXTRACT(YEAR FROM o.ORDERDATE) = :year';
+            binds.year = req.query.year;
+        }
+        if (req.query.quarter && req.query.quarter !== 'all') {
+            whereClause += ` AND TO_CHAR(o.ORDERDATE, 'Q') = :quarter`;
+            binds.quarter = req.query.quarter;
+        }
+        if (req.query.state && req.query.state !== 'all') {
+            whereClause += ' AND s.STATE_ABBR = :state';
+            binds.state = req.query.state;
+        }
+        // Add any other filters you need here...
+
+        // --- SQL Query using a WITH clause for clarity ---
+        // 1. First, we get a list of customers and their order counts within the filtered period.
+        // 2. Then, we classify them as 'One-Time' or 'Repeat' and count how many are in each group.
+        const query = `
+            WITH CustomerOrderCounts AS (
+                SELECT
+                    o.CUSTOMERID,
+                    COUNT(o.ID) as ORDER_COUNT
+                FROM ORDERS o
+                JOIN STORES s ON o.STOREID = s.STOREID
+                ${whereClause}
+                GROUP BY o.CUSTOMERID
+            )
+            SELECT
+                CASE 
+                    WHEN ORDER_COUNT = 1 THEN 'One-Time Buyer' 
+                    ELSE 'Repeat Buyer' 
+                END as CUSTOMER_TYPE,
+                COUNT(CUSTOMERID) as COUNT_OF_CUSTOMERS
+            FROM CustomerOrderCounts
+            GROUP BY
+                CASE 
+                    WHEN ORDER_COUNT = 1 THEN 'One-Time Buyer' 
+                    ELSE 'Repeat Buyer' 
+                END
+        `;
+
+        connection = await oracledb.getConnection(dbConfig);
+        const result = await connection.execute(query, binds);
+
+        // Format the data for a Recharts Pie Chart (requires 'name' and 'value' keys)
+        const chartData = result.rows.map(row => ({
+            name: row[0],
+            value: row[1]
+        }));
+
+        res.json(chartData);
+
+    } catch (err) {
+        console.error("Error fetching order frequency:", err);
+        res.status(500).json({ error: 'Failed to fetch order frequency data.' });
+    } finally {
+        if (connection) {
+            try {
+                await connection.close();
+            } catch (e) {
+                console.error(e);
+            }
+        }
+    }
+});
+
+
+// Average Spend Monthly KPI
+app.get('/api/kpi/avg-spend-monthly', async (req, res) => {
+    let connection;
+    try {
+        const binds = {};
+        let whereClause = 'WHERE 1=1';
+
+        // --- Standard Filter Logic ---
+        if (req.query.year && req.query.year !== 'all') {
+            whereClause += ' AND v.YEAR = :year';
+            binds.year = req.query.year;
+        }
+        if (req.query.quarter && req.query.quarter !== 'all') {
+            whereClause += ` AND v.QUARTER = 'Q' || :quarter`; 
+            binds.quarter = req.query.quarter;
+        }
+        if (req.query.state && req.query.state !== 'all') {
+            // This requires a join if state isn't in the view
+            // For simplicity, we'll assume the view has the necessary data or skip this filter
+        }
+
+        const query = `
+            SELECT 
+                v.MONTH,
+                ROUND(AVG(v.TOTAL_REVENUE), 2) as AVG_SPEND
+            FROM V_AVG_SPEND_CUSTOMER_TIME v
+            ${whereClause}
+            GROUP BY v.MONTH
+            ORDER BY v.MONTH ASC
+        `;
+
+        connection = await oracledb.getConnection(dbConfig);
+        const result = await connection.execute(query, binds);
+
+        // Format data for Recharts Line Chart
+        const chartData = result.rows.map(row => ({
+            month: row[0],
+            avgSpend: row[1]
+        }));
+
+        res.json(chartData);
+    } catch (err) {
+        console.error("Error fetching average spend data:", err);
+        res.status(500).json({ error: 'Failed to fetch average spend data.' });
+    } finally {
+        if (connection) { try { await connection.close(); } catch (e) { console.error(e); } }
+    }
+});
 
 //Weitere SQL queries hier
 
