@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import Select from 'react-select';
 import {
     LineChart,
     Line,
@@ -12,12 +13,33 @@ import {
 } from 'recharts';
 
 // Default filters:
-// • ingredient: an array; empty array means "all"
-// • granularity: one of week/month/quarter/year
 const defaultFilters = {
     ingredient: [],
     granularity: 'week'
 };
+
+// Ingredient options for react-select
+const ingredientOptions = [
+  { value: "BBQ Sauce", label: "BBQ Sauce" },
+  { value: "Bacon", label: "Bacon" },
+  { value: "Basil", label: "Basil" },
+  { value: "Bell Peppers", label: "Bell Peppers" },
+  { value: "Blue Cheese", label: "Blue Cheese" },
+  { value: "Buffalo Sauce", label: "Buffalo Sauce" },
+  { value: "Fresh Mozzarella", label: "Fresh Mozzarella" },
+  { value: "Grilled Chicken", label: "Grilled Chicken" },
+  { value: "Ham", label: "Ham" },
+  { value: "Mozzarella", label: "Mozzarella" },
+  { value: "Mushrooms", label: "Mushrooms" },
+  { value: "Olive Oil", label: "Olive Oil" },
+  { value: "Olives", label: "Olives" },
+  { value: "Onions", label: "Onions" },
+  { value: "Pepperoni", label: "Pepperoni" },
+  { value: "Pineapple", label: "Pineapple" },
+  { value: "Red Onions", label: "Red Onions" },
+  { value: "Sausage", label: "Sausage" },
+  { value: "Tomato Sauce", label: "Tomato Sauce" },
+];
 
 // Utility to convert data to CSV and trigger download
 const downloadCSV = (data) => {
@@ -39,26 +61,20 @@ const IngredientsConsumeOverTimeChart = () => {
     const [rawData, setRawData] = useState([]);
     const [chartData, setChartData] = useState([]);
     const [loading, setLoading] = useState(true);
-    // New state for outlier detection toggle
     const [enableOutlierDetection, setEnableOutlierDetection] = useState(false);
 
-    // For color generation for multiple lines
     const lineColors = ['#8884d8', '#82ca9d', '#ffc658', '#ff7300', '#0088FE', '#00C49F', '#FFBB28'];
 
     // Fetch data from API when filters change
     useEffect(() => {
         setLoading(true);
         const params = new URLSearchParams();
-        // Set granularity and ingredient filters
         params.append('granularity', filters.granularity);
         if (filters.ingredient.length > 0) {
             params.append('ingredient', filters.ingredient.join(','));
         } else {
             params.append('ingredient', 'all');
         }
-        // Expected API behavior:
-        // - If a single ingredient is selected: [{ time, total_consumed }, …]
-        // - Otherwise: [{ time, ingredient_name, total_consumed }, …]
         axios.get(`${process.env.REACT_APP_API_URL}/api/kpi/ingredients-consumed-over-time?${params.toString()}`)
             .then(response => {
                 setRawData(response.data);
@@ -76,25 +92,21 @@ const IngredientsConsumeOverTimeChart = () => {
             setChartData([]);
             return;
         }
-        const timeKey = filters.granularity; // 'week', 'month', 'quarter', or 'year'
-        // When exactly one ingredient is selected
+        const timeKey = filters.granularity;
         if (filters.ingredient.length === 1) {
             const mapped = rawData.map(row => ({
                 time: row[timeKey],
                 total_consumed: row.total_consumed
             }));
-            // Sort result by time (assumed orderable)
             mapped.sort((a, b) => a.time.localeCompare(b.time));
             setChartData(mapped);
         } else {
-            // Pivot rawData: group by time and create a key for each ingredient
             const pivot = {};
             rawData.forEach(row => {
                 const timeValue = row[timeKey];
                 if (!pivot[timeValue]) {
                     pivot[timeValue] = { time: timeValue };
                 }
-                // Expecting row.ingredient_name from API
                 pivot[timeValue][row.ingredient_name] = row.total_consumed;
             });
             const pivotArray = Object.values(pivot).sort((a, b) => a.time.localeCompare(b.time));
@@ -119,38 +131,62 @@ const IngredientsConsumeOverTimeChart = () => {
         return <circle cx={cx} cy={cy} r={4} fill="#8884d8" />;
     };
 
-    // Render filter controls including outlier detection tickbox
-    const handleFilterChange = (e) => {
-        const { name, value, options } = e.target;
-        if (name === 'ingredient') {
-            const selected = Array.from(options, option => option.selected ? option.value : null)
-                                  .filter(val => val !== null);
-            setFilters(prev => ({ ...prev, ingredient: selected }));
-        } else {
-            setFilters(prev => ({ ...prev, [name]: value }));
+    // Tính mean/std cho từng ingredient khi chọn nhiều ingredient
+    let ingredientStats = {};
+    if (filters.ingredient.length > 1 && chartData.length > 0) {
+        filters.ingredient.forEach(ingredient => {
+            const series = chartData.map(item => item[ingredient]).filter(val => val !== undefined);
+            if (series.length > 0) {
+                const mean = series.reduce((sum, val) => sum + val, 0) / series.length;
+                const std = Math.sqrt(series.reduce((acc, val) => acc + Math.pow(val - mean, 2), 0) / series.length);
+                ingredientStats[ingredient] = { mean, std };
+            }
+        });
+    }
+
+    // Hàm custom dot cho từng ingredient
+    const getCustomDot = (ingredient) => (props) => {
+        const { cx, cy, value } = props;
+        const stats = ingredientStats[ingredient];
+        if (!stats) return <circle cx={cx} cy={cy} r={4} fill={lineColors[filters.ingredient.indexOf(ingredient) % lineColors.length]} />;
+        if (value > stats.mean + 2 * stats.std || value < stats.mean - 2 * stats.std) {
+            return <circle cx={cx} cy={cy} r={8} fill="red" stroke="black" />;
         }
+        return <circle cx={cx} cy={cy} r={4} fill={lineColors[filters.ingredient.indexOf(ingredient) % lineColors.length]} />;
+    };
+
+    // Handler for granularity change
+    const handleGranularityChange = (e) => {
+        setFilters(prev => ({ ...prev, granularity: e.target.value }));
     };
 
     return (
         <div style={{ width: '100%', position: 'relative', padding: '20px' }}>
-            <div style={{ marginBottom: '20px', textAlign: 'center' }}>
-                {/* Ingredient Filter */}
-                <label style={{ marginRight: '10px' }}>
-                    Ingredient:
-                    <select
-                        name="ingredient"
-                        multiple
-                        style={{ marginLeft: '5px', padding: '5px' }}
-                        value={filters.ingredient}
-                        onChange={handleFilterChange}
-                    >
-                        <option value="Cheese">Cheese</option>
-                        <option value="Tomato">Tomato</option>
-                        <option value="Pepperoni">Pepperoni</option>
-                        <option value="Mushroom">Mushroom</option>
-                        {/* Add additional ingredient options as needed */}
-                    </select>
-                </label>
+            <div style={{ marginBottom: '20px', textAlign: 'center', display: 'flex', justifyContent: 'center', gap: 20, flexWrap: 'wrap' }}>
+                {/* Ingredient Filter with react-select */}
+                <div style={{ minWidth: 300, display: 'inline-block', marginRight: 20 }}>
+                    <Select
+                        isMulti
+                        options={ingredientOptions}
+                        value={ingredientOptions.filter(opt => filters.ingredient.includes(opt.value))}
+                        onChange={selectedOptions => {
+                            setFilters(prev => ({
+                                ...prev,
+                                ingredient: selectedOptions ? selectedOptions.map(opt => opt.value) : []
+                            }));
+                        }}
+                        placeholder="Select ingredient(s)..."
+                        closeMenuOnSelect={false}
+                        isClearable
+                        styles={{
+                            menu: base => ({ ...base, zIndex: 9999 }),
+                            multiValue: base => ({
+                                ...base,
+                                backgroundColor: '#eaf7e9'
+                            }),
+                        }}
+                    />
+                </div>
                 {/* Granularity Filter */}
                 <label style={{ marginLeft: '20px' }}>
                     Granularity:
@@ -158,7 +194,7 @@ const IngredientsConsumeOverTimeChart = () => {
                         name="granularity"
                         style={{ marginLeft: '5px', padding: '5px' }}
                         value={filters.granularity}
-                        onChange={handleFilterChange}
+                        onChange={handleGranularityChange}
                     >
                         <option value="week">Week</option>
                         <option value="month">Month</option>
@@ -167,7 +203,7 @@ const IngredientsConsumeOverTimeChart = () => {
                     </select>
                 </label>
                 {/* Outlier Detection Toggle */}
-                {filters.ingredient.length === 1 && (
+                {filters.ingredient.length > 0 && (
                     <label style={{ marginLeft: '20px' }}>
                         <input
                             type="checkbox"
@@ -212,7 +248,6 @@ const IngredientsConsumeOverTimeChart = () => {
                                 dot={enableOutlierDetection ? renderCustomDot : undefined}
                             />
                         ) : (
-                          
                             chartData.length > 0 &&
                             Object.keys(chartData[0]).filter(key => key !== 'time').map((ingredient, index) => (
                                 <Line
@@ -221,6 +256,7 @@ const IngredientsConsumeOverTimeChart = () => {
                                     dataKey={ingredient}
                                     name={ingredient}
                                     stroke={lineColors[index % lineColors.length]}
+                                    dot={enableOutlierDetection ? getCustomDot(ingredient) : undefined}
                                 />
                             ))
                         )}

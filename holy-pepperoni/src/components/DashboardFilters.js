@@ -5,17 +5,48 @@ const defaultFilters = {
     year: 'all',
     quarter: 'all',
     month: 'all',
+    week: 'all',
     state: 'all',
     storeId: ''
 };
 
-const DashboardFilters = ({ filters, setFilters }) => {
+const DashboardFilters = ({ filters, setFilters, storeOptions = [] }) => {
     const handleFilterChange = (event) => {
         const { name, value } = event.target;
-        setFilters(prevFilters => ({
-            ...prevFilters,
-            [name]: value
-        }));
+        setFilters(prevFilters => {
+            let newFilters = { ...prevFilters, [name]: value };
+            // Month
+            if (name === 'month') {
+                if (value === 'all' || !prevFilters.year || prevFilters.year === 'all') {
+                    newFilters.month = value;
+                } else {
+                    newFilters.month = `${prevFilters.year}-${value.padStart(2, '0')}`;
+                }
+            }
+            // Quarter
+            if (name === 'quarter') {
+                if (value === 'all' || !prevFilters.year || prevFilters.year === 'all') {
+                    newFilters.quarter = value;
+                } else {
+                    newFilters.quarter = `${prevFilters.year}-"Q"${value}`;
+                }
+            }
+            // Week
+            if (name === 'week') {
+                if (value === 'all' || !prevFilters.year || prevFilters.year === 'all') {
+                    newFilters.week = value;
+                } else {
+                    newFilters.week = `${prevFilters.year}-${value.padStart(2, '0')}`;
+                }
+            }
+            // Nếu đổi year thì reset các filter phụ
+            if (name === 'year') {
+                newFilters.month = 'all';
+                newFilters.quarter = 'all';
+                newFilters.week = 'all';
+            }
+            return newFilters;
+        });
     };
 
     const handleResetFilters = () => {
@@ -24,6 +55,15 @@ const DashboardFilters = ({ filters, setFilters }) => {
 
     return (
         <div style={{ display: 'flex', gap: '20px', padding: '20px', background: '#f0f0f0', flexWrap: 'wrap', alignItems: 'flex-end' }}>
+            <div>
+                <label>Store: </label>
+                <select name="storeId" value={filters.storeId || ""} onChange={handleFilterChange}>
+                    <option value="">All Stores</option>
+                    {storeOptions && storeOptions.map(store => (
+                        <option key={store.storeid} value={store.storeid}>{store.name}</option>
+                    ))}
+                </select>
+            </div>
             <div>
                 <label>Year: </label>
                 <select name="year" value={filters.year} onChange={handleFilterChange}>
@@ -47,18 +87,22 @@ const DashboardFilters = ({ filters, setFilters }) => {
                 <label>Month: </label>
                 <select name="month" value={filters.month || "all"} onChange={handleFilterChange}>
                     <option value="all">All Months</option>
-                    <option value="1">January</option>
-                    <option value="2">February</option>
-                    <option value="3">March</option>
-                    <option value="4">April</option>
-                    <option value="5">May</option>
-                    <option value="6">June</option>
-                    <option value="7">July</option>
-                    <option value="8">August</option>
-                    <option value="9">September</option>
-                    <option value="10">October</option>
-                    <option value="11">November</option>
-                    <option value="12">December</option>
+                    {[...Array(12)].map((_, i) => (
+                        <option key={i + 1} value={String(i + 1)}>
+                            {new Date(0, i).toLocaleString('en-US', { month: 'long' })}
+                        </option>
+                    ))}
+                </select>
+            </div>
+            <div>
+                <label>Week: </label>
+                <select name="week" value={filters.week || "all"} onChange={handleFilterChange}>
+                    <option value="all">All Weeks</option>
+                    {[...Array(53)].map((_, i) => (
+                        <option key={i + 1} value={String(i + 1)}>
+                            {`Week ${i + 1}`}
+                        </option>
+                    ))}
                 </select>
             </div>
             <div>
@@ -71,19 +115,6 @@ const DashboardFilters = ({ filters, setFilters }) => {
                     <option value="UT">Utah</option>
                 </select>
             </div>
-            {filters.storeId !== undefined && (
-                <div>
-                    <label>Store ID: </label>
-                    <input
-                        type="text"
-                        name="storeId"
-                        value={filters.storeId || ""}
-                        onChange={handleFilterChange}
-                        placeholder="Store ID"
-                        style={{ width: 100 }}
-                    />
-                </div>
-            )}
             <button onClick={handleResetFilters} style={{ height: 36 }}>
                 Reset Filters
             </button>

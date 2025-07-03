@@ -174,7 +174,88 @@ app.get('/api/kpi/top-customers', async (req, res) => {
     }
 });
 
-// Ingredients Consumed Over Time chart
+// Ingredients Consumed Over Time char// --- Thay đổi trong endpoint Top Ingredients ---
+app.get('/api/kpi/top-ingredients', async (req, res) => {
+    let connection;
+    const binds = {};
+    let whereClause = 'WHERE 1=1';
+
+    try {
+        connection = await oracledb.getConnection(dbConfig);
+
+        // Multi-store support: storeId có thể là mảng (storeId=1&storeId=2...) hoặc 1 giá trị
+        let storeIds = req.query.storeId;
+        if (storeIds && !Array.isArray(storeIds)) storeIds = [storeIds];
+
+        // Filter logic
+        if (req.query.week && req.query.week !== 'all') {
+            whereClause += ' AND week = :week';
+            binds.week = req.query.week;
+        }
+        if (req.query.month && req.query.month !== 'all') {
+            whereClause += ' AND month = :month';
+            binds.month = req.query.month;
+        }
+        if (req.query.quarter && req.query.quarter !== 'all') {
+            whereClause += ' AND quarter = :quarter';
+            binds.quarter = req.query.quarter;
+        }
+        if (req.query.year && req.query.year !== 'all') {
+            whereClause += ' AND year = :year';
+            binds.year = req.query.year;
+        }
+        if (req.query.state && req.query.state !== 'all') {
+            whereClause += ' AND state = :state';
+            binds.state = req.query.state;
+        }
+
+        // Nếu không truyền storeId, trả về top 5 toàn hệ thống
+        if (!storeIds || storeIds.length === 0) {
+            const query = `
+                SELECT ingredient_name, SUM(total_quantity_used) AS total_quantity_used
+                FROM v_top_ingredients_by_store
+                ${whereClause}
+                GROUP BY ingredient_name
+                ORDER BY total_quantity_used DESC
+                FETCH FIRST 5 ROWS ONLY
+            `;
+            const result = await connection.execute(query, binds);
+            const chartData = result.rows.map(row => ({
+                ingredient_name: row[0],
+                total_quantity_used: row[1]
+            }));
+            return res.json(chartData);
+        }
+
+        // Nếu có nhiều storeId, trả về object {storeId: [ingredients...]}
+        const resultObj = {};
+        for (const storeId of storeIds) {
+            const query = `
+                SELECT ingredient_name, SUM(total_quantity_used) AS total_quantity_used
+                FROM v_top_ingredients_by_store
+                ${whereClause} AND storeid = :storeId
+                GROUP BY ingredient_name
+                ORDER BY total_quantity_used DESC
+                FETCH FIRST 5 ROWS ONLY
+            `;
+            const result = await connection.execute(query, { ...binds, storeId });
+            const total = result.rows.reduce((sum, row) => sum + row[1], 0);
+            // Đảm bảo key là string
+            resultObj[String(storeId)] = result.rows.map(row => ({
+                ingredient: row[0],
+                quantity: row[1],
+                percent: total > 0 ? Math.round((row[1] / total) * 1000) / 10 : 0 // 1 decimal
+            }));
+        }
+        res.json(resultObj);
+
+    } catch (err) {
+        console.error("Error fetching top ingredients:", err);
+        res.status(500).json({ error: 'Failed to fetch top ingredients.', details: err.message });
+    } finally {
+        if (connection) { try { await connection.close(); } catch (e) { console.error(e); } }
+    }
+});
 app.get('/api/kpi/ingredients-consumed-over-time', async (req, res) => {
     let connection;
     const binds = {};
@@ -307,7 +388,7 @@ app.get('/api/kpi/customer-share-by-store', async (req, res) => {
             const city = row[0];
             const storeId = row[1];
             const customerCount = row[2];
-            // The denominator is now the correct, filtered total
+            // The denominator is now the correct, filtered
             const totalFilteredCustomers = row[3]; 
             
             const share = totalFilteredCustomers > 0 ? (customerCount / totalFilteredCustomers) * 100 : 0;
@@ -512,6 +593,29 @@ app.get('/api/customer-history/:customerId', async (req, res) => {
     } catch (err) {
         console.error(`Error fetching history for customer ${customerId}:`, err);
         res.status(500).json({ error: 'Failed to fetch customer history.' });
+    } finally {
+        if (connection) { try { await connection.close(); } catch (e) { console.error(e); } }
+    }
+});
+
+// Store list endpoint
+app.get('/api/kpi/store-list', async (req, res) => {
+    let connection;
+    try {
+        connection = await oracledb.getConnection(dbConfig);
+        const result = await connection.execute(`
+            SELECT storeid, city || ' - ' || state_abbr AS name
+            FROM stores
+            ORDER BY storeid
+        `);
+        const stores = result.rows.map(row => ({
+            storeid: row[0],
+            name: row[1]
+        }));
+        res.json(stores);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Failed to fetch store list.' });
     } finally {
         if (connection) { try { await connection.close(); } catch (e) { console.error(e); } }
     }
