@@ -1,5 +1,5 @@
 import React from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import TopCustomersChart from '../kpi-widgets/TopCustomersChart';
 import StoreCustomerShareChart from '../kpi-widgets/StoreCustomerShareChart';
 import IngredientsConsumeOverTimeChart from '../kpi-widgets/IngredientsConsumeOverTimeChart';
@@ -8,8 +8,9 @@ import StoreKPIRadarChart from '../kpi-widgets/StoreKPIRadarChart';
 import ProductCohortSalesLineChart from '../kpi-widgets/ProductCohortSalesLineChart';
 import CustomerOrderFrequencyChart from '../kpi-widgets/CustomerOrderFrequencyChart';
 import AverageSpendLineChart from '../kpi-widgets/AverageSpendLineChart';
-import TopSellingProductsChart from '../kpi-widgets/TopSellingProductsChart'; 
- 
+import TopSellingProductsChart from '../kpi-widgets/TopSellingProductsChart';
+import ProductDistributionPieCharts from '../kpi-widgets/ProductDistributionPieCharts';
+import StoreComparisonGroupedBarChart from '../kpi-widgets/StoreComparisonGroupedBarChart';
 
 
 // Placeholder for other KPIs
@@ -119,19 +120,41 @@ const ChartPage = () => {
                 chartComponent = <div>KPI not found. Please go back.</div>;
                 pageTitle = "KPI Not Found";
         }
-    }else if(window.location.pathname.startsWith("/product")) {
+    } else if (window.location.pathname.startsWith("/product")) {
         backPath = "/product";
-    switch (kpiId) {
-        case 'top-products':
-            chartComponent = <TopSellingProductsChart />;
-            pageTitle = "Top Selling Products";
-            break;
-        // weitere Produkt-KPIs hier ergänzen
-        default:
-            chartComponent = <div>KPI not found. Please go back.</div>;
-            pageTitle = "KPI Not Found";
+        switch (kpiId) {
+            case 'top-products':
+                chartComponent = <TopSellingProductsChart />;
+                pageTitle = "Top Selling Products";
+                break;
+            case 'cohortchart':
+                chartComponent = <ProductCohortSalesLineChart />;
+                pageTitle = "Product Cohort Sales Over Time";
+                break;
+            case 'distributionchart':
+                chartComponent = <ProductDistributionPieCharts />;
+                pageTitle = "Product Sales Distribution";
+                break;
+            default:
+                chartComponent = <div>KPI not found. Please go back.</div>;
+                pageTitle = "KPI Not Found";
+        }
+    } else if (window.location.pathname.startsWith("/store")) {
+        backPath = "/store";
+        switch (kpiId) {
+            case 'kpi-radar':
+                chartComponent = <StoreKPIRadarChart />;
+                pageTitle = "Store KPIs Radar";
+                break;
+            case 'comparison-bar':
+                chartComponent = <StoreComparisonGroupedBarChart />;
+                pageTitle = "Store Comparison Grouped Bar";
+                break;
+            default:
+                chartComponent = <div>KPI not found. Please go back.</div>;
+                pageTitle = "KPI Not Found";
+        }
     }
-}
 
     return (
         <div style={styles.container}>

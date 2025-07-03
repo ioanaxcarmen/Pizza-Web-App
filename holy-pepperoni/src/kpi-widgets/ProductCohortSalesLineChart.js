@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import Select from 'react-select';
 import {
     LineChart,
     Line,
@@ -10,28 +11,41 @@ import {
     Legend,
     ResponsiveContainer
 } from 'recharts';
+import LoadingPizza from '../components/LoadingPizza'; 
+import ProductDistributionPieCharts from './ProductDistributionPieCharts';
+import TopSellingProductsChart from './TopSellingProductsChart';
 
-// Colors for the lines
-const lineColors = ['#8884d8', '#82ca9d', '#ff7300', '#0088FE', '#FFBB28', '#aa4643', '#89A54E'];
+const pizzaOptions = [
+    { value: "Margherita Pizza", label: "Margherita Pizza" },
+    { value: "Pepperoni Pizza", label: "Pepperoni Pizza" },
+    { value: "Hawaiian Pizza", label: "Hawaiian Pizza" },
+    { value: "Meat Lover's Pizza", label: "Meat Lover's Pizza" },
+    { value: "Veggie Pizza", label: "Veggie Pizza" },
+    { value: "BBQ Chicken Pizza", label: "BBQ Chicken Pizza" },
+    { value: "Buffalo Chicken Pizza", label: "Buffalo Chicken Pizza" },
+    { value: "Sicilian Pizza", label: "Sicilian Pizza" },
+    { value: "Oxtail Pizza", label: "Oxtail Pizza" }
+];
 
 // Default filters:
 // • selectedProducts: an array of product names to compare. Empty means “all”
 // • yMetric: either "total_quantity" or "total_revenue"
-// • category: product category filter ("all", "vegetarian", "classic", "specialty")
 const defaultFilters = {
     selectedProducts: [],
-    yMetric: 'total_quantity',
-    category: 'all'
+    yMetric: 'total_quantity'
 };
+
+// Colors for the lines
+const lineColors = ['#8884d8', '#82ca9d', '#ff7300', '#0088FE', '#FFBB28', '#aa4643', '#89A54E'];
 
 const ProductCohortSalesLineChart = () => {
     const [filters, setFilters] = useState(defaultFilters);
     const [rawData, setRawData] = useState([]);
-    const [availableProducts, setAvailableProducts] = useState([]);
     const [pivotData, setPivotData] = useState([]);
     const [loading, setLoading] = useState(true);
     // New state for showing or hiding the average line
     const [showAverage, setShowAverage] = useState(true);
+    const [enableOutlierDetection, setEnableOutlierDetection] = useState(false);
 
     // Fetch raw data from the API.
     // The endpoint is expected to return rows with:
@@ -42,18 +56,19 @@ const ProductCohortSalesLineChart = () => {
             .then(response => {
                 setRawData(response.data);
                 setLoading(false);
-                // Derive available products from data
-                const products = Array.from(new Set(response.data.map(item => item.product_name)));
-                setAvailableProducts(products);
-                // If no product is selected, default to first 3 products
+                // Nếu chưa chọn sản phẩm thì mặc định chọn tất cả sản phẩm
                 if (filters.selectedProducts.length === 0) {
-                    setFilters(prev => ({ ...prev, selectedProducts: products.slice(0, 3) }));
+                    setFilters(prev => ({
+                        ...prev,
+                        selectedProducts: pizzaOptions.map(opt => opt.value)
+                    }));
                 }
             })
             .catch(error => {
                 console.error("Error fetching product cohort sales data:", error);
                 setLoading(false);
             });
+        // eslint-disable-next-line
     }, []);
 
     // Pivot the raw data into an array of objects where each object represents a cohort month.
@@ -63,22 +78,14 @@ const ProductCohortSalesLineChart = () => {
             setPivotData([]);
             return;
         }
-        // First, filter rawData by category if not "all"
-        const filteredData = filters.category === 'all'
-            ? rawData
-            : rawData.filter(row => row.category === filters.category);
-  
-        // Determine the set of products to display: if none selected, use all.
-        const productsToShow = filters.selectedProducts.length > 0 ? filters.selectedProducts : availableProducts;
-  
-        // Group filtered data by month_since_launch
+        // Chỉ lấy các sản phẩm được chọn
+        const productsToShow = filters.selectedProducts.length > 0 ? filters.selectedProducts : pizzaOptions.map(opt => opt.value);
         const pivot = {};
-        filteredData.forEach(row => {
+        rawData.forEach(row => {
             const month = Number(row.month_since_launch);
             if (!pivot[month]) {
                 pivot[month] = { month };
             }
-            // Only add metric for products in the selected list.
             if (productsToShow.includes(row.product_name)) {
                 // Use the chosen metric as the value.
                 pivot[month][row.product_name] = row[filters.yMetric];
@@ -87,12 +94,14 @@ const ProductCohortSalesLineChart = () => {
         // Convert object to sorted array by month
         const pivotArray = Object.values(pivot).sort((a, b) => a.month - b.month);
         setPivotData(pivotArray);
-    }, [rawData, filters.selectedProducts, filters.yMetric, availableProducts, filters.category]);
+    }, [rawData, filters.selectedProducts, filters.yMetric]);
 
-    // Handler for multi-select change on products.
-    const handleProductChange = (e) => {
-        const selected = Array.from(e.target.selectedOptions, option => option.value);
-        setFilters(prev => ({ ...prev, selectedProducts: selected }));
+    // Handler for product multi-select
+    const handleProductChange = (selectedOptions) => {
+        setFilters(prev => ({
+            ...prev,
+            selectedProducts: selectedOptions ? selectedOptions.map(opt => opt.value) : []
+        }));
     };
 
     // Handler for yMetric change.
@@ -105,13 +114,8 @@ const ProductCohortSalesLineChart = () => {
         setShowAverage(e.target.checked);
     };
 
-    // Handler for category filter.
-    const handleCategoryChange = (e) => {
-        setFilters(prev => ({ ...prev, category: e.target.value }));
-    };
-
     if (loading) {
-        return <div>Loading cohort chart...</div>;
+        return <LoadingPizza />;
     }
 
     // Extend pivotData with an "average" key computed from selected products.
@@ -121,39 +125,46 @@ const ProductCohortSalesLineChart = () => {
         return { ...row, average: avg };
     });
 
+    function getOutlierIndices(data, product) {
+        const values = data.map(row => Number(row[product]) || 0).filter(v => v > 0);
+        if (values.length < 2) return [];
+        const mean = values.reduce((a, b) => a + b, 0) / values.length;
+        const std = Math.sqrt(values.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / values.length);
+        return data.map((row, idx) =>
+            (row[product] && row[product] > mean + 2 * std) ? idx : null
+        ).filter(idx => idx !== null);
+    }
+
+    const renderCustomDot = (product, outlierIndices) => (props) => {
+        const { cx, cy, index } = props;
+        if (outlierIndices.includes(index)) {
+            return (
+                <circle cx={cx} cy={cy} r={7} fill="red" stroke="#fff" strokeWidth={2} />
+            );
+        }
+        return (
+            <circle cx={cx} cy={cy} r={4} fill="#fff" stroke="#8884d8" strokeWidth={1} />
+        );
+    };
+
     return (
         <div style={{ width: '100%', padding: '20px' }}>
+            {/* Product Cohort Sales Chart */}
             <h2 style={{ textAlign: 'center' }}>Product Cohort Sales Analysis</h2>
             <div style={{ textAlign: 'center', marginBottom: '20px' }}>
                 <label style={{ marginRight: '20px' }}>
-                    Category:
-                    <select
-                        name="category"
-                        style={{ marginLeft: '10px', padding: '5px' }}
-                        value={filters.category}
-                        onChange={handleCategoryChange}
-                    >
-                        <option value="all">All</option>
-                        <option value="vegetarian">Vegetarian</option>
-                        <option value="classic">Classic</option>
-                        <option value="specialty">Specialty</option>
-                    </select>
-                </label>
-                <label style={{ marginRight: '20px' }}>
-                    Select Product(s):
-                    <select
-                        name="product"
-                        multiple
-                        style={{ marginLeft: '10px', padding: '5px' }}
-                        value={filters.selectedProducts}
-                        onChange={handleProductChange}
-                    >
-                        {availableProducts.map(product => (
-                            <option key={product} value={product}>
-                                {product}
-                            </option>
-                        ))}
-                    </select>
+                    Select Pizza(s):
+                    <div style={{ minWidth: 300, display: 'inline-block', marginLeft: 10 }}>
+                        <Select
+                            isMulti
+                            options={pizzaOptions}
+                            value={pizzaOptions.filter(opt => filters.selectedProducts.includes(opt.value))}
+                            onChange={handleProductChange}
+                            placeholder="Select pizza(s)..."
+                            closeMenuOnSelect={false}
+                            isClearable
+                        />
+                    </div>
                 </label>
                 <label style={{ marginRight: '20px' }}>
                     Y-Axis Metric:
@@ -175,6 +186,14 @@ const ProductCohortSalesLineChart = () => {
                     />
                     Show Average Line
                 </label>
+                <label style={{ marginRight: '20px' }}>
+                    <input
+                        type="checkbox"
+                        checked={enableOutlierDetection}
+                        onChange={e => setEnableOutlierDetection(e.target.checked)}
+                    />
+                    Highlight Outliers
+                </label>
             </div>
             <ResponsiveContainer width="100%" height={400}>
                 <LineChart data={extendedData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
@@ -183,16 +202,22 @@ const ProductCohortSalesLineChart = () => {
                     <YAxis label={{ value: filters.yMetric === 'total_quantity' ? 'Total Quantity' : 'Total Revenue (USD)', angle: -90, position: 'insideLeft' }} />
                     <Tooltip />
                     <Legend />
-                    {filters.selectedProducts.map((product, index) => (
-                        <Line
-                            key={product}
-                            type="monotone"
-                            dataKey={product}
-                            name={product}
-                            stroke={lineColors[index % lineColors.length]}
-                            activeDot={{ r: 5 }}
-                        />
-                    ))}
+                    {filters.selectedProducts.map((product, index) => {
+                        let outlierIndices = [];
+                        if (enableOutlierDetection) {
+                            outlierIndices = getOutlierIndices(extendedData, product);
+                        }
+                        return (
+                            <Line
+                                key={product}
+                                type="monotone"
+                                dataKey={product}
+                                name={product}
+                                stroke={lineColors[index % lineColors.length]}
+                                activeDot={enableOutlierDetection ? renderCustomDot(product, outlierIndices) : { r: 5 }}
+                            />
+                        );
+                    })}
                     {showAverage && (
                         <Line
                             type="monotone"
@@ -205,6 +230,20 @@ const ProductCohortSalesLineChart = () => {
                     )}
                 </LineChart>
             </ResponsiveContainer>
+
+            <div style={{ height: 40 }} />
+
+            {/* Top Selling Products Chart */}
+            <h2 style={{ textAlign: 'center', marginTop: 40 }}>Top Selling Products</h2>
+            <div style={{ background: '#fff', borderRadius: 12, padding: 16, marginBottom: 40 }}>
+                <TopSellingProductsChart />
+            </div>
+
+            {/* Product Sales Distribution Pie Charts */}
+            <h2 style={{ textAlign: 'center', marginTop: 40 }}>Product Sales Distribution</h2>
+            <div style={{ background: '#fff', borderRadius: 12, padding: 16 }}>
+                <ProductDistributionPieCharts />
+            </div>
         </div>
     );
 };

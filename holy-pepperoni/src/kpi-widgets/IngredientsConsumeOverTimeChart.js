@@ -11,6 +11,7 @@ import {
     Legend,
     ResponsiveContainer
 } from 'recharts';
+import LoadingPizza from '../components/LoadingPizza'; 
 
 // Default filters:
 const defaultFilters = {
@@ -230,7 +231,7 @@ const IngredientsConsumeOverTimeChart = () => {
                 </button>
             </div>
             {loading ? (
-                <div>Loading Ingredients Consumption Chart...</div>
+                <LoadingPizza />
             ) : (
                 <ResponsiveContainer width="100%" height={400}>
                     <LineChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>

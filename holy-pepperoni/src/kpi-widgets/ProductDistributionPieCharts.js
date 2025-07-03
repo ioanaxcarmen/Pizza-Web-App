@@ -52,6 +52,7 @@ const ProductDistributionPieCharts = () => {
     return acc;
   }, {});
 
+  // Render Pie Charts for each group (size)
   return (
     <div style={{ padding: '20px' }}>
       <h2 style={{ textAlign: 'center' }}>Product Sales Distribution</h2>

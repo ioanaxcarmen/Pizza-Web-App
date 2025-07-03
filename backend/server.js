@@ -621,7 +621,6 @@ app.get('/api/kpi/store-list', async (req, res) => {
     }
 });
 
-
 // Top Selling Products 
 app.get('/api/kpi/top-products', async (req, res) => {
     let connection;
@@ -711,5 +710,109 @@ app.get('/api/kpi/top-products', async (req, res) => {
 // Start the server on the specified port local IP address
 app.listen(port, '0.0.0.0', () => {
     console.log(`Backend server running at http://localhost:${port}`);
+});
+
+// Product Monthly Sales Since Launch
+app.get('/api/kpi/product-monthly-sales-since-launch', async (req, res) => {
+    let connection;
+    try {
+        connection = await oracledb.getConnection(dbConfig);
+
+        // Bạn có thể thêm filter nếu muốn, ví dụ theo category, sku, v.v.
+        // Ở đây lấy toàn bộ dữ liệu từ view
+        const query = `
+            SELECT
+                sku,
+                product_name,
+                launch,
+                month_since_launch,
+                total_quantity,
+                total_revenue
+            FROM v_product_monthly_sales_since_launch
+            ORDER BY product_name, month_since_launch
+        `;
+
+        const result = await connection.execute(query);
+
+        // Format lại cho frontend
+        const chartData = result.rows.map(row => ({
+            sku: row[0],
+            product_name: row[1],
+            launch: row[2],
+            month_since_launch: Number(row[3]),
+            total_quantity: Number(row[4]),
+            total_revenue: Number(row[5])
+        }));
+
+        res.json(chartData);
+    } catch (err) {
+        console.error("Error fetching product cohort sales data:", err);
+        res.status(500).json({ error: 'Failed to fetch product cohort sales data.', details: err.message });
+    } finally {
+        if (connection) { try { await connection.close(); } catch (e) { console.error(e); } }
+    }
+});
+// Product Sales Distribution KPI
+app.get('/api/kpi/product-sales-distribution', async (req, res) => {
+    let connection;
+    try {
+        connection = await oracledb.getConnection(dbConfig);
+
+        // Lấy filter từ query string
+        const metric = req.query.metric || 'revenue'; // 'revenue' hoặc 'orders'
+        const compareBy = req.query.compareBy || 'category'; // 'category' hoặc 'size'
+        const timeResolution = req.query.timeResolution || 'month'; // 'month', 'quarter', 'year'
+        const timeValue = req.query.timeValue && req.query.timeValue !== 'all' ? req.query.timeValue : null;
+
+        // Xác định cột thời gian
+        let timeCol = 'month';
+        if (timeResolution === 'quarter') timeCol = 'quarter';
+        if (timeResolution === 'year') timeCol = 'year';
+
+        // Xác định cột group
+        let groupCol = compareBy === 'size' ? 'size' : 'category';
+
+        // Xác định cột metric
+        let metricCol = metric === 'orders' ? 'total_orders' : 'total_revenue';
+
+        // Query từ view/mv phù hợp
+        let query = `
+            SELECT
+                ${groupCol},
+                product_name,
+                SUM(${metricCol}) AS value
+            FROM mv_sales_product_time
+            WHERE 1=1
+        `;
+
+        const binds = {};
+
+        // Thêm filter thời gian nếu có
+        if (timeValue) {
+            query += ` AND ${timeCol} = :timeValue`;
+            binds.timeValue = timeValue;
+        }
+
+        query += `
+            GROUP BY ${groupCol}, product_name
+            ORDER BY ${groupCol}, value DESC
+        `;
+
+        const result = await connection.execute(query, binds);
+
+        // Format cho frontend: { group, product, value }
+        const chartData = result.rows.map(row => ({
+            group: row[0],
+            product: row[1],
+            value: Number(row[2])
+        }));
+
+        res.json(chartData);
+    } catch (err) {
+        console.error("Error fetching product sales distribution:", err);
+        res.status(500).json({ error: 'Failed to fetch product sales distribution.', details: err.message });
+    } finally {
+        if (connection) { try { await connection.close(); } catch (e) { console.error(e); } }
+    }
 });
 
