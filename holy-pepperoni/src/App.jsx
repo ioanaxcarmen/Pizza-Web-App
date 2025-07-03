@@ -2,7 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import LoginPage from "./components/LoginPage";
 import Dashboard from "./components/Dashboard";
 import ProtectedRoute from "./components/ProtectedRoute";
-import Product from "./components/Products";
+import ProductMenuPage from "./components/ProductMenuPage";
 import Store from "./components/Store";
 import IngredientMenuPage from "./components/IngredientMenuPage";
 import CustomerMenuPage from "./components/CustomerMenuPage";
@@ -22,7 +22,7 @@ function App() {
             </ProtectedRoute>
           }
         />
-        <Route path="/product" element={<Product />} />
+        <Route path="/product" element={<ProductMenuPage />} />
         <Route path="/store" element={<Store />} />
       
 
@@ -38,6 +38,12 @@ function App() {
 
          {/* This new dynamic path shows the specific chart the user selects */}
         <Route path="/ingredients/:kpiId" element={<ChartPage />} />
+
+        {/* This path now shows the menu of customer KPIs */}
+        <Route path="/product" element={<ProductMenuPage />} />
+
+        {/* This new dynamic path shows the specific chart the user selects */}
+        <Route path="/product/:kpiId" element={<ChartPage />} />
       </Routes>
     </Router>
   );

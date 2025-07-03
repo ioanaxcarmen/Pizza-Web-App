@@ -8,6 +8,9 @@ import StoreKPIRadarChart from '../kpi-widgets/StoreKPIRadarChart';
 import ProductCohortSalesLineChart from '../kpi-widgets/ProductCohortSalesLineChart';
 import CustomerOrderFrequencyChart from '../kpi-widgets/CustomerOrderFrequencyChart';
 import AverageSpendLineChart from '../kpi-widgets/AverageSpendLineChart';
+import TopSellingProductsChart from '../kpi-widgets/TopSellingProductsChart'; 
+ 
+
 
 // Placeholder for other KPIs
 const PlaceholderChart = ({ kpiName }) => (
@@ -116,7 +119,19 @@ const ChartPage = () => {
                 chartComponent = <div>KPI not found. Please go back.</div>;
                 pageTitle = "KPI Not Found";
         }
+    }else if(window.location.pathname.startsWith("/product")) {
+        backPath = "/product";
+    switch (kpiId) {
+        case 'top-products':
+            chartComponent = <TopSellingProductsChart />;
+            pageTitle = "Top Selling Products";
+            break;
+        // weitere Produkt-KPIs hier ergänzen
+        default:
+            chartComponent = <div>KPI not found. Please go back.</div>;
+            pageTitle = "KPI Not Found";
     }
+}
 
     return (
         <div style={styles.container}>
