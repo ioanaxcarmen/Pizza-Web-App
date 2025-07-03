@@ -3,6 +3,7 @@ import axios from 'axios';
 import DashboardFilters from '../components/DashboardFilters';
 import Select from 'react-select';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import LoadingPizza from '../components/LoadingPizza';
 
 const defaultFilters = {
     week: 'all',
@@ -140,7 +141,7 @@ const TopIngredientsChart = () => {
             </div>
             <h2 style={{ textAlign: 'center' }}>Top 5 Ingredients - Total Quantity Used</h2>
             {loading ? (
-                <div>Loading Top Ingredients Chart...</div>
+                <LoadingPizza />
             ) : invalidFilter ? (
                 <div style={{ color: 'red', textAlign: 'center' }}>
                     No data available for the selected filters. Please adjust your filters and try again.
@@ -177,7 +178,7 @@ const TopIngredientsChart = () => {
                         isClearable
                     />
                 </div>
-                {pieLoading ? <div style={{ textAlign: 'center' }}>Loading...</div> : (
+                {pieLoading ? <LoadingPizza /> : (
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 40, justifyContent: 'center' }}>
                         {selectedStores.map(store => {
                             const pieData = addOthersToPieData(pieDataByStore[store.value] || []);
