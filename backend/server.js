@@ -10,8 +10,8 @@ const port = 3001; // The backend will run on this port
 const dbConfig = {
     user: "PIZZA",
     password: "MyPizza123", // The password you created for the PIZZA user
-    connectString: "localhost:1521/XE"
-    //connectString: "localhost:1521/XEPDB1" //use this if you are using the default Oracle XE database
+    //connectString: "localhost:1521/XE"
+    connectString: "localhost:1521/XEPDB1" //use this if you are using the default Oracle XE database
 };
 
 // A test API endpoint to see if the connection works
@@ -213,7 +213,6 @@ app.get('/api/kpi/ingredients-consumed-over-time', async (req, res) => {
         }
     }
 
-   
 
     try {
         connection = await oracledb.getConnection(dbConfig);
@@ -518,6 +517,85 @@ app.get('/api/customer-history/:customerId', async (req, res) => {
     }
 });
 
+
+// Top Selling Products 
+app.get('/api/kpi/top-products', async (req, res) => {
+    let connection;
+    let whereClause = 'WHERE 1=1';
+    const binds = {};
+
+    // This logic now correctly handles all filters coming from your component
+    if (req.query.year && req.query.year !== 'all') {
+        whereClause += ' AND EXTRACT(YEAR FROM o.ORDERDATE) = :year';
+        binds.year = req.query.year;
+    }
+    if (req.query.quarter && req.query.quarter !== 'all') {
+        whereClause += ` AND TO_CHAR(o.ORDERDATE, 'Q') = :quarter`;
+        binds.quarter = req.query.quarter;
+    }
+    if (req.query.month && req.query.month !== 'all') {
+        // This now correctly uses the simple month number (e.g., 5)
+        whereClause += ' AND EXTRACT(MONTH FROM o.ORDERDATE) = :month';
+        binds.month = req.query.month;
+    }
+    if (req.query.state && req.query.state !== 'all') {
+        whereClause += ' AND s.STATE_ABBR = :state';
+        binds.state = req.query.state;
+    }
+     if (req.query.storeId && req.query.storeId !== 'all') {
+        whereClause += ' AND o.STOREID = :storeId';
+        binds.storeId = req.query.storeId;
+    }
+    // Add other filters like storeId if needed
+
+    try {
+        connection = await oracledb.getConnection(dbConfig);
+
+        let sortField = 'TOTAL_REVENUE';
+        if (req.query.sort === 'quantity') {
+            sortField = 'TOTAL_QUANTITY';
+        }
+
+        const query = `
+             SELECT
+                p.SKU,
+                p.NAME AS PRODUCT_NAME,
+                ps.NAME AS PRODUCT_SIZE,
+                p.LAUNCH,
+                SUM(oi.QUANTITY) AS TOTAL_QUANTITY,
+                SUM(oi.QUANTITY * p.PRICE) AS TOTAL_REVENUE
+            FROM ORDERS o
+            JOIN ORDER_ITEMS oi ON o.ID = oi.ORDERID
+            JOIN PRODUCTS p ON oi.SKU = p.SKU
+            JOIN PRODUCTSIZES ps ON p.SIZE_ID = ps.ID
+            JOIN STORES s ON o.STOREID = s.STOREID
+            ${whereClause}
+            GROUP BY p.SKU, p.NAME, ps.NAME, p.LAUNCH
+            ORDER BY ${sortField} DESC
+            FETCH FIRST 10 ROWS ONLY
+            
+        `;
+
+        const result = await connection.execute(query, binds);
+
+        const chartData = result.rows.map(row => ({
+            sku: row[0],
+            name: row[1],
+            size: row[2],
+            launch: row[3],
+            quantity: row[4],
+            revenue: row[5]
+        }));
+
+        res.json(chartData);
+
+    } catch (err) {
+        console.error("Error fetching top products:", err);
+        res.status(500).json({ error: 'Failed to fetch top selling products.', details: err.message });
+    } finally {
+        if (connection) { try { await connection.close(); } catch (e) { console.error(e); } }
+    }
+});
 //Weitere SQL queries hier
 
 //origianl localhost
