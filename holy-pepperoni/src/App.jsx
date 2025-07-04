@@ -9,6 +9,7 @@ import CustomerMenuPage from "./components/CustomerMenuPage";
 import ChartPage from "./components/ChartPage";
 import CustomerHistoryPage from "./components/CustomerHistoryPage";
 import ProductDistributionPieCharts from "./kpi-widgets/ProductDistributionPieCharts";
+import IngredientsDashboard from "./kpi-widgets/IngredientsDashboard";
 
 function App() {
   return (
@@ -47,6 +48,7 @@ function App() {
         <Route path="/product/:kpiId" element={<ChartPage />} />
 
         <Route path="/product/distributionchart" element={<ProductDistributionPieCharts />} />
+        <Route path="/ingredients/dashboard" element={<IngredientsDashboard />} />
       </Routes>
     </Router>
   );

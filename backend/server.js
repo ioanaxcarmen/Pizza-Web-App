@@ -816,3 +816,70 @@ app.get('/api/kpi/product-sales-distribution', async (req, res) => {
     }
 });
 
+// Example: Endpoint trả về tổng số ingredients, min/max ingredients per product
+app.get('/api/kpi/ingredients-dashboard-stats', async (req, res) => {
+    let connection;
+    try {
+        connection = await oracledb.getConnection(dbConfig);
+
+        // Tổng số ingredients
+        const totalIngredientsResult = await connection.execute(`SELECT COUNT(*) FROM ingredients`);
+        const totalIngredients = totalIngredientsResult.rows[0][0];
+
+        // Min/max ingredients per product
+        const minMaxResult = await connection.execute(`
+            SELECT MIN(cnt), MAX(cnt)
+            FROM (
+                SELECT COUNT(*) AS cnt
+                FROM product_ingredients
+                GROUP BY sku
+            )
+        `);
+        const minIngredients = minMaxResult.rows[0][0];
+        const maxIngredients = minMaxResult.rows[0][1];
+
+        res.json({
+            totalIngredients,
+            minIngredients,
+            maxIngredients
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Failed to fetch ingredients dashboard stats.' });
+    } finally {
+        if (connection) { try { await connection.close(); } catch (e) { console.error(e); } }
+    }
+});
+
+// Product Size Distribution KPI
+// ...existing code...
+
+// Product Size Distribution KPI
+app.get('/api/kpi/product-size-distribution', async (req, res) => {
+    let connection;
+    try {
+        connection = await oracledb.getConnection(dbConfig);
+        const metric = req.query.metric === 'orders' ? 'total_orders' : 'total_revenue';
+        // Lấy dữ liệu từ view, chuẩn hóa tên size về chuẩn "Small", "Medium", "Large", "Extra Large"
+        const query = `
+            SELECT INITCAP(LOWER("size")) AS size, product_name, SUM(${metric}) AS value
+            FROM v_order_per_product_by_size
+            GROUP BY INITCAP(LOWER("size")), product_name
+            ORDER BY size, value DESC
+        `;
+        const result = await connection.execute(query);
+        const chartData = result.rows.map(row => ({
+            size: row[0],      // "Small", "Medium", "Large", "Extra Large"
+            product: row[1],
+            value: Number(row[2])
+        }));
+        res.json(chartData);
+    } catch (err) {
+        console.error("Error fetching product size distribution:", err);
+        res.status(500).json({ error: 'Failed to fetch product size distribution.', details: err.message });
+    } finally {
+        if (connection) { try { await connection.close(); } catch (e) { console.error(e); } }
+    }
+});
+
+// ...existing code...
