@@ -10,8 +10,8 @@ const port = 3001; // The backend will run on this port
 const dbConfig = {
     user: "PIZZA",
     password: "MyPizza123", // The password you created for the PIZZA user
-    connectString: "localhost:1521/XE"
-    //connectString: "localhost:1521/XEPDB1" //use this if you are using the default Oracle XE database
+    //connectString: "localhost:1521/XE"
+    connectString: "localhost:1521/XEPDB1" //use this if you are using the default Oracle XE database
 };
 
 // A test API endpoint to see if the connection works
@@ -336,7 +336,7 @@ app.get('/api/kpi/customer-share-by-store', async (req, res) => {
     try {
         const binds = {};
         // This WHERE clause will be used by our main query and the subquery
-        let whereClause = 'WHERE 1=1'; 
+        let whereClause = 'WHERE 1=1';
 
         // --- FILTER LOGIC ---
         if (req.query.year && req.query.year !== 'all') {
@@ -380,17 +380,17 @@ app.get('/api/kpi/customer-share-by-store', async (req, res) => {
             ORDER BY
                 ACTIVE_CUSTOMERS DESC
         `;
-        
+
         connection = await oracledb.getConnection(dbConfig);
         const result = await connection.execute(query, binds);
-        
+
         const chartData = result.rows.map(row => {
             const city = row[0];
             const storeId = row[1];
             const customerCount = row[2];
             // The denominator is now the correct, filtered
-            const totalFilteredCustomers = row[3]; 
-            
+            const totalFilteredCustomers = row[3];
+
             const share = totalFilteredCustomers > 0 ? (customerCount / totalFilteredCustomers) * 100 : 0;
 
             return {
@@ -505,7 +505,7 @@ app.get('/api/kpi/avg-spend-monthly', async (req, res) => {
             binds.year = req.query.year;
         }
         if (req.query.quarter && req.query.quarter !== 'all') {
-            whereClause += ` AND v.QUARTER = 'Q' || :quarter`; 
+            whereClause += ` AND v.QUARTER = 'Q' || :quarter`;
             binds.quarter = req.query.quarter;
         }
 
@@ -582,12 +582,12 @@ app.get('/api/customer-history/:customerId', async (req, res) => {
             ${whereClause}
             ORDER BY o.ORDERDATE DESC
         `;
-        
+
         console.log("Executing Customer History Query:", query, binds); // For debugging
 
         connection = await oracledb.getConnection(dbConfig);
         const result = await connection.execute(query, binds, { outFormat: oracledb.OUT_FORMAT_OBJECT });
-        
+
         res.json(result.rows);
 
     } catch (err) {
@@ -645,7 +645,7 @@ app.get('/api/kpi/top-products', async (req, res) => {
         whereClause += ' AND s.STATE_ABBR = :state';
         binds.state = req.query.state;
     }
-     if (req.query.storeId && req.query.storeId !== 'all') {
+    if (req.query.storeId && req.query.storeId !== 'all') {
         whereClause += ' AND o.STOREID = :storeId';
         binds.storeId = req.query.storeId;
     }
@@ -705,6 +705,179 @@ app.get('/api/kpi/top-products', async (req, res) => {
 // app.listen(port, () => {
 //     console.log(`Backend server running at http://localhost:${port}`);
 // });
+app.get('/api/kpi/store-performance-ranking', async (req, res) => {
+    let connection;
+    const binds = {};
+    let whereClause = 'WHERE 1=1'; // Start with a condition that is always true
+
+    const { rankingType = 'totalRevenue', year, quarter, month, state } = req.query;
+
+    // --- Dynamic Filters based on request query parameters ---
+    if (year && year !== 'all') {
+        whereClause += ' AND EXTRACT(YEAR FROM o.ORDERDATE) = :year';
+        binds.year = Number(year);
+    }
+    if (quarter && quarter !== 'all') {
+        // Assuming quarter is '1', '2', '3', '4' from frontend
+        whereClause += ' AND TO_CHAR(o.ORDERDATE, \'Q\') = :quarter';
+        binds.quarter = quarter;
+    }
+    if (month && month !== 'all') {
+        whereClause += ' AND EXTRACT(MONTH FROM o.ORDERDATE) = :month';
+        binds.month = Number(month);
+    }
+    if (state && state !== 'all') {
+        whereClause += ' AND s.STATE_ABBR = :state'; // Assuming STORES table has STATE_ABBR
+        binds.state = state;
+    }
+
+    // --- Determine the aggregation metric and sort order ---
+    let selectAggregate;
+    let orderByColumn;
+
+    switch (rankingType) {
+        case 'totalOrders':
+            selectAggregate = 'COUNT(o.ID)';
+            orderByColumn = 'TOTAL_ORDERS_AGG';
+            break;
+        case 'avgOrderValue':
+            selectAggregate = 'ROUND(AVG(o.TOTAL), 2)';
+            orderByColumn = 'AVG_ORDER_VALUE_AGG';
+            break;
+        case 'activeCustomers':
+            selectAggregate = 'COUNT(DISTINCT o.CUSTOMERID)';
+            orderByColumn = 'ACTIVE_CUSTOMERS_AGG';
+            break;
+        case 'totalRevenue':
+        default: // Default to totalRevenue
+            selectAggregate = 'SUM(o.TOTAL)';
+            orderByColumn = 'TOTAL_REVENUE_AGG';
+            break;
+    }
+
+    try {
+        connection = await oracledb.getConnection(dbConfig);
+
+        // --- The new SQL Query to aggregate directly from ORDERS and STORES ---
+        const query = `
+            SELECT
+                s.STOREID,
+                s.CITY || ', ' || s.STATE_ABBR AS STORE_NAME, -- Combine city and state for a descriptive name
+                ${selectAggregate} AS RANK_VALUE_AGG,
+                -- Include other aggregates if you might need them in the future for different ranking types
+                SUM(o.TOTAL) AS TOTAL_REVENUE_AGG,
+                COUNT(o.ID) AS TOTAL_ORDERS_AGG,
+                ROUND(AVG(o.TOTAL), 2) AS AVG_ORDER_VALUE_AGG,
+                COUNT(DISTINCT o.CUSTOMERID) AS ACTIVE_CUSTOMERS_AGG
+            FROM
+                ORDERS o
+            JOIN
+                STORES s ON o.STOREID = s.STOREID
+            ${whereClause}
+            GROUP BY
+                s.STOREID, s.CITY, s.STATE_ABBR
+            ORDER BY
+                ${orderByColumn} DESC
+            FETCH FIRST 10 ROWS ONLY
+        `;
+
+        console.log("Executing Store Performance Ranking Query (NEW):", query, binds); // For debugging
+        const result = await connection.execute(query, binds, { outFormat: oracledb.OUT_FORMAT_ARRAY }); // Use array format for easy mapping
+
+        console.log("Query result rows (NEW):", result.rows);
+
+        // Map the results to the format expected by your React chart
+        // The column order in SELECT is crucial here for mapping
+        const response = result.rows.map(row => ({
+            storeId: row[0],         // s.STOREID
+            storeName: row[1],       // s.CITY || ', ' || s.STATE_ABBR
+            value: Number(row[2])    // The RANK_VALUE_AGG, cast to Number
+            // You can also pass other aggregated values if needed in tooltip or elsewhere
+            // totalRevenue: Number(row[3]),
+            // totalOrders: Number(row[4]),
+            // avgOrderValue: Number(row[5]),
+            // activeCustomers: Number(row[6])
+        }));
+
+        res.json(response);
+
+    } catch (err) {
+        console.error("Error in /store-performance-ranking (NEW):", err);
+        res.status(500).json({ error: 'Failed to fetch store performance ranking.', details: err.message });
+    } finally {
+        if (connection) {
+            try { await connection.close(); } catch (e) { console.error(e); }
+        }
+    }
+});
+
+
+app.get('/api/kpi/avg-order-value-by-store', async (req, res) => {
+    let connection;
+    const binds = {};
+    let whereClause = 'WHERE 1=1'; 
+
+    // Extract filters from query parameters
+    const { year, quarter, month, state } = req.query;
+
+    // Apply filters
+    if (year && year !== 'all') {
+        whereClause += ' AND EXTRACT(YEAR FROM o.ORDERDATE) = :year';
+        binds.year = Number(year);
+    }
+    if (quarter && quarter !== 'all') {
+        whereClause += ' AND TO_CHAR(o.ORDERDATE, \'Q\') = :quarter';
+        binds.quarter = quarter;
+    }
+    if (month && month !== 'all') {
+        whereClause += ' AND EXTRACT(MONTH FROM o.ORDERDATE) = :month';
+        binds.month = Number(month);
+    }
+    if (state && state !== 'all') {
+        whereClause += ' AND s.STATE_ABBR = :state';
+        binds.state = state;
+    }
+
+    try {
+       
+        connection = await oracledb.getConnection(dbConfig); 
+
+        const query = `
+            SELECT
+                s.STOREID,
+                s.CITY || ', ' || s.STATE_ABBR AS STORE_NAME,
+                ROUND(AVG(o.TOTAL), 2) AS AVG_ORDER_VALUE
+            FROM
+                ORDERS o
+            JOIN
+                STORES s ON o.STOREID = s.STOREID
+            ${whereClause}
+            GROUP BY
+                s.STOREID, s.CITY, s.STATE_ABBR
+            ORDER BY
+                s.CITY, s.STATE_ABBR -- Order by store name for consistent display
+        `;
+
+        console.log("Executing Avg Order Value By Store Query:", query, binds);
+        const result = await connection.execute(query, binds, { outFormat: oracledb.OUT_FORMAT_ARRAY });
+
+        const chartData = result.rows.map(row => ({
+            storeId: row[0],
+            storeName: row[1],
+            avgOrderValue: Number(row[2]) // The aggregated average order value
+        }));
+
+        res.json(chartData);
+
+    } catch (err) {
+        console.error("Error in /avg-order-value-by-store:", err);
+        res.status(500).json({ error: 'Failed to fetch average order value by store.', details: err.message });
+    } finally {
+        if (connection) {
+            try { await connection.close(); } catch (e) { console.error(e); }
+        }
+    }
+});
 
 
 // Start the server on the specified port local IP address

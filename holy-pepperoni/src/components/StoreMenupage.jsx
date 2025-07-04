@@ -32,10 +32,10 @@ const styles = {
   },
   buttonGrid: {
     display: "grid",
-    gridTemplateColumns: "1fr 1fr",
+    gridTemplateColumns: "1fr 1fr", // Two columns for buttons
     gap: "20px",
     margin: "0 auto 32px auto",
-    maxWidth: "440px",
+    maxWidth: "440px", // Adjust grid width as needed
     justifyContent: "center",
   },
   button: {
@@ -44,7 +44,7 @@ const styles = {
     border: "none",
     borderRadius: "50px",
     padding: "18px 0",
-    width: "180px",
+    width: "180px", // Fixed width for buttons
     fontSize: "1.1rem",
     fontWeight: "bold",
     cursor: "pointer",
@@ -53,10 +53,10 @@ const styles = {
     justifyContent: "center",
     textDecoration: "none",
     textAlign: "center",
-    margin: "0 auto"
+    margin: "0 auto", // Center buttons within their grid cell
   },
   backButton: {
-    background: "#faa28a", 
+    background: "#faa28a",
     color: "#000000ff",
     border: "none",
     borderRadius: "50px",
@@ -71,22 +71,41 @@ const styles = {
     textDecoration: "none",
     textAlign: "center",
     margin: "0 auto",
-    marginTop: "16px"
+    marginTop: "16px",
   }
 };
 
-const IngredientMenuPage = () => {
+const StoreMenuPage = () => {
   const navigate = useNavigate();
 
   return (
     <div style={styles.container}>
-      <div style={styles.header}>Ingredients Menu</div>
-      <div style={styles.subheading}>Please select a Key Performance Indicator to view.</div>
+      <div style={styles.header}>Store Analytics</div>
+      <div style={styles.subheading}>Explore key performance indicators for your stores.</div>
       <div style={styles.buttonGrid}>
-        <Link to="/stores/consumed-over-time" style={styles.button}>Ingredients Consumed Over Time</Link>
-        <Link to="/ingredients/top-ingredients" style={styles.button}>Top Ingredients</Link>
-        <Link to="/ingredients/cost-trends" style={styles.button}>Ingredient Cost Trends</Link>
-        {/* Add more links for other ingredient-related KPIs */}
+        {/* Store Performance Ranking */}
+        <Link to="/store/performance-ranking" style={styles.button}>Performance Ranking</Link>
+
+        {/* Average Order Value */}
+        <Link to="/store/avg-order-value-by-store" style={styles.button}>Average Order Value</Link>
+
+        {/* Active Customers by Store */}
+        <Link to="/store/active-customers" style={styles.button}>Active Customers</Link>
+
+        {/* Customer Share by Store (already in backend, but will be filtered by store now) */}
+        {/* NOTE: Your existing /api/kpi/customer-share-by-store endpoint already calculates this,
+                  but for a store-centric view, you might want a page specifically for it. */}
+        <Link to="/store/customer-share" style={styles.button}>Customer Share</Link>
+
+        {/* Revenue per Active Customer */}
+        <Link to="/store/revenue-per-customer" style={styles.button}>Revenue per Customer</Link>
+
+
+
+
+
+        {/* Ingredients Consumed (already exists, but might want to be filtered by store) */}
+        <Link to="/store/ingredients-consumed" style={styles.button}>Ingredient Consumption</Link>
       </div>
       <button
         style={styles.backButton}
@@ -98,4 +117,4 @@ const IngredientMenuPage = () => {
   );
 };
 
-export default IngredientMenuPage;
+export default StoreMenuPage;

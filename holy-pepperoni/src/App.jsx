@@ -2,13 +2,12 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import LoginPage from "./components/LoginPage";
 import Dashboard from "./components/Dashboard";
 import ProtectedRoute from "./components/ProtectedRoute";
-import ProductMenuPage from "./components/ProductMenuPage";
-import Store from "./components/Store";
+import Product from "./components/ProductMenuPage";
 import IngredientMenuPage from "./components/IngredientMenuPage";
 import CustomerMenuPage from "./components/CustomerMenuPage";
 import ChartPage from "./components/ChartPage";
-import CustomerHistoryPage from "./components/CustomerHistoryPage";
-import ProductDistributionPieCharts from "./kpi-widgets/ProductDistributionPieCharts";
+import StoreMenuPage from "./components/StoreMenupage";
+
 
 function App() {
   return (
@@ -23,8 +22,10 @@ function App() {
             </ProtectedRoute>
           }
         />
-        <Route path="/product" element={<ProductMenuPage />} />
-        <Route path="/store" element={<Store />} />
+        <Route path="/product" element={<Product />} />
+        <Route path="/store" element={<StoreMenuPage />} />
+         {/* This new dynamic path shows the specific chart the user selects */}
+        <Route path="/store/:kpiId" element={<ChartPage />} />
       
 
         {/* This path now shows the menu of customer KPIs */}
@@ -33,20 +34,11 @@ function App() {
         {/* This new dynamic path shows the specific chart the user selects */}
         <Route path="/customer/:kpiId" element={<ChartPage />} />
         
-        <Route path="/customer/order-history/:customerId" element={<CustomerHistoryPage />} />
 
         <Route path="/ingredients" element={<IngredientMenuPage />} />
 
          {/* This new dynamic path shows the specific chart the user selects */}
         <Route path="/ingredients/:kpiId" element={<ChartPage />} />
-
-        {/* This path now shows the menu of customer KPIs */}
-        <Route path="/product" element={<ProductMenuPage />} />
-
-        {/* This new dynamic path shows the specific chart the user selects */}
-        <Route path="/product/:kpiId" element={<ChartPage />} />
-
-        <Route path="/product/distributionchart" element={<ProductDistributionPieCharts />} />
       </Routes>
     </Router>
   );
