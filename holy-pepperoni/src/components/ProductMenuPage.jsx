@@ -85,7 +85,7 @@ const CustomerMenuPage = () => {
       <div style={styles.buttonGrid}>
         <Link to="/product/top-products" style={styles.button}>Top Selling Products</Link>
         <Link to="/product/cohortchart" style={styles.button}>Product Cohort Sales</Link>
-        <Link to="/product/distributionchart" style={styles.button}>Product Sales Distribution</Link> {/* Thêm button này */}
+        <Link to="/product/dashboard" style={styles.button}>Product Dashboard</Link> {/* Thêm button này */}
       </div>
       <button
         style={styles.backButton}

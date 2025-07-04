@@ -189,6 +189,34 @@ GROUP BY
     p.name, c.name
 ORDER BY year, quarter, month, total_revenue DESC;
 
+-- 4. Orders Distribution by Weekday, Category, and Size
+-- Aggregates order counts and revenue by weekday, product category, and size.
+-- Business Case: Helps understand weekly sales patterns, category performance, and size preferences; supports staffing and inventory planning.
+-- Power BI Usage: Useful for heatmaps, bar charts, and category/size distribution visuals.
+-- Why Separate: Weekday analysis is distinct from time-based sales trends; provides a different perspective on sales patterns.
+CREATE MATERIALIZED VIEW mv_orders_distribution_weekday_category_size_en AS
+SELECT
+    TO_CHAR(o.orderdate, 'D') AS weekday,
+    RTRIM(TO_CHAR(o.orderdate, 'Day', 'NLS_DATE_LANGUAGE = ''ENGLISH''')) AS weekday_name,
+    c.name AS category,
+    s.name AS "size",
+    COUNT(DISTINCT o.id) AS total_orders,
+    SUM(oi.quantity * p.price) AS total_revenue
+FROM orders o
+JOIN order_items oi ON o.id = oi.orderid
+JOIN products p ON oi.sku = p.sku
+JOIN categories c ON p.category_id = c.id
+JOIN productsizes s ON p.size_id = s.id
+GROUP BY
+    TO_CHAR(o.orderdate, 'D'),
+    RTRIM(TO_CHAR(o.orderdate, 'Day', 'NLS_DATE_LANGUAGE = ''ENGLISH''')),
+    c.name,
+    s.name
+ORDER BY
+    TO_CHAR(o.orderdate, 'D'),
+    c.name,
+    s.name;
+
 -- 4. Order Per Product By Size View
 -- Shows order counts and revenue for each product and its size variant.
 -- Business Case: Supports inventory, assortment, and supply chain decisions; helps optimize product portfolio.

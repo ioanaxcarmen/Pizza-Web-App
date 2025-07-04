@@ -852,9 +852,6 @@ app.get('/api/kpi/ingredients-dashboard-stats', async (req, res) => {
 });
 
 // Product Size Distribution KPI
-// ...existing code...
-
-// Product Size Distribution KPI
 app.get('/api/kpi/product-size-distribution', async (req, res) => {
     let connection;
     try {
@@ -882,4 +879,57 @@ app.get('/api/kpi/product-size-distribution', async (req, res) => {
     }
 });
 
-// ...existing code...
+// Orders distribution by weekday
+app.get('/api/kpi/orders-distribution-weekday', async (req, res) => {
+    let connection;
+    try {
+        connection = await oracledb.getConnection(dbConfig);
+        const query = `
+            SELECT
+                weekday,
+                weekday_name,
+                category,
+                size,
+                SUM(total_orders) AS total_orders
+            FROM mv_orders_distribution_weekday_category_size_en
+            GROUP BY weekday, weekday_name, category
+            ORDER BY weekday, category
+        `;
+        const result = await connection.execute(query);
+        // Format: [{ weekday, weekday_name, category, total_orders }]
+        const data = result.rows.map(row => ({
+            weekday: row[0],
+            weekday_name: row[1].trim(),
+            category: row[2],
+            total_orders: Number(row[3])
+        }));
+        res.json(data);
+    } catch (err) {
+        console.error("Error fetching orders distribution by weekday:", err);
+        res.status(500).json({ error: 'Failed to fetch data.' });
+    } finally {
+        if (connection) { try { await connection.close(); } catch (e) {} }
+    }
+});
+
+// Product revenue by size
+app.get('/api/kpi/product-revenue-by-size', async (req, res) => {
+  let connection;
+  try {
+    connection = await oracledb.getConnection(dbConfig);
+    const result = await connection.execute(`
+      SELECT product_name, "size", total_revenue
+      FROM v_order_per_product_by_size
+    `);
+    const data = result.rows.map(row => ({
+      product_name: row[0],
+      size: row[1],
+      total_revenue: Number(row[2])
+    }));
+    res.json(data);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch data.' });
+  } finally {
+    if (connection) try { await connection.close(); } catch (e) {}
+  }
+});

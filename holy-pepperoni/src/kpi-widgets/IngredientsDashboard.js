@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import {
-  Box, CssBaseline, AppBar, Toolbar, Typography, IconButton, Avatar, Badge, Drawer,
-  List, ListItem, ListItemIcon, ListItemText, Grid, Paper, Divider, Button, useTheme, useMediaQuery
+  Box, CssBaseline, AppBar, Toolbar, Typography, IconButton, Avatar, Badge, Grid, Paper, Divider, Button, useTheme, useMediaQuery
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import NotificationsIcon from '@mui/icons-material/Notifications';
@@ -16,6 +15,7 @@ import TopIngredientsByStorePieChart from '../kpi-widgets/TopIngredientsByStoreP
 import USStatesMap from '../kpi-widgets/USStatesMap';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import Sidebar from '../components/Sidebar';
 
 const drawerWidth = 230;
 
@@ -24,34 +24,6 @@ const navItems = [
   { icon: <AnalyticsIcon />, label: 'Analytics' },
   { icon: <SettingsIcon />, label: 'Settings' }
 ];
-
-function Sidebar() {
-  return (
-    <Drawer
-      variant="permanent"
-      anchor="left"
-      PaperProps={{ sx: { width: drawerWidth, background: "#232a37", color: "#fff" } }}
-      sx={{ display: { xs: 'none', md: 'block' } }}
-      open
-    >
-      <Box sx={{ p: 2, mb: 2, textAlign: 'center', fontWeight: 700, fontSize: 24, letterSpacing: 2 }}>
-        🍕 LOGO
-      </Box>
-      <Divider sx={{ borderColor: "rgba(255,255,255,0.08)" }} />
-      <List>
-        {navItems.map((item, idx) => (
-          <ListItem button key={idx} sx={{
-            '&:hover': { bgcolor: 'rgba(255,255,255,0.08)' },
-            transition: 'background 0.2s'
-          }}>
-            <ListItemIcon sx={{ color: "#fff" }}>{item.icon}</ListItemIcon>
-            <ListItemText primary={item.label} />
-          </ListItem>
-        ))}
-      </List>
-    </Drawer>
-  );
-}
 
 function TopBar() {
   return (

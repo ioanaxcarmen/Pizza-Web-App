@@ -11,9 +11,7 @@ import {
     Legend,
     ResponsiveContainer
 } from 'recharts';
-import LoadingPizza from '../components/LoadingPizza'; 
-import ProductDistributionPieCharts from './ProductDistributionPieCharts';
-import TopSellingProductsChart from './TopSellingProductsChart';
+import LoadingPizza from '../components/LoadingPizza';
 
 const pizzaOptions = [
     { value: "Margherita Pizza", label: "Margherita Pizza" },
@@ -150,7 +148,6 @@ const ProductCohortSalesLineChart = () => {
     return (
         <div style={{ width: '100%', padding: '20px' }}>
             {/* Product Cohort Sales Chart */}
-            <h2 style={{ textAlign: 'center' }}>Product Cohort Sales Analysis</h2>
             <div style={{ textAlign: 'center', marginBottom: '20px' }}>
                 <label style={{ marginRight: '20px' }}>
                     Select Pizza(s):
@@ -230,20 +227,6 @@ const ProductCohortSalesLineChart = () => {
                     )}
                 </LineChart>
             </ResponsiveContainer>
-
-            <div style={{ height: 40 }} />
-
-            {/* Top Selling Products Chart */}
-            <h2 style={{ textAlign: 'center', marginTop: 40 }}>Top Selling Products</h2>
-            <div style={{ background: '#fff', borderRadius: 12, padding: 16, marginBottom: 40 }}>
-                <TopSellingProductsChart />
-            </div>
-
-            {/* Product Sales Distribution Pie Charts */}
-            <h2 style={{ textAlign: 'center', marginTop: 40 }}>Product Sales Distribution</h2>
-            <div style={{ background: '#fff', borderRadius: 12, padding: 16 }}>
-                <ProductDistributionPieCharts />
-            </div>
         </div>
     );
 };
