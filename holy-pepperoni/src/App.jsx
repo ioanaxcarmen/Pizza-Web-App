@@ -6,7 +6,13 @@ import Product from "./components/ProductMenuPage";
 import IngredientMenuPage from "./components/IngredientMenuPage";
 import CustomerMenuPage from "./components/CustomerMenuPage";
 import ChartPage from "./components/ChartPage";
+
 import StoreMenuPage from "./components/StoreMenupage";
+
+
+import CustomerHistoryPage from "./components/CustomerHistoryPage";
+import ProductDistributionPieCharts from "./kpi-widgets/ProductDistributionPieCharts";
+import IngredientsDashboard from "./kpi-widgets/IngredientsDashboard";
 
 
 function App() {
@@ -39,6 +45,17 @@ function App() {
 
          {/* This new dynamic path shows the specific chart the user selects */}
         <Route path="/ingredients/:kpiId" element={<ChartPage />} />
+
+
+        {/* This path now shows the menu of customer KPIs */}
+        <Route path="/product" element={<ProductMenuPage />} />
+
+        {/* This new dynamic path shows the specific chart the user selects */}
+        <Route path="/product/:kpiId" element={<ChartPage />} />
+
+        <Route path="/product/distributionchart" element={<ProductDistributionPieCharts />} />
+        <Route path="/ingredients/dashboard" element={<IngredientsDashboard />} />
+
       </Routes>
     </Router>
   );

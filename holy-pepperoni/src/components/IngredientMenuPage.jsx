@@ -80,13 +80,17 @@ const IngredientMenuPage = () => {
 
   return (
     <div style={styles.container}>
-      <div style={styles.header}>Ingredients Menu</div>
+      <div style={styles.header}>Ingredient Menu</div>
       <div style={styles.subheading}>Please select a Key Performance Indicator to view.</div>
       <div style={styles.buttonGrid}>
+
         <Link to="/stores/consumed-over-time" style={styles.button}>Ingredients Consumed Over Time</Link>
+
+        <Link to="/ingredients/dashboard" style={styles.button}>Ingredients Dashboard</Link>
+        <Link to="/ingredients/consumed-over-time" style={styles.button}>Ingredients Consumed Over Time</Link>
+
         <Link to="/ingredients/top-ingredients" style={styles.button}>Top Ingredients</Link>
-        <Link to="/ingredients/cost-trends" style={styles.button}>Ingredient Cost Trends</Link>
-        {/* Add more links for other ingredient-related KPIs */}
+     
       </div>
       <button
         style={styles.backButton}

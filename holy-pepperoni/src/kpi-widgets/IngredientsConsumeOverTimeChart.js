@@ -63,6 +63,7 @@ const IngredientsConsumeOverTimeChart = () => {
     const [chartData, setChartData] = useState([]);
     const [loading, setLoading] = useState(true);
     const [enableOutlierDetection, setEnableOutlierDetection] = useState(false);
+    const [showAverage, setShowAverage] = useState(false);
 
     const lineColors = ['#8884d8', '#82ca9d', '#ffc658', '#ff7300', '#0088FE', '#00C49F', '#FFBB28'];
 
@@ -115,27 +116,13 @@ const IngredientsConsumeOverTimeChart = () => {
         }
     }, [rawData, filters.ingredient, filters.granularity]);
 
-    // Calculate mean and standard deviation for outlier detection if one ingredient is selected
-    let mean = null, std = null;
-    if (filters.ingredient.length === 1 && chartData.length > 0) {
-        const series = chartData.map(item => item.total_consumed);
-        mean = series.reduce((sum, val) => sum + val, 0) / series.length;
-        std = Math.sqrt(series.reduce((acc, val) => acc + Math.pow(val - mean, 2), 0) / series.length);
-    }
-
-    // Custom dot renderer to highlight outliers
-    const renderCustomDot = (props) => {
-        const { cx, cy, value } = props;
-        if (value > mean + 2 * std || value < mean - 2 * std) {
-            return <circle cx={cx} cy={cy} r={8} fill="red" stroke="black" />;
-        }
-        return <circle cx={cx} cy={cy} r={4} fill="#8884d8" />;
-    };
-
-    // Tính mean/std cho từng ingredient khi chọn nhiều ingredient
+    // Calculate mean and std for each ingredient (even if only one)
     let ingredientStats = {};
-    if (filters.ingredient.length > 1 && chartData.length > 0) {
-        filters.ingredient.forEach(ingredient => {
+    if (chartData.length > 0) {
+        const keys = filters.ingredient.length === 1
+            ? ['total_consumed']
+            : Object.keys(chartData[0]).filter(key => key !== 'time');
+        keys.forEach(ingredient => {
             const series = chartData.map(item => item[ingredient]).filter(val => val !== undefined);
             if (series.length > 0) {
                 const mean = series.reduce((sum, val) => sum + val, 0) / series.length;
@@ -145,7 +132,7 @@ const IngredientsConsumeOverTimeChart = () => {
         });
     }
 
-    // Hàm custom dot cho từng ingredient
+    // Custom dot for outlier detection
     const getCustomDot = (ingredient) => (props) => {
         const { cx, cy, value } = props;
         const stats = ingredientStats[ingredient];
@@ -155,6 +142,19 @@ const IngredientsConsumeOverTimeChart = () => {
         }
         return <circle cx={cx} cy={cy} r={4} fill={lineColors[filters.ingredient.indexOf(ingredient) % lineColors.length]} />;
     };
+
+    // Average line data
+    let averageData = [];
+    if (chartData.length > 0 && filters.ingredient.length > 0) {
+        averageData = chartData.map(row => {
+            const keys = filters.ingredient.length === 1
+                ? ['total_consumed']
+                : Object.keys(row).filter(key => key !== 'time');
+            const values = keys.map(k => Number(row[k]) || 0);
+            const avg = values.length ? values.reduce((a, b) => a + b, 0) / values.length : 0;
+            return { time: row.time, average: avg };
+        });
+    }
 
     // Handler for granularity change
     const handleGranularityChange = (e) => {
@@ -203,17 +203,24 @@ const IngredientsConsumeOverTimeChart = () => {
                         <option value="year">Year</option>
                     </select>
                 </label>
-                {/* Outlier Detection Toggle */}
-                {filters.ingredient.length > 0 && (
-                    <label style={{ marginLeft: '20px' }}>
-                        <input
-                            type="checkbox"
-                            checked={enableOutlierDetection}
-                            onChange={() => setEnableOutlierDetection(!enableOutlierDetection)}
-                        />
-                        Enable Outlier Detection
-                    </label>
-                )}
+                {/* Outlier Detection Toggle (always show) */}
+                <label style={{ marginLeft: '20px' }}>
+                    <input
+                        type="checkbox"
+                        checked={enableOutlierDetection}
+                        onChange={() => setEnableOutlierDetection(!enableOutlierDetection)}
+                    />
+                    Enable Outlier Detection
+                </label>
+                {/* Average Line Toggle */}
+                <label style={{ marginLeft: '20px' }}>
+                    <input
+                        type="checkbox"
+                        checked={showAverage}
+                        onChange={() => setShowAverage(!showAverage)}
+                    />
+                    Show Average Line
+                </label>
                 <button
                     onClick={() => downloadCSV(chartData)}
                     style={{
@@ -246,7 +253,7 @@ const IngredientsConsumeOverTimeChart = () => {
                                 dataKey="total_consumed"
                                 name="Total Consumed"
                                 stroke="#8884d8"
-                                dot={enableOutlierDetection ? renderCustomDot : undefined}
+                                dot={enableOutlierDetection ? getCustomDot('total_consumed') : undefined}
                             />
                         ) : (
                             chartData.length > 0 &&
@@ -260,6 +267,18 @@ const IngredientsConsumeOverTimeChart = () => {
                                     dot={enableOutlierDetection ? getCustomDot(ingredient) : undefined}
                                 />
                             ))
+                        )}
+                        {showAverage && averageData.length > 0 && (
+                            <Line
+                                type="monotone"
+                                dataKey="average"
+                                name="Average"
+                                stroke="#000"
+                                strokeDasharray="5 5"
+                                dot={false}
+                                data={averageData}
+                                isAnimationActive={false}
+                            />
                         )}
                     </LineChart>
                 </ResponsiveContainer>
