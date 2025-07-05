@@ -7,7 +7,7 @@ import IngredientMenuPage from "./components/IngredientMenuPage";
 import CustomerMenuPage from "./components/CustomerMenuPage";
 import ChartPage from "./components/ChartPage";
 import ProductMenuPage from "./components/ProductMenuPage"; 
-
+import GeographicalReportMenuPage from "./components/GeographicalReportMenuPage";
 import StoreMenupage from "./components/StoreMenupage";
 
 
@@ -59,6 +59,11 @@ function App() {
         <Route path="/ingredients/dashboard" element={<IngredientsDashboard />} />
 
         <Route path="/product/dashboard" element={<ProductsDashboard />} />
+         {/* --- NEW GEOGRAPHICAL ROUTES --- */}
+        <Route path="/geo-reports" element={<GeographicalReportMenuPage />} />
+        <Route path="/geo/:kpiId" element={<ChartPage />} /> {/* Dynamic KPI charts for geographical reports */}
+        {/* --- END NEW GEOGRAPHICAL ROUTES --- */}
+
 
       </Routes>
     </Router>

@@ -77,7 +77,7 @@ const StorePerformanceRankingChart = () => {
     }, [rankingType, selectedYear, selectedQuarter, selectedMonth, selectedState]); // Dependencies: re-run effect when any of these change
 
     // Function to format tooltip values based on the selected ranking type
-    const getTooltipFormatter = (value) => {
+    /* const getTooltipFormatter = (value) => {
         switch (rankingType) {
             case 'totalRevenue':
             case 'avgOrderValue':
@@ -87,8 +87,30 @@ const StorePerformanceRankingChart = () => {
                 return Number(value).toLocaleString(); // Format as a localized number
             default:
                 return value; // Return as-is for other types
+        } */
+    const getTooltipFormatter = () => {
+        switch (rankingType) {
+            case 'totalRevenue':
+            case 'avgOrderValue':
+                return (value) => {
+                    const num = Number(value);
+                    return isNaN(num) ? 'N/A' : `$${num.toFixed(2)}`;
+
+
+                };
+            case 'totalOrders':
+            case 'activeCustomers':
+                return (value) => {
+                    const num = Number(value);
+                    return isNaN(num) ? 'N/A' : num.toLocaleString();
+                };
+            default:
+                return (value) => (value == null ? 'N/A' : value.toString());
         }
     };
+
+
+
 
     // Function to get the label for the Y-axis based on the selected ranking type
     const getAxisLabel = () => {
