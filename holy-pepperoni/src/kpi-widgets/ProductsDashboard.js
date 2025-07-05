@@ -14,6 +14,7 @@ import ProductCohortSalesLineChart from './ProductCohortSalesLineChart';
 import ProductDistributionPieCharts from './ProductDistributionPieCharts';
 import ProductRevenuePieBySize from './ProductRevenuePieBySize';
 import TopSellingProductsChart from './TopSellingProductsChart';
+import Sidebar from '../components/Sidebar';
 
 const drawerWidth = 230;
 
@@ -23,33 +24,6 @@ const navItems = [
   { icon: <SettingsIcon />, label: 'Settings' }
 ];
 
-function Sidebar() {
-  return (
-    <Drawer
-      variant="permanent"
-      anchor="left"
-      PaperProps={{ sx: { width: drawerWidth, background: "#232a37", color: "#fff" } }}
-      sx={{ display: { xs: 'none', md: 'block' } }}
-      open
-    >
-      <Box sx={{ p: 2, mb: 2, textAlign: 'center', fontWeight: 700, fontSize: 24, letterSpacing: 2 }}>
-        🍕 HOLLY  PEPPERONI 🍕
-      </Box>
-      <Divider sx={{ borderColor: "rgba(255,255,255,0.08)" }} />
-      <List>
-        {navItems.map((item, idx) => (
-          <ListItem button key={idx} sx={{
-            '&:hover': { bgcolor: 'rgba(255,255,255,0.08)' },
-            transition: 'background 0.2s'
-          }}>
-            <ListItemIcon sx={{ color: "#fff" }}>{item.icon}</ListItemIcon>
-            <ListItemText primary={item.label} />
-          </ListItem>
-        ))}
-      </List>
-    </Drawer>
-  );
-}
 
 function TopBar() {
   return (
