@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import DashboardFilters from '../components/DashboardFilters';
 import Select from 'react-select';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { ResponsiveContainer, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, Legend, Bar } from 'recharts';
 import LoadingPizza from '../components/LoadingPizza';
 
 const defaultFilters = {
@@ -120,7 +120,7 @@ const TopIngredientsChart = () => {
     };
 
     return (
-        <div style={{ width: '100%', minHeight: 500, position: 'relative' }}>
+          <div style={{ width: '100%', height: '100%', minHeight: 150, position: 'relative' }}>
             <div style={{ display: 'flex', gap: 20, padding: 20, background: '#f0f0f0', flexWrap: 'wrap', alignItems: 'flex-end' }}>
                 <DashboardFilters filters={filters} setFilters={setFilters} onReset={handleResetFilters} />
                 <button
@@ -139,7 +139,6 @@ const TopIngredientsChart = () => {
                     Download Report
                 </button>
             </div>
-            <h2 style={{ textAlign: 'center' }}>Top 5 Ingredients - Total Quantity Used</h2>
             {loading ? (
                 <LoadingPizza />
             ) : invalidFilter ? (
@@ -147,7 +146,7 @@ const TopIngredientsChart = () => {
                     No data available for the selected filters. Please adjust your filters and try again.
                 </div>
             ) : (
-                <ResponsiveContainer width="100%" height={window.innerWidth < 600 ? 300 : 500}>
+                <ResponsiveContainer width="100%" height="100%">
                     <BarChart
                         layout="vertical"
                         data={data}

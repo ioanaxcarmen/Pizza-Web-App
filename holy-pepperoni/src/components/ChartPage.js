@@ -17,7 +17,7 @@ import AverageOrderValuePerStoreChart from '../kpi-widgets/AverageOrderValuePerS
 
 // Placeholder for other KPIs
 const PlaceholderChart = ({ kpiName }) => (
-    <div style={{border: '1px solid #ddd', padding: '20px', borderRadius: '12px', background: '#fff'}}>
+    <div style={{ border: '1px solid #ddd', padding: '20px', borderRadius: '12px', background: '#fff' }}>
         <h2>Chart for "{kpiName}"</h2>
         <p>The real chart component will go here.</p>
     </div>
@@ -67,7 +67,7 @@ const styles = {
         cursor: "pointer",
         textDecoration: "none",
         textAlign: "center",
-        margin: "64px auto 0 auto" 
+        margin: "64px auto 0 auto"
     }
 };
 
@@ -157,10 +157,15 @@ const ChartPage = () => {
                 chartComponent = <StorePerformanceRankingChart />;
                 pageTitle = "Store Performance Ranking";
                 break;
-                case 'avg-order-value-by-store':
+            case 'avg-order-value-by-store':
                 chartComponent = <AverageOrderValuePerStoreChart />;
                 pageTitle = "Average Order Value by Store";
                 break;
+            case 'store-share':
+                chartComponent = <StoreCustomerShareChart />;
+                pageTitle = "Store Customer Share";
+                break;
+
             default:
                 chartComponent = <div>KPI not found. Please go back.</div>;
                 pageTitle = "KPI Not Found";
@@ -187,40 +192,40 @@ const ChartPage = () => {
 }
 
 export default ChartPage;
- /*else if (window.location.pathname.startsWith("/store")) {
-        backPath = "/store";
-        switch (kpiId) {
-            case 'kpi-radar':
-                chartComponent = <StoreKPIRadarChart />;
-                pageTitle = "Store KPIs Radar";
-                break;
-            case 'comparison-bar':
-                chartComponent = <StoreComparisonGroupedBarChart />;
-                pageTitle = "Store Comparison Grouped Bar";
-                break;
-            default:
-                chartComponent = <div>KPI not found. Please go back.</div>;
-                pageTitle = "KPI Not Found";
-        } 
-      
+/*else if (window.location.pathname.startsWith("/store")) {
+       backPath = "/store";
+       switch (kpiId) {
+           case 'kpi-radar':
+               chartComponent = <StoreKPIRadarChart />;
+               pageTitle = "Store KPIs Radar";
+               break;
+           case 'comparison-bar':
+               chartComponent = <StoreComparisonGroupedBarChart />;
+               pageTitle = "Store Comparison Grouped Bar";
+               break;
+           default:
+               chartComponent = <div>KPI not found. Please go back.</div>;
+               pageTitle = "KPI Not Found";
+       } 
+     
 
-    return (
-        <div style={styles.container}>
-            <div style={styles.header}>{pageTitle}</div>
-            <div style={styles.chartArea}>
-                <div style={{ width: "100%", padding: '20px', boxSizing: 'border-box' }}>
-                    {chartComponent}
-                </div>
-                <div style={{ height: 40 }} />
-                <button
-                    style={styles.backButton}
-                    onClick={() => navigate(backPath)}
-                >
-                    Back
-                </button>
-            </div>
-        </div>
-    );
+   return (
+       <div style={styles.container}>
+           <div style={styles.header}>{pageTitle}</div>
+           <div style={styles.chartArea}>
+               <div style={{ width: "100%", padding: '20px', boxSizing: 'border-box' }}>
+                   {chartComponent}
+               </div>
+               <div style={{ height: 40 }} />
+               <button
+                   style={styles.backButton}
+                   onClick={() => navigate(backPath)}
+               >
+                   Back
+               </button>
+           </div>
+       </div>
+   );
 };
 
 export default ChartPage; */

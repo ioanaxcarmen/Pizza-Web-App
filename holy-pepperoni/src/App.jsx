@@ -6,13 +6,15 @@ import Product from "./components/ProductMenuPage";
 import IngredientMenuPage from "./components/IngredientMenuPage";
 import CustomerMenuPage from "./components/CustomerMenuPage";
 import ChartPage from "./components/ChartPage";
+import ProductMenuPage from "./components/ProductMenuPage"; 
 
-import StoreMenuPage from "./components/StoreMenupage";
+import StoreMenupage from "./components/StoreMenupage";
 
 
 import CustomerHistoryPage from "./components/CustomerHistoryPage";
 import ProductDistributionPieCharts from "./kpi-widgets/ProductDistributionPieCharts";
 import IngredientsDashboard from "./kpi-widgets/IngredientsDashboard";
+import ProductsDashboard from "./kpi-widgets/ProductsDashboard";
 
 
 function App() {
@@ -29,21 +31,21 @@ function App() {
           }
         />
         <Route path="/product" element={<Product />} />
-        <Route path="/store" element={<StoreMenuPage />} />
-         {/* This new dynamic path shows the specific chart the user selects */}
+        <Route path="/store" element={<StoreMenupage />} />
+        {/* This new dynamic path shows the specific chart the user selects */}
         <Route path="/store/:kpiId" element={<ChartPage />} />
-      
+
 
         {/* This path now shows the menu of customer KPIs */}
         <Route path="/customer" element={<CustomerMenuPage />} />
 
         {/* This new dynamic path shows the specific chart the user selects */}
         <Route path="/customer/:kpiId" element={<ChartPage />} />
-        
+
 
         <Route path="/ingredients" element={<IngredientMenuPage />} />
 
-         {/* This new dynamic path shows the specific chart the user selects */}
+        {/* This new dynamic path shows the specific chart the user selects */}
         <Route path="/ingredients/:kpiId" element={<ChartPage />} />
 
 
@@ -55,6 +57,8 @@ function App() {
 
         <Route path="/product/distributionchart" element={<ProductDistributionPieCharts />} />
         <Route path="/ingredients/dashboard" element={<IngredientsDashboard />} />
+
+        <Route path="/product/dashboard" element={<ProductsDashboard />} />
 
       </Routes>
     </Router>

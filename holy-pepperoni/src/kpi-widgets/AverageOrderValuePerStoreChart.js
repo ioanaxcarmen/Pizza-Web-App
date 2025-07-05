@@ -15,7 +15,7 @@ const AverageOrderValuePerStoreChart = () => {
     const [selectedState, setSelectedState] = useState('all');
 
     // Filter options (can be global or fetched dynamically if needed)
-    const years = ['all', '2023', '2024', '2025'];
+    const years = ['all', '2023', '2024', '2025']; // Adjust years as per your data
     const quarters = ['all', '1', '2', '3', '4'];
     const months = ['all', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'];
     const states = ['all', 'CA', 'NY', 'TX', 'UT', 'NV', 'AZ']; // Example states
@@ -31,6 +31,7 @@ const AverageOrderValuePerStoreChart = () => {
                 if (selectedMonth !== 'all') queryParams.append('month', selectedMonth);
                 if (selectedState !== 'all') queryParams.append('state', selectedState);
 
+                // This URL corresponds to the backend endpoint for fetching AOV by store
                 const url = `http://localhost:3001/api/kpi/avg-order-value-by-store?${queryParams.toString()}`;
                 console.log("Fetching AOV by Store from URL:", url);
 
@@ -42,7 +43,7 @@ const AverageOrderValuePerStoreChart = () => {
 
                 const data = await response.json();
                 console.log("Received AOV by Store data:", data);
-                setChartData(data);
+                setChartData(data || []); // Ensure it's an empty array if no data
 
             } catch (err) {
                 console.error("Error fetching average order value by store data:", err);
@@ -53,9 +54,9 @@ const AverageOrderValuePerStoreChart = () => {
         };
 
         fetchChartData();
-    }, [selectedYear, selectedQuarter, selectedMonth, selectedState]); // Dependencies for re-fetching
+    }, [selectedYear, selectedQuarter, selectedMonth, selectedState]); // Dependencies for re-fetching data
 
-    // Tooltip formatter for currency
+    // Tooltip formatter for currency values
     const getTooltipFormatter = (value) => `$${Number(value).toFixed(2)}`;
 
     if (loading) {
@@ -71,6 +72,7 @@ const AverageOrderValuePerStoreChart = () => {
             <h2 style={styles.chartTitle}>Average Order Value by Store</h2>
 
             <div style={styles.filterContainer}>
+                {/* Year Dropdown */}
                 <label htmlFor="year-select" style={styles.filterLabel}>Year:</label>
                 <select
                     id="year-select"
@@ -83,6 +85,7 @@ const AverageOrderValuePerStoreChart = () => {
                     ))}
                 </select>
 
+                {/* Quarter Dropdown */}
                 <label htmlFor="quarter-select" style={{ ...styles.filterLabel, marginLeft: '20px' }}>Quarter:</label>
                 <select
                     id="quarter-select"
@@ -95,6 +98,7 @@ const AverageOrderValuePerStoreChart = () => {
                     ))}
                 </select>
 
+                {/* Month Dropdown */}
                 <label htmlFor="month-select" style={{ ...styles.filterLabel, marginLeft: '20px' }}>Month:</label>
                 <select
                     id="month-select"
@@ -107,6 +111,7 @@ const AverageOrderValuePerStoreChart = () => {
                     ))}
                 </select>
 
+                {/* State Dropdown */}
                 <label htmlFor="state-select" style={{ ...styles.filterLabel, marginLeft: '20px' }}>State:</label>
                 <select
                     id="state-select"
@@ -171,7 +176,7 @@ const AverageOrderValuePerStoreChart = () => {
     );
 };
 
-// Styles remain the same as your previous component
+// Styles for the chart container, title, loading, error, and filters
 const styles = {
     chartContainer: {
         backgroundColor: '#ffffff',
