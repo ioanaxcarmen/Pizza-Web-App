@@ -11,11 +11,15 @@ import AverageSpendLineChart from '../kpi-widgets/AverageSpendLineChart';
 import TopSellingProductsChart from '../kpi-widgets/TopSellingProductsChart';
 import ProductDistributionPieCharts from '../kpi-widgets/ProductDistributionPieCharts';
 import StoreComparisonGroupedBarChart from '../kpi-widgets/StoreComparisonGroupedBarChart';
+import StorePerformanceRankingChart from '../kpi-widgets/StorePerformanceRankingChart';
+import AverageOrderValuePerStoreChart from '../kpi-widgets/AverageOrderValuePerStoreChart';
+import StoreDistanceMap from '../kpi-widgets/StoreDistanceMap';
+import TopCustomervsStoreGeoChart from '../kpi-widgets/TopCustomervsStoreGeoChart';
 
 
 // Placeholder for other KPIs
 const PlaceholderChart = ({ kpiName }) => (
-    <div style={{border: '1px solid #ddd', padding: '20px', borderRadius: '12px', background: '#fff'}}>
+    <div style={{ border: '1px solid #ddd', padding: '20px', borderRadius: '12px', background: '#fff' }}>
         <h2>Chart for "{kpiName}"</h2>
         <p>The real chart component will go here.</p>
     </div>
@@ -65,7 +69,7 @@ const styles = {
         cursor: "pointer",
         textDecoration: "none",
         textAlign: "center",
-        margin: "64px auto 0 auto" 
+        margin: "64px auto 0 auto"
     }
 };
 
@@ -101,7 +105,8 @@ const ChartPage = () => {
                 chartComponent = <div>KPI not found. Please go back.</div>;
                 pageTitle = "KPI Not Found";
         }
-    } else if (window.location.pathname.startsWith("/ingredients")) {
+    }
+    else if (window.location.pathname.startsWith("/ingredients")) {
         backPath = "/ingredients";
         switch (kpiId) {
             case 'consumed-over-time':
@@ -140,7 +145,7 @@ const ChartPage = () => {
                 pageTitle = "KPI Not Found";
         }
     } else if (window.location.pathname.startsWith("/store")) {
-        backPath = "/store";
+        backPath = "/store"; // Set back path to your Store Menu Page
         switch (kpiId) {
             case 'kpi-radar':
                 chartComponent = <StoreKPIRadarChart />;
@@ -150,29 +155,102 @@ const ChartPage = () => {
                 chartComponent = <StoreComparisonGroupedBarChart />;
                 pageTitle = "Store Comparison Grouped Bar";
                 break;
+            // ADD THIS NEW CASE FOR STORE PERFORMANCE RANKING
+            case 'performance-ranking':
+                chartComponent = <StorePerformanceRankingChart />;
+                pageTitle = "Store Performance Ranking";
+                break;
+            case 'avg-order-value-by-store':
+                chartComponent = <AverageOrderValuePerStoreChart />;
+                pageTitle = "Average Order Value by Store";
+                break;
+            case 'store-share':
+                chartComponent = <StoreCustomerShareChart />;
+                pageTitle = "Store Customer Share";
+           /* case 'store-distance-map':
+                chartComponent = <StoreDistanceMap />;
+                pageTitle = "Distance Between Top Customer Stores";
+                break;
+
+
+
+            default:
+                chartComponent = <div>KPI not found. Please go back.</div>;
+                pageTitle = "KPI Not Found"; 
+        }*/
+        }
+
+    } else if (window.location.pathname.startsWith("/geo")) {
+        backPath = "/geo-reports"; // Back button goes to the new geographical menu
+        switch (kpiId) {
+            case 'store-distance-map':
+                chartComponent = <StoreDistanceMap />;
+                pageTitle = "Distance Between Top Customer Stores";
+                break;
+            case 'top-customer-store-geo':
+                chartComponent = <TopCustomervsStoreGeoChart />;
+                pageTitle = "Top Customer Stores (Geographical)";
+                break;
+            // Add more geographical charts here
             default:
                 chartComponent = <div>KPI not found. Please go back.</div>;
                 pageTitle = "KPI Not Found";
         }
-    }
 
-    return (
-        <div style={styles.container}>
-            <div style={styles.header}>{pageTitle}</div>
-            <div style={styles.chartArea}>
-                <div style={{ width: "100%", padding: '20px', boxSizing: 'border-box' }}>
-                    {chartComponent}
+        return (
+            <div style={styles.container}>
+                <div style={styles.header}>{pageTitle}</div>
+                <div style={styles.chartArea}>
+                    <div style={{ width: "100%", padding: '20px', boxSizing: 'border-box' }}>
+                        {chartComponent}
+                    </div>
+                    <div style={{ height: 40 }} />
+                    <button
+                        style={styles.backButton}
+                        onClick={() => navigate(backPath)}
+                    >
+                        Back
+                    </button>
                 </div>
-                <div style={{ height: 40 }} />
-                <button
-                    style={styles.backButton}
-                    onClick={() => navigate(backPath)}
-                >
-                    Back
-                </button>
             </div>
-        </div>
-    );
+        );
+    }}
+
+    export default ChartPage;
+/*else if (window.location.pathname.startsWith("/store")) {
+       backPath = "/store";
+       switch (kpiId) {
+           case 'kpi-radar':
+               chartComponent = <StoreKPIRadarChart />;
+               pageTitle = "Store KPIs Radar";
+               break;
+           case 'comparison-bar':
+               chartComponent = <StoreComparisonGroupedBarChart />;
+               pageTitle = "Store Comparison Grouped Bar";
+               break;
+           default:
+               chartComponent = <div>KPI not found. Please go back.</div>;
+               pageTitle = "KPI Not Found";
+       } 
+     
+
+   return (
+       <div style={styles.container}>
+           <div style={styles.header}>{pageTitle}</div>
+           <div style={styles.chartArea}>
+               <div style={{ width: "100%", padding: '20px', boxSizing: 'border-box' }}>
+                   {chartComponent}
+               </div>
+               <div style={{ height: 40 }} />
+               <button
+                   style={styles.backButton}
+                   onClick={() => navigate(backPath)}
+               >
+                   Back
+               </button>
+           </div>
+       </div>
+   );
 };
 
-export default ChartPage;
+export default ChartPage; */

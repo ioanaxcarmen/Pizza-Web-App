@@ -83,8 +83,12 @@ const IngredientMenuPage = () => {
       <div style={styles.header}>Ingredient Menu</div>
       <div style={styles.subheading}>Please select a Key Performance Indicator to view.</div>
       <div style={styles.buttonGrid}>
+
+        <Link to="/stores/consumed-over-time" style={styles.button}>Ingredients Consumed Over Time</Link>
+
         <Link to="/ingredients/dashboard" style={styles.button}>Ingredients Dashboard</Link>
         <Link to="/ingredients/consumed-over-time" style={styles.button}>Ingredients Consumed Over Time</Link>
+
         <Link to="/ingredients/top-ingredients" style={styles.button}>Top Ingredients</Link>
      
       </div>

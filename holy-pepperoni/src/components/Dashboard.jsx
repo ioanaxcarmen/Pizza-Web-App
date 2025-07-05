@@ -92,7 +92,7 @@ const Dashboard = () => {
 
       </div>
       <div style={styles.button5Wrapper}>
-        <button style={styles.button}>Geographical Reports</button>
+        <button style={styles.button} onClick={() => navigate("/geo-reports")}>Geographical Reports</button>
       </div>
       <button style={styles.logoutButton} onClick={handleLogout}>
         Log Out
