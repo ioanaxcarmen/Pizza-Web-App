@@ -33,7 +33,6 @@ const ProductDistributionPieCharts = () => {
 
   return (
     <div style={{ padding: '20px' }}>
-      <h2 style={{ textAlign: 'center' }}>Product Sales Distribution by Category (Total Revenue)</h2>
       {loading ? (
         <div>Loading data...</div>
       ) : (
@@ -57,7 +56,7 @@ const ProductDistributionPieCharts = () => {
                       cx="50%"
                       cy="50%"
                       outerRadius={80}
-                      label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                      label={false}
                     >
                       {groupedData[groupKey].map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />

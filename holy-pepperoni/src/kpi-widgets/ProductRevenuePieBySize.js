@@ -41,7 +41,7 @@ const ProductRevenuePieBySize = () => {
           {SIZE_LIST.map((size) => (
             <div key={size} style={{ border: '1px solid #ddd', padding: '10px', borderRadius: '8px', background: "#fff" }}>
               <h3 style={{ textAlign: 'center', fontWeight: 700 }}>{size}</h3>
-              <ResponsiveContainer width="100%" height={250}>
+              <ResponsiveContainer width="100%" height={400}>
                 <PieChart>
                   <Pie
                     data={groupedData[size]}
@@ -50,11 +50,7 @@ const ProductRevenuePieBySize = () => {
                     cx="50%"
                     cy="50%"
                     outerRadius={80}
-                    label={({ name, percent }) =>
-                      groupedData[size].length > 0
-                        ? `${name}: ${(percent * 100).toFixed(0)}%`
-                        : ""
-                    }
+                    label={false }
                   >
                     {groupedData[size].map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />

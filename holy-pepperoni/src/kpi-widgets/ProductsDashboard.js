@@ -1,68 +1,21 @@
 import React, { useEffect } from 'react';
 import {
-  Box, CssBaseline, AppBar, Toolbar, Typography, IconButton, Avatar, Badge, Drawer,
-  List, ListItem, ListItemIcon, ListItemText, Grid, Paper, Divider, useTheme, useMediaQuery
+  Box, CssBaseline, Paper, useTheme, useMediaQuery, Typography
 } from '@mui/material';
-import MenuIcon from '@mui/icons-material/Menu';
-import NotificationsIcon from '@mui/icons-material/Notifications';
-import AccountCircle from '@mui/icons-material/AccountCircle';
-import DashboardIcon from '@mui/icons-material/Dashboard';
-import AnalyticsIcon from '@mui/icons-material/Analytics';
-import SettingsIcon from '@mui/icons-material/Settings';
 import { motion } from 'framer-motion';
 import ProductCohortSalesLineChart from './ProductCohortSalesLineChart';
 import ProductDistributionPieCharts from './ProductDistributionPieCharts';
 import ProductRevenuePieBySize from './ProductRevenuePieBySize';
 import TopSellingProductsChart from './TopSellingProductsChart';
 import Sidebar from '../components/Sidebar';
+import TopBar from '../components/TopBar';
+import CookingChef from '../components/CookingChef';
+import Lottie from "lottie-react";
+import chefAnimation from "../components/chef.json";
 
 const drawerWidth = 230;
 
-const navItems = [
-  { icon: <DashboardIcon />, label: 'Dashboard' },
-  { icon: <AnalyticsIcon />, label: 'Analytics' },
-  { icon: <SettingsIcon />, label: 'Settings' }
-];
-
-
-function TopBar() {
-  return (
-    <AppBar
-      position="fixed"
-      sx={{
-        width: { md: `calc(100% - ${drawerWidth}px)` },
-        ml: { md: `${drawerWidth}px` },
-        background: "#fff",
-        color: "#232a37",
-        boxShadow: "0 2px 8px rgba(35,42,55,0.04)"
-      }}
-      elevation={1}
-    >
-      <Toolbar sx={{ display: 'flex', justifyContent: 'space-between', minHeight: 68 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <IconButton color="inherit" sx={{ display: { md: 'none' } }}>
-            <MenuIcon />
-          </IconButton>
-          <Typography variant="h6" sx={{ fontWeight: 700, fontFamily: "'Inter', 'Roboto', sans-serif" }}>
-            Products Dashboard
-          </Typography>
-        </Box>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <IconButton color="inherit">
-            <Badge badgeContent={3} color="error">
-              <NotificationsIcon />
-            </Badge>
-          </IconButton>
-          <Avatar sx={{ bgcolor: "#faa28a", width: 36, height: 36 }}>
-            <AccountCircle sx={{ color: "#fff" }} />
-          </Avatar>
-        </Box>
-      </Toolbar>
-    </AppBar>
-  );
-}
-
-const ProductsDashboard = () => {
+const ProductsDashboard = (props) => {
   const theme = useTheme();
   const isMdUp = useMediaQuery(theme.breakpoints.up('md'));
 
@@ -91,13 +44,77 @@ const ProductsDashboard = () => {
     };
   }, []);
 
+  // Widget Orders Sold với Chef trắng và to hơn
+  const OrdersSoldWidget = () => (
+    <Paper
+      elevation={2}
+      sx={{
+        p: 3,
+        borderRadius: 5,
+        bgcolor: "#fff", // nền trắng hoàn toàn
+        boxShadow: "0 2px 12px rgba(250, 162, 138, 0.12)",
+        fontFamily: "'Inter', 'Roboto', sans-serif",
+        minWidth: 340,
+        display: 'flex',
+        alignItems: 'center',
+        gap: 3,
+        color: "#fa7a1c"
+      }}
+    >
+      <Box sx={{ flex: 1 }}>
+        <Typography variant="subtitle2" sx={{ color: "#fa7a1c", fontWeight: 700 }}>
+          🎉 You're doing amazing!
+        </Typography>
+        <Typography
+          variant="h4"
+          fontWeight="bold"
+          sx={{ color: "#fa7a1c", fontFamily: "'Inter', 'Roboto', sans-serif", mt: 0.5 }}
+        >
+          2,916,015
+        </Typography>
+        <Typography
+          variant="body1"
+          color="text.secondary"
+          sx={{ fontFamily: "'Inter', 'Roboto', sans-serif" }}
+        >
+          Pizzas Sold!
+        </Typography>
+      </Box>
+      <Box sx={{ width: 300, height: 290 }}>
+        <Lottie
+          animationData={chefAnimation}
+          loop={true}
+          style={{
+            width: "100%",
+            height: "100%"
+          }}
+        />
+      </Box>
+    </Paper>
+  );
+
   return (
     <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: "#f5f7fb", fontFamily: "'Inter', 'Roboto', sans-serif" }}>
       <CssBaseline />
       {isMdUp && <Sidebar />}
       <Box sx={{ flexGrow: 1, ml: { md: `${drawerWidth}px` } }}>
-        <TopBar />
-        <Box sx={{ mt: 10, p: { xs: 1, md: 3 } }}>
+        <TopBar title="Products Dashboard" {...props} />
+
+        {/* Widget tổng số orders và animation chef trắng to */}
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'flex-start',
+            mt: 10,
+            mb: 3,
+            px: { xs: 1, md: 3 }
+          }}
+        >
+          <OrdersSoldWidget />
+        </Box>
+
+        <Box sx={{ p: { xs: 0, md: 0 } }}>
           {/* Product Cohort Sales Line Chart */}
           <motion.div
             initial={{ opacity: 0, y: 24 }}
@@ -134,7 +151,7 @@ const ProductsDashboard = () => {
               fontFamily: "'Inter', 'Roboto', sans-serif"
             }}>
               <Typography variant="h6" fontWeight="bold" sx={{ mb: 2, fontFamily: "'Inter', 'Roboto', sans-serif" }}>
-                Product Sales Distribution by Category
+                Product Revenue Distribution by Category
               </Typography>
               <ProductDistributionPieCharts />
             </Paper>

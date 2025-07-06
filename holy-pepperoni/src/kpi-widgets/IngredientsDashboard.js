@@ -16,6 +16,7 @@ import USStatesMap from '../kpi-widgets/USStatesMap';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Sidebar from '../components/Sidebar';
+import TopBar from '../components/TopBar';
 
 const drawerWidth = 230;
 
@@ -24,43 +25,6 @@ const navItems = [
   { icon: <AnalyticsIcon />, label: 'Analytics' },
   { icon: <SettingsIcon />, label: 'Settings' }
 ];
-
-function TopBar() {
-  return (
-    <AppBar
-      position="fixed"
-      sx={{
-        width: { md: `calc(100% - ${drawerWidth}px)` },
-        ml: { md: `${drawerWidth}px` },
-        background: "#fff",
-        color: "#232a37",
-        boxShadow: "0 2px 8px rgba(35,42,55,0.04)"
-      }}
-      elevation={1}
-    >
-      <Toolbar sx={{ display: 'flex', justifyContent: 'space-between', minHeight: 68 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <IconButton color="inherit" sx={{ display: { md: 'none' } }}>
-            <MenuIcon />
-          </IconButton>
-          <Typography variant="h6" sx={{ fontWeight: 700, fontFamily: "'Inter', 'Roboto', sans-serif" }}>
-            Ingredients Dashboard
-          </Typography>
-        </Box>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <IconButton color="inherit">
-            <Badge badgeContent={3} color="error">
-              <NotificationsIcon />
-            </Badge>
-          </IconButton>
-          <Avatar sx={{ bgcolor: "#faa28a", width: 36, height: 36 }}>
-            <AccountCircle sx={{ color: "#fff" }} />
-          </Avatar>
-        </Box>
-      </Toolbar>
-    </AppBar>
-  );
-}
 
 const DashboardStat = ({ label, value, delay = 0 }) => (
   <motion.div
@@ -86,7 +50,7 @@ const DashboardStat = ({ label, value, delay = 0 }) => (
 
 const pageTitle = "Ingredients Dashboard";
 
-const IngredientsDashboard = () => {
+const IngredientsDashboard = (props) => {
   const navigate = useNavigate();
   const [stats, setStats] = useState({
     totalIngredients: '...',
@@ -151,7 +115,7 @@ const IngredientsDashboard = () => {
       <CssBaseline />
       {isMdUp && <Sidebar />}
       <Box sx={{ flexGrow: 1, ml: { md: `${drawerWidth}px` } }}>
-        <TopBar />
+        <TopBar title="Ingredients Dashboard" {...props} />
         <Box sx={{ mt: 10, p: { xs: 1, md: 3 } }}>
           {/* Stats Widgets with animation */}
           <Grid container spacing={2} sx={{ mb: 3 }}>
