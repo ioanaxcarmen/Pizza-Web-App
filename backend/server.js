@@ -175,7 +175,7 @@ app.get('/api/kpi/top-customers', async (req, res) => {
 });
 
 // Ingredients Consumed Over Time char// --- Thay đổi trong endpoint Top Ingredients ---
-app.get('/api/kpi/top-ingredients', async (req, res) => {
+/*app.get('/api/kpi/top-ingredients', async (req, res) => {
     let connection;
     const binds = {};
     let whereClause = 'WHERE 1=1';
@@ -328,7 +328,7 @@ app.get('/api/kpi/ingredients-consumed-over-time', async (req, res) => {
     } finally {
         if (connection) { try { await connection.close(); } catch (e) { console.error(e); } }
     }
-});
+});*/
 
 // Customer Share by Store chart
 app.get('/api/kpi/customer-share-by-store', async (req, res) => {

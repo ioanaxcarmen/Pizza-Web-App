@@ -195,8 +195,8 @@ const ChartPage = () => {
             default:
                 chartComponent = <div>KPI not found. Please go back.</div>;
                 pageTitle = "KPI Not Found";
+            }
         }
-
         return (
             <div style={styles.container}>
                 <div style={styles.header}>{pageTitle}</div>
@@ -214,7 +214,7 @@ const ChartPage = () => {
                 </div>
             </div>
         );
-    }}
+    }
 
     export default ChartPage;
 /*else if (window.location.pathname.startsWith("/store")) {
