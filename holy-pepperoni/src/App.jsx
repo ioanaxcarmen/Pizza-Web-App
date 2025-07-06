@@ -15,7 +15,7 @@ import ProductsDashboard from "./kpi-widgets/ProductsDashboard";
 import OrdersDashboard from "./kpi-widgets/OrdersDashboard";
 import CustomerDashboard from "./components/CustomerDashboard";
 import SegmentDetailsPage from './components/SegmentDetailsPage'; // Import the new page
-
+import StoreDashboards from "./kpi-widgets/storeDashboards";
 
 function App() {
   return (
@@ -32,6 +32,7 @@ function App() {
         />  
         <Route path="/store" element={<StoreMenupage />} />
         <Route path="/store/:kpiId" element={<ChartPage />} />
+        <Route path="/store/dashboard" element={<StoreDashboards />} />
         {/* This path now shows the menu of customer KPIs */}
         <Route path="/customer" element={<CustomerDashboard />} />
         {/* This new dynamic path shows the specific chart the user selects */}

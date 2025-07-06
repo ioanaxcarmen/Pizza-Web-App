@@ -41,7 +41,7 @@ const Dashboard = () => {
     // Define the items for each row
     const row1Items = [
         { title: "Product", path: "/product/dashboard", icon: <FastfoodIcon sx={{ fontSize: 40 }} /> },
-        { title: "Store", path: "/store", icon: <StorefrontIcon sx={{ fontSize: 40 }} /> },
+        { title: "Store", path: "/store/dashboard", icon: <StorefrontIcon sx={{ fontSize: 40 }} /> },
     ];
     const row2Items = [
         { title: "Customer", path: "/customer", icon: <PeopleIcon sx={{ fontSize: 40 }} /> },
