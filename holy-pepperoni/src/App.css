@@ -47,7 +47,7 @@
 
 @media (max-width: 700px) {
   .buttonGrid {
-    grid-template-columns: 1fr; /* Stack buttons on small screens */
+    grid-template-columns: 1fr; 
     max-width: 90vw;
   }
 }

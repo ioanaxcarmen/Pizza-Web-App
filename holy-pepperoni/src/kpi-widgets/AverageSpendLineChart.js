@@ -1,7 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { useNavigate } from 'react-router-dom';
+import {
+    LineChart,
+    Line,
+    XAxis,
+    YAxis,
+    CartesianGrid,
+    Tooltip,
+    Legend,
+    ResponsiveContainer
+} from 'recharts';
+import LoadingPizza from '../components/LoadingPizza';
+import { Button } from '@mui/material';
 
 const AverageSpendLineChart = () => {
     const [data, setData] = useState([]);
@@ -21,52 +32,92 @@ const AverageSpendLineChart = () => {
             });
     }, []);
 
+    // Utility to convert data to CSV and trigger download
+    const downloadCSV = (data) => {
+        if (!data.length) return;
+        const header = Object.keys(data[0]).join(',');
+        const rows = data.map(row => Object.values(row).join(','));
+        const csvContent = [header, ...rows].join('\n');
+        const blob = new Blob([csvContent], { type: 'text/csv' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'average_spend_over_time.csv';
+        a.click();
+        URL.revokeObjectURL(url);
+    };
+
+    // Custom Dot with hover effect and onClick drill-down
     const CustomDot = (props) => {
         const { cx, cy, payload } = props;
+        const [isHovered, setIsHovered] = useState(false);
         return (
             <circle
-                cx={cx}
-                cy={cy}
-                r={8}
-                fill="#8884d8"
-                stroke="#fff"
-                strokeWidth={2}
-                style={{ cursor: 'pointer' }}
+                cx={cx} cy={cy} r={isHovered ? 10 : 6} fill="#8884d8" stroke="#fff" strokeWidth={2}
+                style={{ cursor: 'pointer', transition: 'r 0.2s ease-in-out' }}
                 onClick={() => {
                     if (payload && payload.month) {
-                        // Only set the month filter and navigate
                         navigate(`/customer/top-10?month=${payload.month}`);
                     }
                 }}
+                onMouseEnter={() => setIsHovered(true)}
+                onMouseLeave={() => setIsHovered(false)}
             />
         );
     };
 
-    if (loading) {
-        return <div>Loading Average Spend Data...</div>;
-    }
-
     return (
-        <div style={{ width: '100%', height: 500 }}>
-            <ResponsiveContainer>
-                <LineChart
-                    data={data}
-                    margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+        <div
+            style={{
+                width: '100%',
+                minWidth: 1100,
+                position: 'relative',
+                padding: '20px',
+                overflowX: 'auto'
+            }}
+        >
+            <div style={{ marginBottom: '20px', display: 'flex', justifyContent: 'flex-end' }}>
+                <Button
+                    onClick={() => downloadCSV(data)}
+                    variant="contained"
+                    sx={{
+                        background: "#f7d9afff",
+                        color: "#000",
+                        borderRadius: "20px",
+                        fontWeight: "bold",
+                        textTransform: "none",
+                        px: 3,
+                        py: 1,
+                        boxShadow: 1,
+                        '&:hover': { background: "#ffe0b2" }
+                    }}
                 >
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="month" />
-                    <YAxis tickFormatter={(value) => `$${value}`} />
-                    <Tooltip formatter={(value) => `$${value.toFixed(2)}`} />
-                    <Legend />
-                    <Line
-                        type="monotone"
-                        dataKey="avgSpend"
-                        name="Average Spend"
-                        stroke="#8884d8"
-                        dot={<CustomDot />}
-                    />
-                </LineChart>
-            </ResponsiveContainer>
+                    Download Report
+                </Button>
+            </div>
+
+            {loading ? (
+                <LoadingPizza />
+            ) : (
+                <ResponsiveContainer width="100%" height={400}>
+                    <LineChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="month" />
+                        <YAxis tickFormatter={(value) => `$${value}`} />
+                        <Tooltip formatter={(value) => `$${value.toFixed(2)}`} />
+                        <Legend />
+                        <Line
+                            type="monotone"
+                            dataKey="avgSpend"
+                            name="Average Spend"
+                            stroke="#8884d8"
+                            strokeWidth={2}
+                            dot={<CustomDot />}
+                            activeDot={false}
+                        />
+                    </LineChart>
+                </ResponsiveContainer>
+            )}
         </div>
     );
 };

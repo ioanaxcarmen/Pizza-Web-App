@@ -12,13 +12,13 @@ import { useNavigate } from 'react-router-dom';
 const drawerWidth = 230;
 
 const navItems = [
-  { icon: <HomeIcon />, label: 'Main Menu', path: '' }, 
+  { icon: <HomeIcon />, label: 'Main Menu', path: '/dashboard' }, 
   { icon: <DashboardIcon />, label: 'Product', path: '/product/dashboard' },
   { icon: <AssignmentIcon />, label: 'Orders', path: '/orders/dashboard' }, // Thêm dòng này
   { icon: <StoreIcon />, label: 'Store', path: '/store' },
   { icon: <PeopleIcon />, label: 'Customer', path: '/customer' },
   { icon: <RestaurantMenuIcon />, label: 'Ingredients', path: '/ingredients/dashboard' },
-  { icon: <MapIcon />, label: 'Geographical Reports', path: '' }, 
+  { icon: <MapIcon />, label: 'Geographical Reports', path: '/geo-reports' }, 
 ];
 
 const Sidebar = () => {
@@ -32,8 +32,8 @@ const Sidebar = () => {
       sx={{ display: { xs: 'none', md: 'block' } }}
       open
     >
-      <Box sx={{ p: 2, mb: 2, textAlign: 'center', fontWeight: 700, fontSize: 24, letterSpacing: 2 }}>
-        🍕 HOLLY PEPPERONI 🍕
+      <Box sx={{ p: 2, mb: 2, textAlign: 'center', fontWeight: 700, fontSize: 20, letterSpacing: 2 }}>
+        🍕 HOLY PEPPERONI 🍕
       </Box>
       <Divider sx={{ borderColor: "rgba(255,255,255,0.08)" }} />
       <List>

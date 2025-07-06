@@ -8,11 +8,13 @@ import ChartPage from "./components/ChartPage";
 import ProductMenuPage from "./components/ProductMenuPage"; 
 import GeographicalReportMenuPage from "./components/GeographicalReportMenuPage";
 import StoreMenupage from "./components/StoreMenupage";
-//import CustomerHistoryPage from "./components/CustomerHistoryPage";
+import CustomerHistoryPage from "./components/CustomerHistoryPage";
 import ProductDistributionPieCharts from "./kpi-widgets/ProductDistributionPieCharts";
 import IngredientsDashboard from "./kpi-widgets/IngredientsDashboard";
 import ProductsDashboard from "./kpi-widgets/ProductsDashboard";
 import OrdersDashboard from "./kpi-widgets/OrdersDashboard";
+import CustomerDashboard from "./components/CustomerDashboard";
+import SegmentDetailsPage from './components/SegmentDetailsPage'; // Import the new page
 
 
 function App() {
@@ -31,7 +33,7 @@ function App() {
         <Route path="/store" element={<StoreMenupage />} />
         <Route path="/store/:kpiId" element={<ChartPage />} />
         {/* This path now shows the menu of customer KPIs */}
-        <Route path="/customer" element={<CustomerMenuPage />} />
+        <Route path="/customer" element={<CustomerDashboard />} />
         {/* This new dynamic path shows the specific chart the user selects */}
         <Route path="/customer/:kpiId" element={<ChartPage />} />
         <Route path="/ingredients" element={<IngredientMenuPage />} />
@@ -49,6 +51,8 @@ function App() {
         <Route path="/geo-reports" element={<GeographicalReportMenuPage />} />
         <Route path="/geo/:kpiId" element={<ChartPage />} /> {/* Dynamic KPI charts for geographical reports */}
         {/* --- END NEW GEOGRAPHICAL ROUTES --- */}
+        <Route path="/customer/order-history/:customerId" element={<CustomerHistoryPage />} />
+        <Route path="/customer/segment-details" element={<SegmentDetailsPage />} />
       </Routes>
     </Router>
   );

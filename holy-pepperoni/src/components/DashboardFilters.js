@@ -16,29 +16,29 @@ const DashboardFilters = ({ filters, setFilters, storeOptions = [] }) => {
         setFilters(prevFilters => {
             let newFilters = { ...prevFilters, [name]: value };
             // Month
-            if (name === 'month') {
-                if (value === 'all' || !prevFilters.year || prevFilters.year === 'all') {
-                    newFilters.month = value;
-                } else {
-                    newFilters.month = `${prevFilters.year}-${value.padStart(2, '0')}`;
-                }
-            }
-            // Quarter
-            if (name === 'quarter') {
-                if (value === 'all' || !prevFilters.year || prevFilters.year === 'all') {
-                    newFilters.quarter = value;
-                } else {
-                    newFilters.quarter = `${prevFilters.year}-"Q"${value}`;
-                }
-            }
-            // Week
-            if (name === 'week') {
-                if (value === 'all' || !prevFilters.year || prevFilters.year === 'all') {
-                    newFilters.week = value;
-                } else {
-                    newFilters.week = `${prevFilters.year}-${value.padStart(2, '0')}`;
-                }
-            }
+            // if (name === 'month') {
+            //     if (value === 'all' || !prevFilters.year || prevFilters.year === 'all') {
+            //         newFilters.month = value;
+            //     } else {
+            //         newFilters.month = `${prevFilters.year}-${value.padStart(2, '0')}`;
+            //     }
+            // }
+            // // Quarter
+            // if (name === 'quarter') {
+            //     if (value === 'all' || !prevFilters.year || prevFilters.year === 'all') {
+            //         newFilters.quarter = value;
+            //     } else {
+            //         newFilters.quarter = `${prevFilters.year}-"Q"${value}`;
+            //     }
+            // }
+            // // Week
+            // if (name === 'week') {
+            //     if (value === 'all' || !prevFilters.year || prevFilters.year === 'all') {
+            //         newFilters.week = value;
+            //     } else {
+            //         newFilters.week = `${prevFilters.year}-${value.padStart(2, '0')}`;
+            //     }
+            // }
             // Nếu đổi year thì reset các filter phụ
             if (name === 'year') {
                 newFilters.month = 'all';

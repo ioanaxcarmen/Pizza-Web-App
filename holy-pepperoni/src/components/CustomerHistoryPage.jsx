@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useSearchParams } from 'react-router-dom';
 import axios from 'axios';
+import { Button } from '@mui/material';
 
 // Component-level styles for the table for better organization
 const tableStyles = {
@@ -51,9 +52,26 @@ const CustomerHistoryPage = () => {
 
     return (
         <div style={{ padding: '20px' }}>
-            <Link to="/customer/top-10" style={{ marginBottom: '20px', display: 'inline-block', color: '#faa28a', textDecoration: 'none' }}>
-                &larr; Back to Top 10 Customers
-            </Link>
+            <Button
+                component={Link}
+                to="/customer/top-10"
+                variant="contained"
+                sx={{
+                    background: "#faa28a",
+                    borderRadius: "32px",
+                    color: "#fff",
+                    fontWeight: "bold",
+                    textTransform: "none",
+                    px: 3,
+                    py: 1,
+                    mb: 3,
+                    fontSize: "1rem",
+                    boxShadow: 2,
+                    '&:hover': { background: "#fa7a1c" }
+                }}
+            >
+                Back to Top 10 Customers
+            </Button>
             <h2>Order History for Customer: <strong>{customerId}</strong></h2>
             
             <table style={tableStyles}>

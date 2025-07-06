@@ -15,6 +15,7 @@ import StorePerformanceRankingChart from '../kpi-widgets/StorePerformanceRanking
 import AverageOrderValuePerStoreChart from '../kpi-widgets/AverageOrderValuePerStoreChart';
 import StoreDistanceMap from '../kpi-widgets/StoreDistanceMap';
 import TopCustomervsStoreGeoChart from '../kpi-widgets/TopCustomervsStoreGeoChart';
+import ChurnRiskTable from '../kpi-widgets/ChurnRiskTable'; 
 
 
 // Placeholder for other KPIs
@@ -100,6 +101,10 @@ const ChartPage = () => {
             case 'avg-spend':
                 chartComponent = <AverageSpendLineChart />;
                 pageTitle = "Average Spend Over Time";
+                break;
+            case 'churn-risk': 
+                chartComponent = <ChurnRiskTable />;
+                pageTitle = "Customers at Risk of Churn";
                 break;
             default:
                 chartComponent = <div>KPI not found. Please go back.</div>;

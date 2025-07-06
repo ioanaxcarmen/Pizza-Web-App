@@ -10,8 +10,8 @@ const port = 3001; // The backend will run on this port
 const dbConfig = {
     user: "PIZZA",
     password: "MyPizza123", // The password you created for the PIZZA user
-    connectString: "localhost:1521/XE"
-    //connectString: "localhost:1521/XEPDB1" //use this if you are using the default Oracle XE database
+    //connectString: "localhost:1521/XE"
+    connectString: "localhost:1521/XEPDB1" //use this if you are using the default Oracle XE database
 };
 
 // A test API endpoint to see if the connection works
@@ -66,7 +66,7 @@ app.get('/api/sales-by-product', async (req, res) => {
     }
 });
 
-// --- Add new KPI endpoint here ---
+// Average Orders per Customer KPI
 app.get('/api/kpi/avg-orders-per-customer', async (req, res) => {
     let connection;
 
@@ -122,7 +122,6 @@ app.get('/api/kpi/top-customers', async (req, res) => {
     let whereClause = 'WHERE 1=1';
     const binds = {};
 
-    // This logic now correctly handles all filters coming from your component
     if (req.query.year && req.query.year !== 'all') {
         whereClause += ' AND EXTRACT(YEAR FROM o.ORDERDATE) = :year';
         binds.year = req.query.year;
@@ -132,7 +131,6 @@ app.get('/api/kpi/top-customers', async (req, res) => {
         binds.quarter = req.query.quarter;
     }
     if (req.query.month && req.query.month !== 'all') {
-        // This now correctly uses the simple month number (e.g., 5)
         whereClause += ' AND EXTRACT(MONTH FROM o.ORDERDATE) = :month';
         binds.month = req.query.month;
     }
@@ -140,7 +138,13 @@ app.get('/api/kpi/top-customers', async (req, res) => {
         whereClause += ' AND s.STATE_ABBR = :state';
         binds.state = req.query.state;
     }
-    // Add other filters like storeId if needed
+    if (
+        typeof req.query.storeId === 'string' &&
+        req.query.storeId.trim() !== ''
+    ) {
+        whereClause += ' AND o.STOREID = :storeId';
+        binds.storeId = req.query.storeId.trim();
+    }
 
     try {
         connection = await oracledb.getConnection(dbConfig);
@@ -156,6 +160,8 @@ app.get('/api/kpi/top-customers', async (req, res) => {
             ORDER BY LIFETIME_VALUE DESC
             FETCH FIRST 10 ROWS ONLY
         `;
+
+        console.log("Executing Top Customers Query:", query, binds);
 
         const result = await connection.execute(query, binds);
 
@@ -175,7 +181,7 @@ app.get('/api/kpi/top-customers', async (req, res) => {
 });
 
 // Ingredients Consumed Over Time char// --- Thay đổi trong endpoint Top Ingredients ---
-/*app.get('/api/kpi/top-ingredients', async (req, res) => {
+app.get('/api/kpi/top-ingredients', async (req, res) => {
     let connection;
     const binds = {};
     let whereClause = 'WHERE 1=1';
@@ -328,7 +334,7 @@ app.get('/api/kpi/ingredients-consumed-over-time', async (req, res) => {
     } finally {
         if (connection) { try { await connection.close(); } catch (e) { console.error(e); } }
     }
-});*/
+});
 
 // Customer Share by Store chart
 app.get('/api/kpi/customer-share-by-store', async (req, res) => {
@@ -410,87 +416,162 @@ app.get('/api/kpi/customer-share-by-store', async (req, res) => {
     }
 });
 
-// Order Frequency KPI: One-Time vs Repeat Buyers
+// Customer Order Frequency (Filterable by Segment, Date, etc.)
 app.get('/api/kpi/order-frequency', async (req, res) => {
     let connection;
     try {
         const binds = {};
+        let segmentCte = '';
+
+        if (req.query.segment && req.query.segment !== 'all') {
+            segmentCte = `
+                WITH SegmentCustomers AS (
+                    SELECT CUSTOMER_ID FROM V_CUSTOMER_SEGMENT WHERE SEGMENT = :segment
+                )
+            `;
+            binds.segment = req.query.segment;
+        }
+
         let whereClause = 'WHERE 1=1';
+        if (req.query.year && req.query.year !== 'all') { /* ... add filter ... */ }
+        // Add other filters as needed
 
-        // --- Standard Filter Logic ---
-        if (req.query.year && req.query.year !== 'all') {
-            whereClause += ' AND EXTRACT(YEAR FROM o.ORDERDATE) = :year';
-            binds.year = req.query.year;
-        }
-        if (req.query.quarter && req.query.quarter !== 'all') {
-            whereClause += ` AND TO_CHAR(o.ORDERDATE, 'Q') = :quarter`;
-            binds.quarter = req.query.quarter;
-        }
-        if (req.query.state && req.query.state !== 'all') {
-            whereClause += ' AND s.STATE_ABBR = :state';
-            binds.state = req.query.state;
-        }
-        if (req.query.month) {
-            whereClause += ' AND EXTRACT(MONTH FROM o.ORDERDATE) = :month';
-            binds.month = req.query.month;
-        }
-        if (req.query.storeId) {
-            whereClause += ' AND o.STOREID = :storeId';
-            binds.storeId = req.query.storeId;
-        }
-
-        // --- SQL Query using a WITH clause for clarity ---
-        // 1. First, we get a list of customers and their order counts within the filtered period.
-        // 2. Then, we classify them as 'One-Time' or 'Repeat' and count how many are in each group.
         const query = `
+            ${segmentCte}
             WITH CustomerOrderCounts AS (
-                SELECT
-                    o.CUSTOMERID,
-                    COUNT(o.ID) as ORDER_COUNT
+                SELECT o.CUSTOMERID, COUNT(o.ID) as ORDER_COUNT
                 FROM ORDERS o
-                JOIN STORES s ON o.STOREID = s.STOREID
+                ${segmentCte ? 'JOIN SegmentCustomers sc ON o.CUSTOMERID = sc.CUSTOMER_ID' : ''}
+                /* JOIN STORES s ON o.STOREID = s.STOREID if filtering by location */
                 ${whereClause}
                 GROUP BY o.CUSTOMERID
             )
             SELECT
-                CASE 
-                    WHEN ORDER_COUNT = 1 THEN 'One-Time Buyer' 
-                    ELSE 'Repeat Buyer' 
-                END as CUSTOMER_TYPE,
+                CASE WHEN ORDER_COUNT = 1 THEN 'One-Time Buyer' ELSE 'Repeat Buyer' END as CUSTOMER_TYPE,
                 COUNT(CUSTOMERID) as COUNT_OF_CUSTOMERS
             FROM CustomerOrderCounts
-            GROUP BY
-                CASE 
-                    WHEN ORDER_COUNT = 1 THEN 'One-Time Buyer' 
-                    ELSE 'Repeat Buyer' 
-                END
+            GROUP BY CASE WHEN ORDER_COUNT = 1 THEN 'One-Time Buyer' ELSE 'Repeat Buyer' END
         `;
 
         connection = await oracledb.getConnection(dbConfig);
-        const result = await connection.execute(query, binds);
+        const result = await connection.execute(query, binds, { outFormat: oracledb.OUT_FORMAT_OBJECT });
+        
+        const chartData = result.rows.map(row => ({ name: row.CUSTOMER_TYPE, value: row.COUNT_OF_CUSTOMERS }));
+        res.json(chartData);
 
-        // Format the data for a Recharts Pie Chart (requires 'name' and 'value' keys)
+    } catch (err) {
+        console.error("Error fetching order frequency:", err);
+        res.status(500).json({ error: 'Failed to fetch data.' });
+    } finally {
+        if (connection) { try { await connection.close(); } catch (e) { console.error(e); } }
+    }
+});
+
+// Customer Segmentation KPI
+app.get('/api/kpi/customer-segments', async (req, res) => {
+    let connection;
+    try {
+        const query = `
+            SELECT 
+                SEGMENT, 
+                COUNT(CUSTOMER_ID) as CUSTOMER_COUNT
+            FROM V_CUSTOMER_SEGMENT
+            GROUP BY SEGMENT
+            ORDER BY CUSTOMER_COUNT DESC
+        `;
+
+        connection = await oracledb.getConnection(dbConfig);
+        const result = await connection.execute(query, {}, { outFormat: oracledb.OUT_FORMAT_OBJECT });
+
+        // Format for Recharts Pie Chart
         const chartData = result.rows.map(row => ({
-            name: row[0],
-            value: row[1]
+            name: row.SEGMENT,
+            value: row.CUSTOMER_COUNT
         }));
 
         res.json(chartData);
 
     } catch (err) {
-        console.error("Error fetching order frequency:", err);
-        res.status(500).json({ error: 'Failed to fetch order frequency data.' });
+        console.error("Error fetching customer segments:", err);
+        res.status(500).json({ error: 'Failed to fetch data.' });
     } finally {
-        if (connection) {
-            try {
-                await connection.close();
-            } catch (e) {
-                console.error(e);
-            }
-        }
+        if (connection) { try { await connection.close(); } catch (e) { console.error(e); } }
     }
 });
 
+// Customer Segmentation Detailed View
+app.get('/api/segment-details', async (req, res) => {
+    let connection;
+    try {
+        const { segment } = req.query;
+        const page = parseInt(req.query.page, 10) || 1;
+        const limit = 15; // Show 15 customers per page
+        const offset = (page - 1) * limit;
+
+        if (!segment || segment === 'all') {
+            return res.status(400).json({ error: 'A valid segment is required.' });
+        }
+
+        const binds = { segment, offset, limit };
+
+        // Query to get the paginated list of customers in the segment
+        const dataQuery = `
+            SELECT
+                ltv.CUSTOMER_ID,
+                ltv.TOTAL_ORDERS,
+                ltv.LIFETIME_VALUE as TOTAL_REVENUE
+            FROM V_CUSTOMER_LIFETIME_VALUE ltv
+            JOIN V_CUSTOMER_SEGMENT seg ON ltv.CUSTOMER_ID = seg.CUSTOMER_ID
+            WHERE seg.SEGMENT = :segment
+            ORDER BY ltv.LIFETIME_VALUE DESC
+            OFFSET :offset ROWS FETCH NEXT :limit ROWS ONLY
+        `;
+
+        // Query to get the total count for pagination
+        const countQuery = `
+            SELECT COUNT(*) as TOTAL FROM V_CUSTOMER_SEGMENT WHERE SEGMENT = :segment
+        `;
+
+        connection = await oracledb.getConnection(dbConfig);
+        const dataResult = await connection.execute(dataQuery, binds, { outFormat: oracledb.OUT_FORMAT_OBJECT });
+        const countResult = await connection.execute(countQuery, { segment }, { outFormat: oracledb.OUT_FORMAT_OBJECT });
+
+        const totalRows = countResult.rows[0].TOTAL;
+
+        res.json({
+            data: dataResult.rows,
+            totalPages: Math.ceil(totalRows / limit)
+        });
+
+    } catch (err) {
+        console.error("Error fetching segment details:", err);
+        res.status(500).json({ error: 'Failed to fetch data.' });
+    } finally {
+        if (connection) { try { await connection.close(); } catch (e) { console.error(e); } }
+    }
+});
+
+// KPI Card: Total Unique Customers
+app.get('/api/kpi/total-customers', async (req, res) => {
+    let connection;
+    try {
+        connection = await oracledb.getConnection(dbConfig);
+        const result = await connection.execute(`SELECT COUNT(DISTINCT ID) as TOTAL FROM CUSTOMERS`);
+        res.json(result.rows[0]);
+    } catch (err) { /* ... error handling ... */ } 
+    finally { if (connection) { /* ... close connection ... */ } }
+});
+
+// KPI Card: Average Order Value
+app.get('/api/kpi/avg-order-value', async (req, res) => {
+    let connection;
+    try {
+        connection = await oracledb.getConnection(dbConfig);
+        const result = await connection.execute(`SELECT ROUND(AVG(TOTAL), 2) as AVG_VALUE FROM ORDERS`);
+        res.json(result.rows[0]);
+    } catch (err) { /* ... error handling ... */ }
+    finally { if (connection) { /* ... close connection ... */ } }
+});
 
 // Average Spend Monthly KPI
 app.get('/api/kpi/avg-spend-monthly', async (req, res) => {
@@ -499,20 +580,21 @@ app.get('/api/kpi/avg-spend-monthly', async (req, res) => {
         const binds = {};
         let whereClause = 'WHERE 1=1';
 
-        // --- Standard Filter Logic ---
+        // --- Filter Logic for the View's Text Columns ---
         if (req.query.year && req.query.year !== 'all') {
             whereClause += ' AND v.YEAR = :year';
             binds.year = req.query.year;
         }
-        if (req.query.quarter && req.query.quarter !== 'all') {
-            whereClause += ` AND v.QUARTER = 'Q' || :quarter`;
-            binds.quarter = req.query.quarter;
+        if (req.query.quarter && req.query.quarter !== 'all' && req.query.year && req.query.year !== 'all') {
+            const quarterString = `${req.query.year}-Q${req.query.quarter}`;
+            whereClause += ` AND v.QUARTER = :quarterString`;
+            binds.quarterString = quarterString;
         }
 
         const query = `
             SELECT 
                 v.MONTH,
-                ROUND(AVG(v.TOTAL_REVENUE), 2) as AVG_SPEND
+                ROUND(AVG(v.AVG_SPEND_PER_ORDER), 2) as AVG_SPEND
             FROM V_AVG_SPEND_CUSTOMER_TIME v
             ${whereClause}
             GROUP BY v.MONTH
@@ -522,7 +604,6 @@ app.get('/api/kpi/avg-spend-monthly', async (req, res) => {
         connection = await oracledb.getConnection(dbConfig);
         const result = await connection.execute(query, binds);
 
-        // Format data for Recharts Line Chart
         const chartData = result.rows.map(row => ({
             month: row[0],
             avgSpend: row[1]
@@ -583,7 +664,13 @@ app.get('/api/customer-history/:customerId', async (req, res) => {
             ORDER BY o.ORDERDATE DESC
         `;
 
-        console.log("Executing Customer History Query:", query, binds); // For debugging
+        // DEBUGGING 
+        console.log("-----------------------------------------");
+        console.log("EXECUTING CUSTOMER HISTORY QUERY:");
+        console.log(query);
+        console.log("WITH BIND VARIABLES:");
+        console.log(binds);
+        console.log("-----------------------------------------");
 
         connection = await oracledb.getConnection(dbConfig);
         const result = await connection.execute(query, binds, { outFormat: oracledb.OUT_FORMAT_OBJECT });
@@ -699,7 +786,45 @@ app.get('/api/kpi/top-products', async (req, res) => {
         if (connection) { try { await connection.close(); } catch (e) { console.error(e); } }
     }
 });
-//Weitere SQL queries hier
+
+// Churn Detection KPI using a pre-built Oracle View
+app.get('/api/kpi/churn-risk', async (req, res) => {
+    let connection;
+    try {
+        const page = parseInt(req.query.page, 10) || 1;
+        const limit = parseInt(req.query.limit, 10) || 10; // Show 10 rows per page
+        const offset = (page - 1) * limit;
+
+        const dataQuery = `
+            SELECT CUSTOMER_ID, LAST_ORDER_DATE 
+            FROM V_CUSTOMER_CHURN 
+            ORDER BY LAST_ORDER_DATE ASC
+            OFFSET :offset ROWS FETCH NEXT :limit ROWS ONLY
+        `;
+        
+        const countQuery = `SELECT COUNT(*) as TOTAL FROM V_CUSTOMER_CHURN`;
+
+        connection = await oracledb.getConnection(dbConfig);
+        
+        // Run both queries
+        const dataResult = await connection.execute(dataQuery, { offset, limit }, { outFormat: oracledb.OUT_FORMAT_OBJECT });
+        const countResult = await connection.execute(countQuery, {}, { outFormat: oracledb.OUT_FORMAT_OBJECT });
+
+        const totalRows = countResult.rows[0].TOTAL;
+
+        // Send back both the data for the current page and the total number of pages
+        res.json({
+            data: dataResult.rows,
+            totalPages: Math.ceil(totalRows / limit)
+        });
+
+    } catch (err) {
+        console.error("Error fetching churn risk customers:", err);
+        res.status(500).json({ error: 'Failed to fetch data.' });
+    } finally {
+        if (connection) { try { await connection.close(); } catch (e) { console.error(e); } }
+    }
+});
 
 //origianl localhost
 // app.listen(port, () => {
@@ -718,7 +843,6 @@ app.get('/api/kpi/store-performance-ranking', async (req, res) => {
         binds.year = Number(year);
     }
     if (quarter && quarter !== 'all') {
-        // Assuming quarter is '1', '2', '3', '4' from frontend
         whereClause += ' AND TO_CHAR(o.ORDERDATE, \'Q\') = :quarter';
         binds.quarter = quarter;
     }
@@ -877,11 +1001,6 @@ app.get('/api/kpi/avg-order-value-by-store', async (req, res) => {
             try { await connection.close(); } catch (e) { console.error(e); }
         }
     }
-});
-
-// Start the server on the specified port local IP address
-app.listen(port, '0.0.0.0', () => {
-    console.log(`Backend server running at http://localhost:${port}`);
 });
 
 // Product Monthly Sales Since Launch
@@ -1121,4 +1240,9 @@ app.get('/api/kpi/product-revenue-by-size', async (req, res) => {
   } finally {
     if (connection) try { await connection.close(); } catch (e) {}
   }
+});
+
+// Start the server on the specified port local IP address
+app.listen(port, '0.0.0.0', () => {
+    console.log(`Backend server running at http://localhost:${port}`);
 });
