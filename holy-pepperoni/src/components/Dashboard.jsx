@@ -85,11 +85,11 @@ const Dashboard = () => {
         Good Day, Admin!
       </div>
       <div style={styles.buttonGrid}>
-        <button style={styles.button} onClick={() => navigate("/product")}>Product</button>
+        <button style={styles.button} onClick={() => navigate("/product/dashboard")}>Product</button>
         <button style={styles.button} onClick={() => navigate("/store")}>Store</button>
         <button style={styles.button} onClick={() => navigate("/customer")}>Customer</button>
-        <button style={styles.button} onClick={() => navigate("/ingredients")}>Ingredients</button>
-
+        <button style={styles.button} onClick={() => navigate("/ingredients/dashboard")}>Ingredients</button>
+        <button style={styles.button} onClick={() => navigate("/orders/dashboard")}>Orders</button>
       </div>
       <div style={styles.button5Wrapper}>
         <button style={styles.button} onClick={() => navigate("/geo-reports")}>Geographical Reports</button>

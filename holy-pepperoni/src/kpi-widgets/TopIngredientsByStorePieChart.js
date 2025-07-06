@@ -35,7 +35,7 @@ const TopIngredientsByStorePieChart = ({ filters = {} }) => {
             }))));
     }, []);
 
-    // Fetch pie chart data for selected stores
+    // Fetch pie chart data for selected stores, truyền filters từ props
     useEffect(() => {
         if (!selectedStores.length) {
             setPieDataByStore({});
@@ -43,7 +43,7 @@ const TopIngredientsByStorePieChart = ({ filters = {} }) => {
         }
         setPieLoading(true);
         const params = new URLSearchParams();
-        Object.entries(filters).forEach(([key, value]) => {
+        Object.entries(filters || {}).forEach(([key, value]) => {
             if (value && value !== 'all') params.append(key, value);
         });
         selectedStores.forEach(store => params.append('storeId', store.value));

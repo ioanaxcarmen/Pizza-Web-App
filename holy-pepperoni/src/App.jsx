@@ -15,6 +15,7 @@ import CustomerHistoryPage from "./components/CustomerHistoryPage";
 import ProductDistributionPieCharts from "./kpi-widgets/ProductDistributionPieCharts";
 import IngredientsDashboard from "./kpi-widgets/IngredientsDashboard";
 import ProductsDashboard from "./kpi-widgets/ProductsDashboard";
+import OrdersDashboard from "./kpi-widgets/OrdersDashboard";
 
 
 function App() {
@@ -59,6 +60,7 @@ function App() {
         <Route path="/ingredients/dashboard" element={<IngredientsDashboard />} />
 
         <Route path="/product/dashboard" element={<ProductsDashboard />} />
+        <Route path="/orders/dashboard" element={<OrdersDashboard />} />
          {/* --- NEW GEOGRAPHICAL ROUTES --- */}
         <Route path="/geo-reports" element={<GeographicalReportMenuPage />} />
         <Route path="/geo/:kpiId" element={<ChartPage />} /> {/* Dynamic KPI charts for geographical reports */}

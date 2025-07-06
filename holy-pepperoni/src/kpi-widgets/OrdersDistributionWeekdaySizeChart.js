@@ -13,7 +13,7 @@ const OrdersDistributionWeekdaySizeChart = () => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        axios.get(`${process.env.REACT_APP_API_URL}/api/kpi/orders-distribution-weekday`)
+        axios.get(`${process.env.REACT_APP_API_URL}/api/kpi/orders-distribution-weekday?groupBy=size`)
             .then(res => {
                 // Pivot data: mỗi weekday là 1 object, mỗi size là 1 key
                 const raw = res.data;

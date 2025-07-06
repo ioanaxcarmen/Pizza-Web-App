@@ -879,7 +879,6 @@ app.get('/api/kpi/avg-order-value-by-store', async (req, res) => {
     }
 });
 
-
 // Start the server on the specified port local IP address
 app.listen(port, '0.0.0.0', () => {
     console.log(`Backend server running at http://localhost:${port}`);
@@ -1057,29 +1056,46 @@ app.get('/api/kpi/orders-distribution-weekday', async (req, res) => {
     let connection;
     try {
         connection = await oracledb.getConnection(dbConfig);
-        const query = `
-            SELECT
-                weekday,
-                weekday_name,
-                category,
-                size,
-                SUM(total_orders) AS total_orders
-            FROM mv_orders_distribution_weekday_category_size_en
-            GROUP BY weekday, weekday_name, category
-            ORDER BY weekday, category
-        `;
+        const groupBy = req.query.groupBy === 'size' ? 'size' : 'category';
+
+        let query, field;
+        if (groupBy === 'size') {
+            query = `
+                SELECT
+                    weekday,
+                    weekday_name,
+                    "size",
+                    SUM(total_orders) AS total_orders
+                FROM mv_orders_distribution_weekday_category_size_en
+                GROUP BY weekday, weekday_name, "size"
+                ORDER BY weekday, "size"
+            `;
+            field = 'size';
+        } else {
+            query = `
+                SELECT
+                    weekday,
+                    weekday_name,
+                    category,
+                    SUM(total_orders) AS total_orders
+                FROM mv_orders_distribution_weekday_category_size_en
+                GROUP BY weekday, weekday_name, category
+                ORDER BY weekday, category
+            `;
+            field = 'category';
+        }
+
         const result = await connection.execute(query);
-        // Format: [{ weekday, weekday_name, category, total_orders }]
         const data = result.rows.map(row => ({
             weekday: row[0],
             weekday_name: row[1].trim(),
-            category: row[2],
+            [field]: row[2],
             total_orders: Number(row[3])
         }));
         res.json(data);
     } catch (err) {
         console.error("Error fetching orders distribution by weekday:", err);
-        res.status(500).json({ error: 'Failed to fetch data.' });
+        res.status(500).json({ error: 'Failed to fetch data.', details: err.message });
     } finally {
         if (connection) { try { await connection.close(); } catch (e) {} }
     }

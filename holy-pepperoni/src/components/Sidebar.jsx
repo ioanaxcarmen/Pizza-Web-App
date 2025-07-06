@@ -6,6 +6,7 @@ import PeopleIcon from '@mui/icons-material/People';
 import RestaurantMenuIcon from '@mui/icons-material/RestaurantMenu';
 import HomeIcon from '@mui/icons-material/Home';
 import MapIcon from '@mui/icons-material/Map';
+import AssignmentIcon from '@mui/icons-material/Assignment'; // Thêm icon cho Orders
 import { useNavigate } from 'react-router-dom';
 
 const drawerWidth = 230;
@@ -13,6 +14,7 @@ const drawerWidth = 230;
 const navItems = [
   { icon: <HomeIcon />, label: 'Main Menu', path: '' }, 
   { icon: <DashboardIcon />, label: 'Product', path: '/product/dashboard' },
+  { icon: <AssignmentIcon />, label: 'Orders', path: '/orders/dashboard' }, // Thêm dòng này
   { icon: <StoreIcon />, label: 'Store', path: '/store' },
   { icon: <PeopleIcon />, label: 'Customer', path: '/customer' },
   { icon: <RestaurantMenuIcon />, label: 'Ingredients', path: '/ingredients/dashboard' },

@@ -9,9 +9,7 @@ import ProductRevenuePieBySize from './ProductRevenuePieBySize';
 import TopSellingProductsChart from './TopSellingProductsChart';
 import Sidebar from '../components/Sidebar';
 import TopBar from '../components/TopBar';
-import CookingChef from '../components/CookingChef';
-import Lottie from "lottie-react";
-import chefAnimation from "../components/chef.json";
+import PizzaLottie from '../components/PizzaLottie';
 
 const drawerWidth = 230;
 
@@ -44,17 +42,17 @@ const ProductsDashboard = (props) => {
     };
   }, []);
 
-  // Widget Orders Sold với Chef trắng và to hơn
+  // Widget Orders Sold với PizzaLottie
   const OrdersSoldWidget = () => (
     <Paper
       elevation={2}
       sx={{
         p: 3,
         borderRadius: 5,
-        bgcolor: "#fff", // nền trắng hoàn toàn
+        bgcolor: "#fff7f0",
         boxShadow: "0 2px 12px rgba(250, 162, 138, 0.12)",
         fontFamily: "'Inter', 'Roboto', sans-serif",
-        minWidth: 340,
+        width: '100%', // Thay vì minWidth
         display: 'flex',
         alignItems: 'center',
         gap: 3,
@@ -63,7 +61,7 @@ const ProductsDashboard = (props) => {
     >
       <Box sx={{ flex: 1 }}>
         <Typography variant="subtitle2" sx={{ color: "#fa7a1c", fontWeight: 700 }}>
-          🎉 You're doing amazing!
+          🎉 Amazing milestone!
         </Typography>
         <Typography
           variant="h4"
@@ -80,15 +78,8 @@ const ProductsDashboard = (props) => {
           Pizzas Sold!
         </Typography>
       </Box>
-      <Box sx={{ width: 300, height: 290 }}>
-        <Lottie
-          animationData={chefAnimation}
-          loop={true}
-          style={{
-            width: "100%",
-            height: "100%"
-          }}
-        />
+      <Box sx={{ width: 150, height: 150 }}>
+        <PizzaLottie style={{ width: "100%", height: "100%" }} />
       </Box>
     </Paper>
   );
@@ -97,107 +88,105 @@ const ProductsDashboard = (props) => {
     <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: "#f5f7fb", fontFamily: "'Inter', 'Roboto', sans-serif" }}>
       <CssBaseline />
       {isMdUp && <Sidebar />}
-      <Box sx={{ flexGrow: 1, ml: { md: `${drawerWidth}px` } }}>
+      <Box sx={{ flexGrow: 1, ml: { md: `${drawerWidth}px` }, display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
         <TopBar title="Products Dashboard" {...props} />
-
-        {/* Widget tổng số orders và animation chef trắng to */}
-        <Box
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'flex-start',
-            mt: 10,
-            mb: 3,
-            px: { xs: 1, md: 3 }
-          }}
-        >
-          <OrdersSoldWidget />
-        </Box>
-
-        <Box sx={{ p: { xs: 0, md: 0 } }}>
-          {/* Product Cohort Sales Line Chart */}
-          <motion.div
-            initial={{ opacity: 0, y: 24 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.5 }}
-            transition={{ duration: 0.8, delay: 0.1 }}
+        <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', p: { xs: 1, md: 3 } }}>
+          {/* Widget tổng số orders và animation pizza */}
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'flex-start',
+              mt: 5,
+              mb: 3,
+              width: '100%' // Thêm dòng này
+            }}
           >
-            <Paper elevation={3} sx={{
-              borderRadius: 5,
-              p: 3,
-              mb: 4,
-              boxShadow: "0 4px 16px rgba(250, 162, 138, 0.08)",
-              fontFamily: "'Inter', 'Roboto', sans-serif"
-            }}>
-              <Typography variant="h6" fontWeight="bold" sx={{ mb: 2, fontFamily: "'Inter', 'Roboto', sans-serif" }}>
-                Product Cohort Sales Over Time
-              </Typography>
-              <ProductCohortSalesLineChart />
-            </Paper>
-          </motion.div>
+            <OrdersSoldWidget />
+          </Box>
 
-          {/* Product Distribution Pie Charts */}
-          <motion.div
-            initial={{ opacity: 0, y: 24 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.5 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-          >
-            <Paper elevation={3} sx={{
-              borderRadius: 5,
-              p: 3,
-              mb: 4,
-              boxShadow: "0 4px 16px rgba(250, 162, 138, 0.08)",
-              fontFamily: "'Inter', 'Roboto', sans-serif"
-            }}>
-              <Typography variant="h6" fontWeight="bold" sx={{ mb: 2, fontFamily: "'Inter', 'Roboto', sans-serif" }}>
-                Product Revenue Distribution by Category
-              </Typography>
-              <ProductDistributionPieCharts />
-            </Paper>
-          </motion.div>
+          {/* Các widget biểu đồ */}
+          <Box sx={{ width: '100%' }}>
+            <motion.div
+              initial={{ opacity: 0, y: 24 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.5 }}
+              transition={{ duration: 0.8, delay: 0.1 }}
+            >
+              <Paper elevation={3} sx={{
+                borderRadius: 5,
+                p: 3,
+                mb: 4,
+                boxShadow: "0 4px 16px rgba(250, 162, 138, 0.08)",
+                fontFamily: "'Inter', 'Roboto', sans-serif"
+              }}>
+                <Typography variant="h6" fontWeight="bold" sx={{ mb: 2, fontFamily: "'Inter', 'Roboto', sans-serif" }}>
+                  Product Cohort Sales Over Time
+                </Typography>
+                <ProductCohortSalesLineChart />
+              </Paper>
+            </motion.div>
 
-          {/* Product Revenue Pie By Size */}
-          <motion.div
-            initial={{ opacity: 0, y: 24 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.5 }}
-            transition={{ duration: 0.8, delay: 0.3 }}
-          >
-            <Paper elevation={3} sx={{
-              borderRadius: 5,
-              p: 3,
-              mb: 4,
-              boxShadow: "0 4px 16px rgba(250, 162, 138, 0.08)",
-              fontFamily: "'Inter', 'Roboto', sans-serif"
-            }}>
-              <Typography variant="h6" fontWeight="bold" sx={{ mb: 2, fontFamily: "'Inter', 'Roboto', sans-serif" }}>
-                Product Revenue Distribution by Size
-              </Typography>
-              <ProductRevenuePieBySize />
-            </Paper>
-          </motion.div>
+            <motion.div
+              initial={{ opacity: 0, y: 24 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.5 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+            >
+              <Paper elevation={3} sx={{
+                borderRadius: 5,
+                p: 3,
+                mb: 4,
+                boxShadow: "0 4px 16px rgba(250, 162, 138, 0.08)",
+                fontFamily: "'Inter', 'Roboto', sans-serif"
+              }}>
+                <Typography variant="h6" fontWeight="bold" sx={{ mb: 2, fontFamily: "'Inter', 'Roboto', sans-serif" }}>
+                  Product Revenue Distribution by Category
+                </Typography>
+                <ProductDistributionPieCharts />
+              </Paper>
+            </motion.div>
 
-          {/* Top Selling Products Chart */}
-          <motion.div
-            initial={{ opacity: 0, y: 24 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.5 }}
-            transition={{ duration: 0.8, delay: 0.4 }}
-          >
-            <Paper elevation={3} sx={{
-              borderRadius: 5,
-              p: 3,
-              mb: 4,
-              boxShadow: "0 4px 16px rgba(250, 162, 138, 0.08)",
-              fontFamily: "'Inter', 'Roboto', sans-serif"
-            }}>
-              <Typography variant="h6" fontWeight="bold" sx={{ mb: 2, fontFamily: "'Inter', 'Roboto', sans-serif" }}>
-                Top Selling Products
-              </Typography>
-              <TopSellingProductsChart />
-            </Paper>
-          </motion.div>
+            <motion.div
+              initial={{ opacity: 0, y: 24 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.5 }}
+              transition={{ duration: 0.8, delay: 0.3 }}
+            >
+              <Paper elevation={3} sx={{
+                borderRadius: 5,
+                p: 3,
+                mb: 4,
+                boxShadow: "0 4px 16px rgba(250, 162, 138, 0.08)",
+                fontFamily: "'Inter', 'Roboto', sans-serif"
+              }}>
+                <Typography variant="h6" fontWeight="bold" sx={{ mb: 2, fontFamily: "'Inter', 'Roboto', sans-serif" }}>
+                  Product Revenue Distribution by Size
+                </Typography>
+                <ProductRevenuePieBySize />
+              </Paper>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 24 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.5 }}
+              transition={{ duration: 0.8, delay: 0.4 }}
+            >
+              <Paper elevation={3} sx={{
+                borderRadius: 5,
+                p: 3,
+                mb: 4,
+                boxShadow: "0 4px 16px rgba(250, 162, 138, 0.08)",
+                fontFamily: "'Inter', 'Roboto', sans-serif"
+              }}>
+                <Typography variant="h6" fontWeight="bold" sx={{ mb: 2, fontFamily: "'Inter', 'Roboto', sans-serif" }}>
+                  Top Selling Products
+                </Typography>
+                <TopSellingProductsChart />
+              </Paper>
+            </motion.div>
+          </Box>
         </Box>
       </Box>
     </Box>
