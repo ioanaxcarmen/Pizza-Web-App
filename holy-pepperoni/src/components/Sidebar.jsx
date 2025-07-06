@@ -1,5 +1,5 @@
 import React from 'react';
-import { Drawer, Box, Divider, List, ListItem, ListItemIcon, ListItemText } from '@mui/material';
+import { Drawer, Box, Divider, List, ListItem, ListItemButton, ListItemIcon, ListItemText } from '@mui/material';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import StoreIcon from '@mui/icons-material/Store';
 import PeopleIcon from '@mui/icons-material/People';
@@ -38,18 +38,18 @@ const Sidebar = () => {
       <Divider sx={{ borderColor: "rgba(255,255,255,0.08)" }} />
       <List>
         {navItems.map((item, idx) => (
-          <ListItem
-            button
-            key={item.label}
-            sx={{
-              '&:hover': { bgcolor: 'rgba(255,255,255,0.08)' },
-              transition: 'background 0.2s'
-            }}
-            onClick={() => item.path && navigate(item.path)}
-            disabled={!item.path}
-          >
-            <ListItemIcon sx={{ color: "#fff" }}>{item.icon}</ListItemIcon>
-            <ListItemText primary={item.label} />
+          <ListItem disablePadding key={item.label}>
+            <ListItemButton
+              onClick={() => item.path && navigate(item.path)}
+              disabled={!item.path}
+              sx={{
+                '&:hover': { bgcolor: 'rgba(255,255,255,0.08)' },
+                transition: 'background 0.2s'
+              }}
+            >
+              <ListItemIcon sx={{ color: "#fff" }}>{item.icon}</ListItemIcon>
+              <ListItemText primary={item.label} />
+            </ListItemButton>
           </ListItem>
         ))}
       </List>

@@ -199,7 +199,7 @@ const IngredientsDashboard = (props) => {
                 fontFamily: "'Inter', 'Roboto', sans-serif",
                 '&:hover': { background: "#fa7a1c" }
               }}
-              onClick={() => navigate("/ingredients")}
+              onClick={() => navigate("/dashboard")}
             >
               Back
             </Button>

@@ -35,6 +35,13 @@ const TopIngredientsByStorePieChart = ({ filters = {} }) => {
             }))));
     }, []);
 
+    // Auto-select the first store when storeOptions are loaded and nothing is selected
+    useEffect(() => {
+        if (storeOptions.length > 0 && selectedStores.length === 0) {
+            setSelectedStores([storeOptions[0]]);
+        }
+    }, [storeOptions, selectedStores.length]);
+
     // Fetch pie chart data for selected stores, truyền filters từ props
     useEffect(() => {
         if (!selectedStores.length) {
@@ -89,7 +96,7 @@ const TopIngredientsByStorePieChart = ({ filters = {} }) => {
                                             label={({ name, percent, ingredient }) => `${ingredient || name}: ${percent}%`}
                                         >
                                             {pieData.map((entry, idx) => (
-                                                <Cell key={idx} fill={entry.ingredient === 'Others'
+                                                <Cell key={entry.ingredient || idx} fill={entry.ingredient === 'Others'
                                                     ? '#CCCCCC'
                                                     : COLORS[idx % COLORS.length]} />
                                             ))}
