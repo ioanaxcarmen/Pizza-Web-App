@@ -19,10 +19,10 @@ const TopStoresByProductsSoldChart = () => {
     const [selectedState, setSelectedState] = useState('all');
 
     // Filter options (adjust years/states based on your actual data)
-    const years = ['all', '2023', '2024', '2025'];
+    const years = ['all', '2020', '2021', '2022'];
     const quarters = ['all', '1', '2', '3', '4'];
     const months = ['all', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'];
-    const states = ['all', 'CA', 'NY', 'TX', 'UT', 'NV', 'AZ']; // Example states
+    const states = ['all', 'CA', 'UT', 'NV', 'AZ']; 
 
     useEffect(() => {
         const fetchChartData = async () => {

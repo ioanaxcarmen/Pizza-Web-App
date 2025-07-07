@@ -939,7 +939,7 @@ app.get('/api/kpi/avg-order-value-by-store', async (req, res) => {
     let whereClause = 'WHERE 1=1';
 
     // Extract filters from query parameters
-    const { year, quarter, month, state } = req.query;
+    const { year, quarter, month, state, storeId } = req.query;
 
     // Apply filters
     if (year && year !== 'all') {
@@ -957,6 +957,10 @@ app.get('/api/kpi/avg-order-value-by-store', async (req, res) => {
     if (state && state !== 'all') {
         whereClause += ' AND s.STATE_ABBR = :state';
         binds.state = state;
+    }
+    if (storeId && storeId !== 'all') {
+        whereClause += ' AND s.STOREID = :storeId';
+        binds.storeId = Number(storeId);
     }
 
     try {
@@ -1344,48 +1348,146 @@ app.get('/api/kpi/product-revenue-by-size', async (req, res) => {
 // Store summary endpoint
 app.get('/api/kpi/store-summary', async (req, res) => {
     let connection;
+    const binds = {};
+    let whereClause = 'WHERE 1=1'; // Start with a true condition
+
+    // Filters: year, quarter, month, state, storeId
+    const { year, quarter, month, state, storeId } = req.query;
+
+    // Apply filters to the query
+    if (year && year !== 'all') {
+        whereClause += ' AND YEAR = :year'; // Assuming V_STORE_PERFORMANCE_RANK has YEAR
+        binds.year = Number(year);
+    }
+    if (quarter && quarter !== 'all') {
+        whereClause += ' AND QUARTER = :quarter'; // Assuming V_STORE_PERFORMANCE_RANK has QUARTER
+        binds.quarter = quarter;
+    }
+    if (month && month !== 'all') {
+        whereClause += ' AND MONTH = :month'; // Assuming V_STORE_PERFORMANCE_RANK has MONTH
+        binds.month = Number(month);
+    }
+    if (state && state !== 'all') {
+        whereClause += ' AND STATE = :state'; // Assuming V_STORE_PERFORMANCE_RANK has STATE
+        binds.state = state;
+    }
+    if (storeId && storeId !== 'all') {
+        whereClause += ' AND STOREID = :storeId'; // Filter for specific store
+        binds.storeId = Number(storeId);
+    }
+
     try {
         connection = await oracledb.getConnection(dbConfig);
-        const binds = {
-            state: req.query.state && req.query.state !== 'all' ? req.query.state : 'all'
-        };
 
+        // Subquery to get ranked data and calculate max ranks for normalization
         const query = `
-            SELECT 
-                storeid,
-                city,
-                state,
-                (33 - revenue_rank)        AS revenue_point,
-                (33 - avg_value_rank)      AS avg_value_point,
-                (33 - order_count_rank)    AS order_count_point,
-                (33 - active_cust_rank)    AS active_cust_point,
-                (33 - customer_share_rank) AS customer_share_point
-            FROM v_store_performance_rank
-            WHERE (:state = 'all' OR state = :state)
-            ORDER BY revenue_point DESC
+            WITH RankedStoreData AS (
+                SELECT
+                    STOREID,
+                    CITY,
+                    STATE,
+                    TOTAL_ORDERS,
+                    TOTAL_REVENUE,
+                    AVG_ORDER_VALUE,
+                    ACTIVE_CUSTOMERS,
+                    CUSTOMER_SHARE_PCT,
+                    REVENUE_RANK,
+                    AVG_VALUE_RANK,
+                    ORDER_COUNT_RANK,
+                    ACTIVE_CUST_RANK,
+                    CUSTOMER_SHARE_RANK
+                FROM V_STORE_PERFORMANCE_RANK
+                ${whereClause} -- Apply filters here
+            ),
+            MaxRanks AS (
+                SELECT
+                    MAX(REVENUE_RANK) AS MAX_REVENUE_RANK,
+                    MAX(AVG_VALUE_RANK) AS MAX_AVG_VALUE_RANK,
+                    MAX(ORDER_COUNT_RANK) AS MAX_ORDER_COUNT_RANK,
+                    MAX(ACTIVE_CUST_RANK) AS MAX_ACTIVE_CUST_RANK,
+                    MAX(CUSTOMER_SHARE_RANK) AS MAX_CUSTOMER_SHARE_RANK
+                FROM RankedStoreData
+            )
+            SELECT
+                rsd.STOREID,
+                rsd.CITY,
+                rsd.STATE,
+                rsd.TOTAL_ORDERS,
+                rsd.TOTAL_REVENUE,
+                rsd.AVG_ORDER_VALUE,
+                rsd.ACTIVE_CUSTOMERS,
+                rsd.CUSTOMER_SHARE_PCT,
+                -- Calculate KPI points (0-100 scale), higher is better
+                -- (Max Rank - Current Rank + 1) / Max Rank * 100
+                CASE WHEN mr.MAX_REVENUE_RANK > 0 THEN ROUND(((mr.MAX_REVENUE_RANK - rsd.REVENUE_RANK + 1) / mr.MAX_REVENUE_RANK) * 100, 2) ELSE 0 END AS REVENUE_POINT,
+                CASE WHEN mr.MAX_AVG_VALUE_RANK > 0 THEN ROUND(((mr.MAX_AVG_VALUE_RANK - rsd.AVG_VALUE_RANK + 1) / mr.MAX_AVG_VALUE_RANK) * 100, 2) ELSE 0 END AS AVG_VALUE_POINT,
+                CASE WHEN mr.MAX_ORDER_COUNT_RANK > 0 THEN ROUND(((mr.MAX_ORDER_COUNT_RANK - rsd.ORDER_COUNT_RANK + 1) / mr.MAX_ORDER_COUNT_RANK) * 100, 2) ELSE 0 END AS ORDER_COUNT_POINT,
+                CASE WHEN mr.MAX_ACTIVE_CUST_RANK > 0 THEN ROUND(((mr.MAX_ACTIVE_CUST_RANK - rsd.ACTIVE_CUST_RANK + 1) / mr.MAX_ACTIVE_CUST_RANK) * 100, 2) ELSE 0 END AS ACTIVE_CUST_POINT,
+                CASE WHEN mr.MAX_CUSTOMER_SHARE_RANK > 0 THEN ROUND(((mr.MAX_CUSTOMER_SHARE_RANK - rsd.CUSTOMER_SHARE_RANK + 1) / mr.MAX_CUSTOMER_SHARE_RANK) * 100, 2) ELSE 0 END AS CUSTOMER_SHARE_POINT
+            FROM
+                RankedStoreData rsd
+            CROSS JOIN MaxRanks mr -- Cross join to get max ranks for normalization
+            ORDER BY rsd.STOREID
         `;
 
-        const result = await connection.execute(query, binds);
+        console.log("Executing Store Summary Query (Radar Chart):", query, binds);
+        const result = await connection.execute(query, binds, { outFormat: oracledb.OUT_FORMAT_OBJECT }); // Use OBJECT format for easier key access
+        console.log("Store Summary Query Result Rows (Radar Chart):", result.rows);
 
-        const data = result.rows.map(row => ({
-            storeid: row[0],
-            city: row[1],
-            state: row[2],
-            revenue_point: row[3],
-            avg_value_point: row[4],
-            order_count_point: row[5],
-            active_cust_point: row[6],
-            customer_share_point: row[7],
-        }));
+        res.json(result.rows); // Send the data as is
 
-        res.json(data);
     } catch (err) {
-        console.error("Error fetching store summary:", err);
-        res.status(500).json({ error: 'Failed to fetch store summary.' });
+        console.error("Error fetching store summary for radar chart:", err);
+        res.status(500).json({ error: 'Failed to fetch store summary data for radar chart.', details: err.message });
     } finally {
-        if (connection) { try { await connection.close(); } catch (e) { } }
+        if (connection) {
+            try { await connection.close(); } catch (e) { console.error(e); }
+        }
     }
 });
+/* let connection;
+try {
+    connection = await oracledb.getConnection(dbConfig);
+    const binds = {
+        state: req.query.state && req.query.state !== 'all' ? req.query.state : 'all'
+    };
+
+    const query = `
+        SELECT 
+            storeid,
+            city,
+            state,
+            (33 - revenue_rank)        AS revenue_point,
+            (33 - avg_value_rank)      AS avg_value_point,
+            (33 - order_count_rank)    AS order_count_point,
+            (33 - active_cust_rank)    AS active_cust_point,
+            (33 - customer_share_rank) AS customer_share_point
+        FROM v_store_performance_rank
+        WHERE (:state = 'all' OR state = :state)
+        ORDER BY revenue_point DESC
+    `;
+
+    const result = await connection.execute(query, binds);
+
+    const data = result.rows.map(row => ({
+        storeid: row[0],
+        city: row[1],
+        state: row[2],
+        revenue_point: row[3],
+        avg_value_point: row[4],
+        order_count_point: row[5],
+        active_cust_point: row[6],
+        customer_share_point: row[7],
+    })); */
+
+/*res.json(data);
+} catch (err) {
+console.error("Error fetching store summary:", err);
+res.status(500).json({ error: 'Failed to fetch store summary.' });
+} finally {
+if (connection) { try { await connection.close(); } catch (e) { } }
+}
+}); */
 
 // New endpoint: Items by Category and Hour
 app.get('/api/kpi/items-by-category-hour', async (req, res) => {
@@ -1517,7 +1619,7 @@ app.get('/api/kpi/orders-by-hour', async (req, res) => {
                 orderCount: resultsMap.get(hour) || 0
             };
         });
-        
+
         res.json(chartData);
 
     } catch (err) {
@@ -1549,7 +1651,7 @@ app.get('/api/kpi/product-pairs', async (req, res) => {
 
         connection = await oracledb.getConnection(dbConfig);
         const result = await connection.execute(query, {}, { outFormat: oracledb.OUT_FORMAT_OBJECT });
-        
+
         res.json(result.rows);
 
     } catch (err) {

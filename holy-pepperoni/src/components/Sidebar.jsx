@@ -19,7 +19,7 @@ const navItems = [
   { icon: <HomeIcon />, label: 'Main Menu', path: '/dashboard' }, 
   { icon: <DashboardIcon />, label: 'Product', path: '/product/dashboard' },
   { icon: <AssignmentIcon />, label: 'Orders', path: '/orders/dashboard' },
-  { icon: <StoreIcon />, label: 'Store', path: '/store' },
+  { icon: <StoreIcon />, label: 'Store', path: '/store/dashboard' },
   { icon: <PeopleIcon />, label: 'Customer', path: '/customer' },
   { icon: <RestaurantMenuIcon />, label: 'Ingredients', path: '/ingredients/dashboard' },
   { icon: <MapIcon />, label: 'Geographical Reports', path: '/geo-reports' }, 
