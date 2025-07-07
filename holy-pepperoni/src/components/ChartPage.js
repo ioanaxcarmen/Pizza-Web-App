@@ -173,7 +173,8 @@ const ChartPage = () => {
             case 'store-share':
                 chartComponent = <StoreCustomerShareChart />;
                 pageTitle = "Store Customer Share";
-            case 'top-products-sold': // New kpiId for this chart
+                break;
+            case 'top-products-sold':
                 chartComponent = <TopStoresByProductsSoldChart />;
                 pageTitle = "Top Stores by Products Sold";
                 break;
