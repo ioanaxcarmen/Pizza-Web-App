@@ -10,8 +10,8 @@ const port = 3001; // The backend will run on this port
 const dbConfig = {
     user: "PIZZA",
     password: "MyPizza123", // The password you created for the PIZZA user
-    connectString: "localhost:1521/XE"
-    //connectString: "localhost:1521/XEPDB1" //use this if you are using the default Oracle XE database
+    //connectString: "localhost:1521/XE"
+    connectString: "localhost:1521/XEPDB1" //use this if you are using the default Oracle XE database
 };
 
 // A test API endpoint to see if the connection works
@@ -1472,6 +1472,91 @@ app.get('/api/kpi/items-by-size-hour', async (req, res) => {
         res.status(500).json({ error: 'Failed to fetch items by size and hour.' });
     } finally {
         if (connection) { try { await connection.close(); } catch (e) { } }
+    }
+});
+
+// Order Distribution by Hour of the Day
+app.get('/api/kpi/orders-by-hour', async (req, res) => {
+    let connection;
+    try {
+        const binds = {};
+        let whereClause = 'WHERE 1=1';
+
+        // Add standard filters
+        if (req.query.year && req.query.year !== 'all') {
+            whereClause += ' AND EXTRACT(YEAR FROM o.ORDERDATE) = :year';
+            binds.year = req.query.year;
+        }
+        if (req.query.state && req.query.state !== 'all') {
+            whereClause += ' AND s.STATE_ABBR = :state';
+            binds.state = req.query.state;
+        }
+
+        const query = `
+            SELECT 
+                TO_CHAR(o.ORDERDATE, 'HH24') as HOUR_OF_DAY,
+                COUNT(o.ID) as ORDER_COUNT
+            FROM ORDERS o
+            JOIN STORES s ON o.STOREID = s.STOREID
+            ${whereClause}
+            GROUP BY TO_CHAR(o.ORDERDATE, 'HH24')
+            ORDER BY HOUR_OF_DAY ASC
+        `;
+
+        connection = await oracledb.getConnection(dbConfig);
+        const result = await connection.execute(query, binds, { outFormat: oracledb.OUT_FORMAT_OBJECT });
+
+        // Create a map for easy lookup
+        const resultsMap = new Map(result.rows.map(row => [row.HOUR_OF_DAY, row.ORDER_COUNT]));
+
+        // Ensure all 24 hours are present in the final data
+        const chartData = Array.from({ length: 24 }, (_, i) => {
+            const hour = String(i).padStart(2, '0'); // Format as "00", "01", etc.
+            return {
+                hour: `${hour}:00`,
+                orderCount: resultsMap.get(hour) || 0
+            };
+        });
+        
+        res.json(chartData);
+
+    } catch (err) {
+        console.error("Error fetching orders by hour:", err);
+        res.status(500).json({ error: 'Failed to fetch data.' });
+    } finally {
+        if (connection) { try { await connection.close(); } catch (e) { console.error(e); } }
+    }
+});
+
+// Top Product Combinations (Corrected to prevent duplicates)
+app.get('/api/kpi/product-pairs', async (req, res) => {
+    let connection;
+    try {
+        const query = `
+            SELECT
+                p1.NAME as PRODUCT_A,
+                p2.NAME as PRODUCT_B,
+                COUNT(DISTINCT oi1.ORDERID) as ORDERS_TOGETHER
+            FROM ORDER_ITEMS oi1
+            JOIN ORDER_ITEMS oi2 ON oi1.ORDERID = oi2.ORDERID AND oi1.SKU < oi2.SKU
+            JOIN PRODUCTS p1 ON oi1.SKU = p1.SKU
+            JOIN PRODUCTS p2 ON oi2.SKU = p2.SKU
+            GROUP BY p1.NAME, p2.NAME
+            HAVING COUNT(DISTINCT oi1.ORDERID) > 1 -- Optional: only show pairs that appear more than once
+            ORDER BY ORDERS_TOGETHER DESC
+            FETCH FIRST 20 ROWS ONLY
+        `;
+
+        connection = await oracledb.getConnection(dbConfig);
+        const result = await connection.execute(query, {}, { outFormat: oracledb.OUT_FORMAT_OBJECT });
+        
+        res.json(result.rows);
+
+    } catch (err) {
+        console.error("Error fetching product pairs:", err);
+        res.status(500).json({ error: 'Failed to fetch data' });
+    } finally {
+        if (connection) { try { await connection.close(); } catch (e) { console.error(e); } }
     }
 });
 
