@@ -1,20 +1,20 @@
 import React, { useEffect } from 'react';
 import {
-  Box, CssBaseline, useTheme, useMediaQuery
+  Box, CssBaseline, useTheme, useMediaQuery, Button, Paper, Typography
 } from '@mui/material';
 import Sidebar from '../components/Sidebar';
 import TopBar from '../components/TopBar';
 import OrdersDistributionWeekdayChart from './OrdersDistributionWeekdayChart';
 import OrdersDistributionWeekdaySizeChart from './OrdersDistributionWeekdaySizeChart';
-import Paper from '@mui/material/Paper';
-import Typography from '@mui/material/Typography';
 import PizzaLottie from '../components/PizzaLottie';
+import { useNavigate } from 'react-router-dom'; 
 
 const drawerWidth = 230;
 
 const OrdersDashboard = (props) => {
   const theme = useTheme();
   const isMdUp = useMediaQuery(theme.breakpoints.up('md'));
+  const navigate = useNavigate(); 
 
   // Inject Google Fonts: Inter + Roboto
   useEffect(() => {
@@ -58,7 +58,7 @@ const OrdersDashboard = (props) => {
       }}
     >
       <Box sx={{ flex: 1 }}>
-        <Typography variant="subtitle2" sx={{ color: "#fa7a1c", fontWeight: 700 }}>
+        <Typography variant="subtitle2" sx={{ color: "#fa7a1c", fontWeight: 700, mt: 2 }}>
           🎉 Amazing milestone!
         </Typography>
         <Typography
@@ -113,6 +113,22 @@ const OrdersDashboard = (props) => {
             }}>
               <OrdersDistributionWeekdaySizeChart />
             </Paper>
+          </Box>
+
+          {/* Back to Main Menu button */}
+          <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
+            <Button
+              variant="contained"
+              sx={{
+                background: "#faa28a",
+                borderRadius: "32px",
+                color: "#fff",
+                '&:hover': { background: "#fa7a1c" }
+              }}
+              onClick={() => navigate("/dashboard")}
+            >
+              Back to Main Menu
+            </Button>
           </Box>
         </Box>
       </Box>

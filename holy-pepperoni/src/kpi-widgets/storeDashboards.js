@@ -1,7 +1,8 @@
 import React, { useEffect } from 'react';
 import {
-  Box, CssBaseline, Paper, useTheme, useMediaQuery, Typography
+  Box, CssBaseline, Paper, useTheme, useMediaQuery, Typography, Button, Divider
 } from '@mui/material';
+import { useNavigate } from 'react-router-dom'; 
 import { motion } from 'framer-motion';
 import StorePerformanceRankingChart from './StorePerformanceRankingChart';
 import Sidebar from '../components/Sidebar';
@@ -15,6 +16,7 @@ const drawerWidth = 230;
 const StoreDashboards = (props) => {
   const theme = useTheme();
   const isMdUp = useMediaQuery(theme.breakpoints.up('md'));
+  const navigate = useNavigate(); 
 
   // Inject Google Fonts: Inter + Roboto
   useEffect(() => {
@@ -59,7 +61,7 @@ const StoreDashboards = (props) => {
       }}
     >
       <Box sx={{ flex: 1 }}>
-        <Typography variant="subtitle2" sx={{ color: "#fa7a1c", fontWeight: 700 }}>
+        <Typography variant="subtitle2" sx={{ color: "#fa7a1c", fontWeight: 700, mt: 8 }}>
           🎉 Amazing milestone!
         </Typography>
         <Typography
@@ -83,7 +85,7 @@ const StoreDashboards = (props) => {
     </Paper>
   );
 
- return (
+  return (
     <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: "#f5f7fb", fontFamily: "'Inter', 'Roboto', sans-serif" }}>
       <CssBaseline />
       {isMdUp && <Sidebar />}
@@ -145,6 +147,23 @@ const StoreDashboards = (props) => {
           </Box>
           {/* --- END NEW CHART --- */}
 
+          <Divider sx={{ my: 4 }} />
+
+          {/* Back to Main Menu button */}
+          <Box sx={{ display: "flex", justifyContent: "center" }}>
+            <Button
+              variant="contained"
+              sx={{
+                background: "#faa28a",
+                borderRadius: "32px",
+                color: "#fff",
+                '&:hover': { background: "#fa7a1c" }
+              }}
+              onClick={() => navigate("/dashboard")}
+            >
+              Back to Main Menu
+            </Button>
+          </Box>
         </Box>
       </Box>
     </Box>

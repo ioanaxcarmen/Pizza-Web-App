@@ -1,7 +1,8 @@
 import React, { useEffect } from 'react';
 import {
-  Box, CssBaseline, Paper, useTheme, useMediaQuery, Typography
+  Box, CssBaseline, Paper, useTheme, useMediaQuery, Typography, Button, Divider
 } from '@mui/material';
+import { useNavigate } from 'react-router-dom'; 
 import { motion } from 'framer-motion';
 import ProductCohortSalesLineChart from './ProductCohortSalesLineChart';
 import ProductDistributionPieCharts from './ProductDistributionPieCharts';
@@ -16,6 +17,7 @@ const drawerWidth = 230;
 const ProductsDashboard = (props) => {
   const theme = useTheme();
   const isMdUp = useMediaQuery(theme.breakpoints.up('md'));
+  const navigate = useNavigate(); 
 
   // Inject Google Fonts: Inter + Roboto
   useEffect(() => {
@@ -186,6 +188,24 @@ const ProductsDashboard = (props) => {
                 <TopSellingProductsChart />
               </Paper>
             </motion.div>
+          </Box>
+
+          <Divider sx={{ my: 4 }} />
+
+          {/* Back to Main Menu button */}
+          <Box sx={{ display: "flex", justifyContent: "center" }}>
+            <Button
+              variant="contained"
+              sx={{
+                background: "#faa28a",
+                borderRadius: "32px",
+                color: "#fff",
+                '&:hover': { background: "#fa7a1c" }
+              }}
+              onClick={() => navigate("/dashboard")}
+            >
+              Back to Main Menu
+            </Button>
           </Box>
         </Box>
       </Box>
