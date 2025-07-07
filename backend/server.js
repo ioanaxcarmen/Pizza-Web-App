@@ -942,7 +942,7 @@ app.get('/api/kpi/avg-order-value-by-store', async (req, res) => {
     let whereClause = 'WHERE 1=1';
 
     // Extract filters from query parameters
-    const { year, quarter, month, state } = req.query;
+    const { year, quarter, month, state, storeId } = req.query;
 
     // Apply filters
     if (year && year !== 'all') {
@@ -961,6 +961,10 @@ app.get('/api/kpi/avg-order-value-by-store', async (req, res) => {
         whereClause += ' AND s.STATE_ABBR = :state';
         binds.state = state;
     }
+     if (storeId && storeId !== 'all') {
+        whereClause += ' AND s.STOREID = :storeId';
+        binds.storeId = Number(storeId);
+     }
 
     try {
 

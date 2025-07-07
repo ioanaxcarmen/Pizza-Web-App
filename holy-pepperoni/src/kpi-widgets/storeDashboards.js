@@ -135,7 +135,7 @@ const StoreDashboards = (props) => {
               fontFamily: "'Inter', 'Roboto', sans-serif"
             }}>
               <Typography variant="h6" fontWeight="bold" sx={{ mb: 2, fontFamily: "'Inter', 'Roboto', sans-serif" }}>
-                Store Performance Ranking
+                Average Order Value per Store
               </Typography>
               <AverageOrderValuePerStoreChart />
             </Paper>
