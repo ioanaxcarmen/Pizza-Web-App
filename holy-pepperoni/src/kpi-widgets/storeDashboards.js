@@ -9,10 +9,12 @@ import TopBar from '../components/TopBar';
 // --- Store-specific chart imports ---
 import StorePerformanceRankingChart from '../kpi-widgets/StorePerformanceRankingChart';
 import TopStoresByProductsSoldChart from '../kpi-widgets/TopStoresByProductsSoldChart';
+import AverageOrderValuePerStoreChart from './AverageOrderValuePerStoreChart';
 // Removed TotalStoresWidget import as its functionality is now merged
 // import TotalStoresWidget from '../kpi-widgets/TotalStoresWidget'; 
 
 import TotalStoresWidget from './TotalStoresWidget';
+
 
 
 const drawerWidth = 230;
@@ -114,6 +116,28 @@ const StoreDashboards = (props) => {
                 Top Stores by Products Sold
               </Typography>
               <TopStoresByProductsSoldChart />
+            </Paper>
+          </motion.div>
+        </Box>
+          {/* Store Performance Ranking Chart */}
+        <Box sx={{ width: '100%' }}>
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.5 }}
+            transition={{ duration: 0.8, delay: 0.1 }}
+          >
+            <Paper elevation={3} sx={{
+              borderRadius: 5,
+              p: 3,
+              mb: 4,
+              boxShadow: "0 4px 16px rgba(250, 162, 138, 0.08)",
+              fontFamily: "'Inter', 'Roboto', sans-serif"
+            }}>
+              <Typography variant="h6" fontWeight="bold" sx={{ mb: 2, fontFamily: "'Inter', 'Roboto', sans-serif" }}>
+                Store Performance Ranking
+              </Typography>
+              <AverageOrderValuePerStoreChart />
             </Paper>
           </motion.div>
         </Box>
