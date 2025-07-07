@@ -69,10 +69,34 @@ const Dashboard = () => {
                     {row1Items.map((item, index) => (
                         <Grid item xs={10} sm={5} md={4} key={item.title}>
                             <motion.div initial="hidden" animate="visible" variants={itemVariants} transition={{ delay: index * 0.2 }}>
-                                <Card sx={{ borderRadius: 4, '&:hover': { boxShadow: "0 8px 24px rgba(250, 162, 138, 0.2)" } }}>
-                                    <CardActionArea onClick={() => navigate(item.path)} sx={{ p: 3, textAlign: 'center', bgcolor: '#f7d9afff' }}>
+                                <Card
+                                    sx={{
+                                        borderRadius: 4,
+                                        width: 180,         
+                                        height: 180,        
+                                        flexDirection: 'column',
+                                        justifyContent: 'center',
+                                        alignItems: 'center',
+                                        mx: 'auto',
+                                        '&:hover': { boxShadow: "0 8px 24px rgba(250, 162, 138, 0.2)" }
+                                    }}
+                                >
+                                    <CardActionArea
+                                        onClick={() => navigate(item.path)}
+                                        sx={{
+                                            p: 3,
+                                            textAlign: 'center',
+                                            bgcolor: '#f7d9afff',
+                                            height: '100%',
+                                            width: '100%',
+                                            display: 'flex',
+                                            flexDirection: 'column',
+                                            justifyContent: 'center',
+                                            alignItems: 'center'
+                                        }}
+                                    >
                                         <Box sx={{ color: '#000000' }}>{item.icon}</Box>
-                                        <CardContent>
+                                        <CardContent sx={{ p: 0, mt: 1 }}>
                                             <Typography gutterBottom variant="h5" component="div" sx={{ fontWeight: 'bold' }}>{item.title}</Typography>
                                         </CardContent>
                                     </CardActionArea>
@@ -86,11 +110,36 @@ const Dashboard = () => {
                 <Grid container spacing={4} sx={{ justifyContent: 'center', mb: 4 }}>
                     {row2Items.map((item, index) => (
                         <Grid item xs={10} sm={5} md={4} key={item.title}>
-                           <motion.div initial="hidden" animate="visible" variants={itemVariants} transition={{ delay: (index + 2) * 0.2 }}>
-                                <Card sx={{ borderRadius: 4, '&:hover': { boxShadow: "0 8px 24px rgba(250, 162, 138, 0.2)" } }}>
-                                    <CardActionArea onClick={() => navigate(item.path)} sx={{ p: 3, textAlign: 'center', bgcolor: '#f7d9afff' }}>
+                            <motion.div initial="hidden" animate="visible" variants={itemVariants} transition={{ delay: (index + 2) * 0.2 }}>
+                                <Card
+                                    sx={{
+                                        borderRadius: 4,
+                                        width: 180,
+                                        height: 180,
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        justifyContent: 'center',
+                                        alignItems: 'center',
+                                        mx: 'auto',
+                                        '&:hover': { boxShadow: "0 8px 24px rgba(250, 162, 138, 0.2)" }
+                                    }}
+                                >
+                                    <CardActionArea
+                                        onClick={() => navigate(item.path)}
+                                        sx={{
+                                            p: 3,
+                                            textAlign: 'center',
+                                            bgcolor: '#f7d9afff',
+                                            height: '100%',
+                                            width: '100%',
+                                            display: 'flex',
+                                            flexDirection: 'column',
+                                            justifyContent: 'center',
+                                            alignItems: 'center'
+                                        }}
+                                    >
                                         <Box sx={{ color: '#000000' }}>{item.icon}</Box>
-                                        <CardContent>
+                                        <CardContent sx={{ p: 0, mt: 1 }}>
                                             <Typography gutterBottom variant="h5" component="div" sx={{ fontWeight: 'bold' }}>{item.title}</Typography>
                                         </CardContent>
                                     </CardActionArea>
@@ -104,11 +153,36 @@ const Dashboard = () => {
                 <Grid container spacing={4} sx={{ justifyContent: 'center' }}>
                     {row3Items.map((item, index) => (
                         <Grid item xs={10} sm={5} md={4} key={item.title}>
-                           <motion.div initial="hidden" animate="visible" variants={itemVariants} transition={{ delay: (index + 4) * 0.2 }}>
-                                <Card sx={{ borderRadius: 4, '&:hover': { boxShadow: "0 8px 24px rgba(250, 162, 138, 0.2)" } }}>
-                                    <CardActionArea onClick={() => navigate(item.path)} sx={{ p: 3, textAlign: 'center', bgcolor: '#f7d9afff' }}>
+                            <motion.div initial="hidden" animate="visible" variants={itemVariants} transition={{ delay: (index + 4) * 0.2 }}>
+                                <Card
+                                    sx={{
+                                        borderRadius: 4,
+                                        width: 180,
+                                        height: 180,
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        justifyContent: 'center',
+                                        alignItems: 'center',
+                                        mx: 'auto',
+                                        '&:hover': { boxShadow: "0 8px 24px rgba(250, 162, 138, 0.2)" }
+                                    }}
+                                >
+                                    <CardActionArea
+                                        onClick={() => navigate(item.path)}
+                                        sx={{
+                                            p: 3,
+                                            textAlign: 'center',
+                                            bgcolor: '#f7d9afff',
+                                            height: '100%',
+                                            width: '100%',
+                                            display: 'flex',
+                                            flexDirection: 'column',
+                                            justifyContent: 'center',
+                                            alignItems: 'center'
+                                        }}
+                                    >
                                         <Box sx={{ color: '#000000' }}>{item.icon}</Box>
-                                        <CardContent>
+                                        <CardContent sx={{ p: 0, mt: 1 }}>
                                             <Typography gutterBottom variant="h5" component="div" sx={{ fontWeight: 'bold' }}>{item.title}</Typography>
                                         </CardContent>
                                     </CardActionArea>
@@ -122,8 +196,16 @@ const Dashboard = () => {
             <Box sx={{ mt: 6, pb: 4, display: 'flex', justifyContent: 'center' }}>
                 <button
                     style={{
-                        background: "#faa28a", color: "#000000ff", border: "none", borderRadius: "50px",
-                        padding: "12px 0", width: "200px", fontSize: "1.1rem", fontWeight: "bold", cursor: 'pointer'
+                        background: "#faa28a",
+                        color: "#000000ff",
+                        border: "none",
+                        borderRadius: "50px",
+                        padding: "20px 0",           
+                        width: "260px",              
+                        fontSize: "1.3rem",          
+                        fontWeight: "bold",
+                        cursor: 'pointer',
+                        boxShadow: "0 4px 16px rgba(250, 162, 138, 0.18)" 
                     }}
                     onClick={handleLogout}
                 >
