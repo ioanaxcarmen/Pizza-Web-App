@@ -826,10 +826,7 @@ app.get('/api/kpi/churn-risk', async (req, res) => {
     }
 });
 
-//origianl localhost
-// app.listen(port, () => {
-//     console.log(`Backend server running at http://localhost:${port}`);
-// });
+// Store Performance Ranking (NEW)
 app.get('/api/kpi/store-performance-ranking', async (req, res) => {
     let connection;
     const binds = {};
@@ -1007,7 +1004,7 @@ app.get('/api/kpi/avg-order-value-by-store', async (req, res) => {
     }
 });
 
-
+// Top Stores by Products Sold KPI
 app.get('/api/kpi/top-stores-by-products-sold', async (req, res) => {
     let connection;
     const binds = {};
@@ -1077,6 +1074,8 @@ app.get('/api/kpi/top-stores-by-products-sold', async (req, res) => {
         }
     }
 });
+
+// Total Stores Count KPI
 app.get('/api/kpi/total-stores-count', async (req, res) => {
     let connection;
     try {
@@ -1146,6 +1145,7 @@ app.get('/api/kpi/product-monthly-sales-since-launch', async (req, res) => {
         if (connection) { try { await connection.close(); } catch (e) { console.error(e); } }
     }
 });
+
 // Product Sales Distribution KPI
 app.get('/api/kpi/product-sales-distribution', async (req, res) => {
     let connection;
@@ -1345,7 +1345,225 @@ app.get('/api/kpi/product-revenue-by-size', async (req, res) => {
     }
 });
 
-// Start the server on the specified port local IP address
-app.listen(port, '0.0.0.0', () => {
+// Store summary endpoint
+app.get('/api/kpi/store-summary', async (req, res) => {
+    let connection;
+    try {
+        connection = await oracledb.getConnection(dbConfig);
+        const binds = {
+            state: req.query.state && req.query.state !== 'all' ? req.query.state : 'all'
+        };
+
+        const query = `
+            SELECT 
+                storeid,
+                city,
+                state,
+                (33 - revenue_rank)        AS revenue_point,
+                (33 - avg_value_rank)      AS avg_value_point,
+                (33 - order_count_rank)    AS order_count_point,
+                (33 - active_cust_rank)    AS active_cust_point,
+                (33 - customer_share_rank) AS customer_share_point
+            FROM v_store_performance_rank
+            WHERE (:state = 'all' OR state = :state)
+            ORDER BY revenue_point DESC
+        `;
+
+        const result = await connection.execute(query, binds);
+
+        const data = result.rows.map(row => ({
+            storeid: row[0],
+            city: row[1],
+            state: row[2],
+            revenue_point: row[3],
+            avg_value_point: row[4],
+            order_count_point: row[5],
+            active_cust_point: row[6],
+            customer_share_point: row[7],
+        }));
+
+        res.json(data);
+    } catch (err) {
+        console.error("Error fetching store summary:", err);
+        res.status(500).json({ error: 'Failed to fetch store summary.' });
+    } finally {
+        if (connection) { try { await connection.close(); } catch (e) { } }
+    }
+});
+
+// New endpoint: Items by Category and Hour
+app.get('/api/kpi/items-by-category-hour', async (req, res) => {
+    let connection;
+    try {
+        connection = await oracledb.getConnection(dbConfig);
+
+        // Lấy tổng số items theo category và giờ đặt hàng
+        const query = `
+            SELECT
+                EXTRACT(HOUR FROM o.ORDERDATE) AS order_hour,
+                c.NAME AS category,
+                SUM(oi.QUANTITY) AS total_items
+            FROM
+                ORDERS o
+            JOIN
+                ORDER_ITEMS oi ON o.ID = oi.ORDERID
+            JOIN
+                PRODUCTS p ON oi.SKU = p.SKU
+            JOIN
+                CATEGORIES c ON p.CATEGORY_ID = c.ID
+            GROUP BY
+                EXTRACT(HOUR FROM o.ORDERDATE), c.NAME
+            ORDER BY
+                order_hour, category
+        `;
+
+        const result = await connection.execute(query);
+
+        // Format lại dữ liệu cho frontend: [{ order_hour, category, total_items }]
+        const data = result.rows.map(row => ({
+            order_hour: Number(row[0]),
+            category: row[1],
+            total_items: Number(row[2])
+        }));
+
+        res.json(data);
+    } catch (err) {
+        console.error("Error fetching items by category and hour:", err);
+        res.status(500).json({ error: 'Failed to fetch items by category and hour.' });
+    } finally {
+        if (connection) { try { await connection.close(); } catch (e) { } }
+    }
+});
+
+// New endpoint: Items by Size and Hour
+app.get('/api/kpi/items-by-size-hour', async (req, res) => {
+    let connection;
+    try {
+        connection = await oracledb.getConnection(dbConfig);
+
+        // Lấy tổng số items theo size và giờ đặt hàng
+        const query = `
+            SELECT
+                EXTRACT(HOUR FROM o.ORDERDATE) AS order_hour,
+                ps.NAME AS "size",
+                SUM(oi.QUANTITY) AS total_items
+            FROM
+                ORDERS o
+            JOIN
+                ORDER_ITEMS oi ON o.ID = oi.ORDERID
+            JOIN
+                PRODUCTS p ON oi.SKU = p.SKU
+            JOIN
+                PRODUCTSIZES ps ON p.SIZE_ID = ps.ID
+            GROUP BY
+                EXTRACT(HOUR FROM o.ORDERDATE), ps.NAME
+            ORDER BY
+                order_hour, "size"
+        `;
+
+        const result = await connection.execute(query);
+
+        // Format lại dữ liệu cho frontend: [{ order_hour, size, total_items }]
+        const data = result.rows.map(row => ({
+            order_hour: Number(row[0]),
+            size: row[1],
+            total_items: Number(row[2])
+        }));
+
+        res.json(data);
+    } catch (err) {
+        console.error("Error fetching items by size and hour:", err);
+        res.status(500).json({ error: 'Failed to fetch items by size and hour.' });
+    } finally {
+        if (connection) { try { await connection.close(); } catch (e) { } }
+    }
+});
+
+// Order Distribution by Hour of the Day
+app.get('/api/kpi/orders-by-hour', async (req, res) => {
+    let connection;
+    try {
+        const binds = {};
+        let whereClause = 'WHERE 1=1';
+
+        // Add standard filters
+        if (req.query.year && req.query.year !== 'all') {
+            whereClause += ' AND EXTRACT(YEAR FROM o.ORDERDATE) = :year';
+            binds.year = req.query.year;
+        }
+        if (req.query.state && req.query.state !== 'all') {
+            whereClause += ' AND s.STATE_ABBR = :state';
+            binds.state = req.query.state;
+        }
+
+        const query = `
+            SELECT 
+                TO_CHAR(o.ORDERDATE, 'HH24') as HOUR_OF_DAY,
+                COUNT(o.ID) as ORDER_COUNT
+            FROM ORDERS o
+            JOIN STORES s ON o.STOREID = s.STOREID
+            ${whereClause}
+            GROUP BY TO_CHAR(o.ORDERDATE, 'HH24')
+            ORDER BY HOUR_OF_DAY ASC
+        `;
+
+        connection = await oracledb.getConnection(dbConfig);
+        const result = await connection.execute(query, binds, { outFormat: oracledb.OUT_FORMAT_OBJECT });
+
+        // Create a map for easy lookup
+        const resultsMap = new Map(result.rows.map(row => [row.HOUR_OF_DAY, row.ORDER_COUNT]));
+
+        // Ensure all 24 hours are present in the final data
+        const chartData = Array.from({ length: 24 }, (_, i) => {
+            const hour = String(i).padStart(2, '0'); // Format as "00", "01", etc.
+            return {
+                hour: `${hour}:00`,
+                orderCount: resultsMap.get(hour) || 0
+            };
+        });
+        
+        res.json(chartData);
+
+    } catch (err) {
+        console.error("Error fetching orders by hour:", err);
+        res.status(500).json({ error: 'Failed to fetch data.' });
+    } finally {
+        if (connection) { try { await connection.close(); } catch (e) { console.error(e); } }
+    }
+});
+
+// Top Product Combinations (Corrected to prevent duplicates)
+app.get('/api/kpi/product-pairs', async (req, res) => {
+    let connection;
+    try {
+        const query = `
+            SELECT
+                p1.NAME as PRODUCT_A,
+                p2.NAME as PRODUCT_B,
+                COUNT(DISTINCT oi1.ORDERID) as ORDERS_TOGETHER
+            FROM ORDER_ITEMS oi1
+            JOIN ORDER_ITEMS oi2 ON oi1.ORDERID = oi2.ORDERID AND oi1.SKU < oi2.SKU
+            JOIN PRODUCTS p1 ON oi1.SKU = p1.SKU
+            JOIN PRODUCTS p2 ON oi2.SKU = p2.SKU
+            GROUP BY p1.NAME, p2.NAME
+            HAVING COUNT(DISTINCT oi1.ORDERID) > 1 -- Optional: only show pairs that appear more than once
+            ORDER BY ORDERS_TOGETHER DESC
+            FETCH FIRST 20 ROWS ONLY
+        `;
+
+        connection = await oracledb.getConnection(dbConfig);
+        const result = await connection.execute(query, {}, { outFormat: oracledb.OUT_FORMAT_OBJECT });
+        
+        res.json(result.rows);
+
+    } catch (err) {
+        console.error("Error fetching product pairs:", err);
+        res.status(500).json({ error: 'Failed to fetch data' });
+    } finally {
+        if (connection) { try { await connection.close(); } catch (e) { console.error(e); } }
+    }
+});
+
+app.listen(port, () => {
     console.log(`Backend server running at http://localhost:${port}`);
 });

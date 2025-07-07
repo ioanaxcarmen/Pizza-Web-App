@@ -120,7 +120,7 @@ const TopIngredientsChart = () => {
     };
 
     return (
-          <div style={{ width: '100%', height: '100%', minHeight: 150, position: 'relative' }}>
+        <div style={{ width: '100%', height: '100%', minHeight: 150, position: 'relative' }}>
             <div style={{ display: 'flex', gap: 20, padding: 20, background: '#f0f0f0', flexWrap: 'wrap', alignItems: 'flex-end' }}>
                 <DashboardFilters filters={filters} setFilters={setFilters} onReset={handleResetFilters} />
                 <button
@@ -140,7 +140,7 @@ const TopIngredientsChart = () => {
                 </button>
             </div>
             {loading ? (
-                <LoadingPizza />
+                <div style={{ textAlign: 'center', margin: 24, fontWeight: 500, color: '#fa7a1c' }}>Loading...</div>
             ) : invalidFilter ? (
                 <div style={{ color: 'red', textAlign: 'center' }}>
                     No data available for the selected filters. Please adjust your filters and try again.

@@ -3,7 +3,7 @@ import { useParams, Link, useSearchParams } from 'react-router-dom';
 import axios from 'axios';
 import { Button } from '@mui/material';
 
-// Component-level styles for the table for better organization
+// Table styling for better readability and separation of concerns
 const tableStyles = {
     width: '100%',
     borderCollapse: 'collapse',
@@ -23,17 +23,20 @@ const tdStyles = {
 };
 
 const CustomerHistoryPage = () => {
-    // Get the main customer ID from the URL path (e.g., /.../C612070)
+    // Get the customer ID from the URL (e.g., /customer-history/C612070)
     const { customerId } = useParams();
-    // Get the filter parameters from the URL query string (e.g., ?year=2024&month=5)
+    // Get filter parameters from the URL query string (e.g., ?year=2024&month=5)
     const [searchParams] = useSearchParams();
 
+    // State to hold the fetched order history
     const [history, setHistory] = useState([]);
+    // State to track loading status
     const [loading, setLoading] = useState(true);
 
+    // Fetch customer order history when component mounts or when customerId/searchParams change
     useEffect(() => {
         setLoading(true);
-        // Pass the searchParams directly to axios. It will correctly build the query string.
+        // Fetch order history from backend, passing filters as query params
         axios.get(`${process.env.REACT_APP_API_URL}/api/customer-history/${customerId}`, { params: searchParams })
             .then(response => {
                 setHistory(response.data);
@@ -43,15 +46,16 @@ const CustomerHistoryPage = () => {
                 console.error("Error fetching customer history:", error);
                 setLoading(false);
             });
-    // This effect re-runs if the customerId or the filters in the URL change
-    }, [customerId, searchParams]);
+    }, [customerId, searchParams]); // Re-run if customerId or filters change
 
+    // Show loading message while fetching data
     if (loading) {
         return <div style={{ padding: '20px' }}>Loading customer order history...</div>;
     }
 
     return (
         <div style={{ padding: '20px' }}>
+            {/* Button to navigate back to the Top 10 Customers page */}
             <Button
                 component={Link}
                 to="/customer/top-10"
@@ -72,8 +76,10 @@ const CustomerHistoryPage = () => {
             >
                 Back to Top 10 Customers
             </Button>
+            {/* Display the customer ID */}
             <h2>Order History for Customer: <strong>{customerId}</strong></h2>
             
+            {/* Order history table */}
             <table style={tableStyles}>
                 <thead>
                     <tr>
@@ -86,6 +92,7 @@ const CustomerHistoryPage = () => {
                     </tr>
                 </thead>
                 <tbody>
+                    {/* Render order rows if history exists, otherwise show a message */}
                     {history.length > 0 ? (
                         history.map((item, index) => (
                             <tr key={index}>

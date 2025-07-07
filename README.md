@@ -134,19 +134,19 @@ Use these Firebase credentials:
 
 ### 2. Navigate
 
-After logging in, use the sidebar menu to go to:
+After logging in, use the menu to go to:
 
 - Products
 - Stores
 - Customers
 - Ingredients
+- Orders
 - Geographical Reports
 
 ### 3. Analyze Data
 
 On KPI pages:
 
-- Click buttons to display charts.
 - Use filters to slice data.
 - Click chart elements to drill down into details.
 

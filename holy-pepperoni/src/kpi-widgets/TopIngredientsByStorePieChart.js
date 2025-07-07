@@ -35,14 +35,7 @@ const TopIngredientsByStorePieChart = ({ filters = {} }) => {
             }))));
     }, []);
 
-    // Auto-select the first store when storeOptions are loaded and nothing is selected
-    useEffect(() => {
-        if (storeOptions.length > 0 && selectedStores.length === 0) {
-            setSelectedStores([storeOptions[0]]);
-        }
-    }, [storeOptions, selectedStores.length]);
-
-    // Fetch pie chart data for selected stores, truyền filters từ props
+    // Fetch pie chart data for selected stores
     useEffect(() => {
         if (!selectedStores.length) {
             setPieDataByStore({});
@@ -50,7 +43,7 @@ const TopIngredientsByStorePieChart = ({ filters = {} }) => {
         }
         setPieLoading(true);
         const params = new URLSearchParams();
-        Object.entries(filters || {}).forEach(([key, value]) => {
+        Object.entries(filters).forEach(([key, value]) => {
             if (value && value !== 'all') params.append(key, value);
         });
         selectedStores.forEach(store => params.append('storeId', store.value));
@@ -77,39 +70,37 @@ const TopIngredientsByStorePieChart = ({ filters = {} }) => {
                     isClearable
                 />
             </div>
-            {pieLoading ? <LoadingPizza /> : (
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 40, justifyContent: 'center' }}>
-                    {selectedStores.map(store => {
-                        const pieData = addOthersToPieData(pieDataByStore[store.value] || []);
-                        return (
-                            <div key={store.value} style={{ width: 350 }}>
-                                <h4 style={{ textAlign: 'center' }}>{store.label}</h4>
-                                <ResponsiveContainer width="100%" height={300}>
-                                    <PieChart>
-                                        <Pie
-                                            data={pieData}
-                                            dataKey="percent"
-                                            nameKey="ingredient"
-                                            cx="50%"
-                                            cy="50%"
-                                            outerRadius={100}
-                                            label={({ name, percent, ingredient }) => `${ingredient || name}: ${percent}%`}
-                                        >
-                                            {pieData.map((entry, idx) => (
-                                                <Cell key={entry.ingredient || idx} fill={entry.ingredient === 'Others'
-                                                    ? '#CCCCCC'
-                                                    : COLORS[idx % COLORS.length]} />
-                                            ))}
-                                        </Pie>
-                                        <Tooltip formatter={value => `${value}%`} />
-                                        <Legend />
-                                    </PieChart>
-                                </ResponsiveContainer>
-                            </div>
-                        );
-                    })}
-                </div>
-            )}
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 40, justifyContent: 'center' }}>
+                {selectedStores.map(store => {
+                    const pieData = addOthersToPieData(pieDataByStore[store.value] || []);
+                    return (
+                        <div key={store.value} style={{ width: 350 }}>
+                            <h4 style={{ textAlign: 'center' }}>{store.label}</h4>
+                            <ResponsiveContainer width="100%" height={300}>
+                                <PieChart>
+                                    <Pie
+                                        data={pieData}
+                                        dataKey="percent"
+                                        nameKey="ingredient"
+                                        cx="50%"
+                                        cy="50%"
+                                        outerRadius={100}
+                                        label={({ name, percent, ingredient }) => `${ingredient || name}: ${percent}%`}
+                                    >
+                                        {pieData.map((entry, idx) => (
+                                            <Cell key={idx} fill={entry.ingredient === 'Others'
+                                                ? '#CCCCCC'
+                                                : COLORS[idx % COLORS.length]} />
+                                        ))}
+                                    </Pie>
+                                    <Tooltip formatter={value => `${value}%`} />
+                                    <Legend />
+                                </PieChart>
+                            </ResponsiveContainer>
+                        </div>
+                    );
+                })}
+            </div>
         </div>
     );
 };

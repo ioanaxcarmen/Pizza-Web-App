@@ -16,11 +16,19 @@ import CustomerDashboard from "./components/CustomerDashboard";
 import SegmentDetailsPage from './components/SegmentDetailsPage'; 
 import StoreDashboards from "./kpi-widgets/storeDashboards";
 
+/**
+ * App component
+ * Sets up all the main routes for the Pizza Web App using React Router.
+ * Most dashboard and chart pages are protected and require authentication.
+ * Dynamic routes are used for KPI charts and customer/segment details.
+ */
 function App() {
   return (
     <Router>
       <Routes>
+        {/* Login page (public) */}
         <Route path="/" element={<LoginPage />} />
+        {/* Main dashboard (protected) */}
         <Route
           path="/dashboard"
           element={
@@ -29,28 +37,29 @@ function App() {
             </ProtectedRoute>
           }
         />  
+        {/* Store menu and dashboards */}
         <Route path="/store" element={<StoreMenupage />} />
         <Route path="/store/:kpiId" element={<ChartPage />} />
         <Route path="/store/dashboard" element={<StoreDashboards />} />
-        {/* This path now shows the menu of customer KPIs */}
+        {/* Customer dashboard and dynamic KPI charts */}
         <Route path="/customer" element={<CustomerDashboard />} />
-        {/* This new dynamic path shows the specific chart the user selects */}
         <Route path="/customer/:kpiId" element={<ChartPage />} />
+        {/* Ingredients menu and dynamic KPI charts */}
         <Route path="/ingredients" element={<IngredientMenuPage />} />
-        {/* This new dynamic path shows the specific chart the user selects */}
         <Route path="/ingredients/:kpiId" element={<ChartPage />} />
-        {/* This path now shows the menu of customer KPIs */}
+        {/* Product dashboard and menu (protected) */}
         <Route path="/product" element={<ProtectedRoute><ProductMenuPage /></ProtectedRoute>} />
-        {/* This new dynamic path shows the specific chart the user selects */}
         <Route path="/product/:kpiId" element={<ProtectedRoute><ChartPage /></ProtectedRoute>} />
+        {/* Product distribution chart */}
         <Route path="/product/distributionchart" element={<ProductDistributionPieCharts />} />
+        {/* Ingredients, products, and orders dashboards */}
         <Route path="/ingredients/dashboard" element={<IngredientsDashboard />} />
         <Route path="/product/dashboard" element={<ProductsDashboard />} />
         <Route path="/orders/dashboard" element={<OrdersDashboard />} />
-         {/* --- NEW GEOGRAPHICAL ROUTES --- */}
+        {/* Geographical reports and dynamic KPI charts */}
         <Route path="/geo-reports" element={<GeographicalReportMenuPage />} />
-        <Route path="/geo/:kpiId" element={<ChartPage />} /> {/* Dynamic KPI charts for geographical reports */}
-        {/* --- END NEW GEOGRAPHICAL ROUTES --- */}
+        <Route path="/geo/:kpiId" element={<ChartPage />} />
+        {/* Customer order history and segment details */}
         <Route path="/customer/order-history/:customerId" element={<CustomerHistoryPage />} />
         <Route path="/customer/segment-details" element={<SegmentDetailsPage />} />
       </Routes>

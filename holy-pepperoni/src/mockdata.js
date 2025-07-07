@@ -1,5 +1,4 @@
-// This is an array of fake data that mimics what our API will return.
-// You can change the names and numbers to whatever you like.
+// fake data that mimics what our API will return.
 export const topProductsData = [
   { name: 'Wireless Mouse', sales: 4000 },
   { name: 'Mechanical Keyboard', sales: 3200 },
@@ -8,7 +7,6 @@ export const topProductsData = [
   { name: 'Webcam', sales: 1890 },
 ];
 
-// Let's add another dataset for a different chart, maybe a line chart!
 export const salesOverTimeData = [
     { name: 'Jan', sales: 4100 },
     { name: 'Feb', sales: 3800 },
@@ -18,7 +16,6 @@ export const salesOverTimeData = [
     { name: 'Jun', sales: 5900 },
 ];
 
-// --- ADD THIS NEW DATA FOR THE PRODUCT PAGE ---
 export const productInventoryData = [
     { warehouse: 'Frankfurt', stock: 450 },
     { warehouse: 'Hamburg', stock: 210 },
