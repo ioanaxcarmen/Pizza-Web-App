@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Select from 'react-select';
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import LoadingPizza from '../components/LoadingPizza';
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#A28CFF'];
 
@@ -19,6 +18,21 @@ function addOthersToPieData(data) {
     }
     return data;
 }
+
+// Utility to convert data to CSV and trigger download
+const downloadCSV = (data, storeLabel) => {
+    if (!data.length) return;
+    const header = Object.keys(data[0]).join(',');
+    const rows = data.map(row => Object.values(row).join(','));
+    const csvContent = [header, ...rows].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `top_ingredients_by_store_${storeLabel || 'report'}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+};
 
 const TopIngredientsByStorePieChart = ({ filters = {} }) => {
     const [storeOptions, setStoreOptions] = useState([]);
@@ -57,7 +71,6 @@ const TopIngredientsByStorePieChart = ({ filters = {} }) => {
 
     return (
         <div style={{ marginTop: 40 }}>
-            <h3 style={{ textAlign: 'center' }}>Top 5 Ingredients by Store</h3>
             <div style={{ maxWidth: 400, margin: '0 auto 20px auto' }}>
                 <label style={{ fontWeight: 'bold' }}>Stores:&nbsp;</label>
                 <Select
@@ -97,6 +110,24 @@ const TopIngredientsByStorePieChart = ({ filters = {} }) => {
                                     <Legend />
                                 </PieChart>
                             </ResponsiveContainer>
+                            {/* Download button dưới mỗi pie chart, căn giữa */}
+                            <div style={{ marginTop: 16, display: 'flex', justifyContent: 'center' }}>
+                                <button
+                                    onClick={() => downloadCSV(pieData, store.label)}
+                                    style={{
+                                        background: '#f7d9afff',
+                                        color: '#000',
+                                        border: 'none',
+                                        borderRadius: '20px',
+                                        padding: '8px 18px',
+                                        fontWeight: 'bold',
+                                        cursor: 'pointer',
+                                        marginBottom: window.innerWidth < 600 ? 16 : 0
+                                    }}
+                                >
+                                    Download Report
+                                </button>
+                            </div>
                         </div>
                     );
                 })}
