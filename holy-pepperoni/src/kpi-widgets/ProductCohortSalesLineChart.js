@@ -211,7 +211,8 @@ const ProductCohortSalesLineChart = () => {
                                 dataKey={product}
                                 name={product}
                                 stroke={lineColors[index % lineColors.length]}
-                                activeDot={enableOutlierDetection ? renderCustomDot(product, outlierIndices) : { r: 5 }}
+                                dot={enableOutlierDetection ? renderCustomDot(product, outlierIndices) : undefined}
+                                activeDot={{ r: 5 }}
                             />
                         );
                     })}

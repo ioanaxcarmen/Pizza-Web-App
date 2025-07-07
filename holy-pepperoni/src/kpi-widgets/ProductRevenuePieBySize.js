@@ -18,6 +18,15 @@ const ProductRevenuePieBySize = () => {
       .catch(() => setLoading(false));
   }, []);
 
+  // Build a unique product list for color mapping
+  const allProductNames = Array.from(
+    new Set(data.map(item => item.product_name))
+  );
+  const colorMap = {};
+  allProductNames.forEach((name, idx) => {
+    colorMap[name] = COLORS[idx % COLORS.length];
+  });
+
   // Pivot dữ liệu cho 4 size cố định, luôn show 4 chart
   let groupedData = {};
   SIZE_LIST.forEach(size => { groupedData[size] = []; });
@@ -50,10 +59,10 @@ const ProductRevenuePieBySize = () => {
                     cx="50%"
                     cy="50%"
                     outerRadius={80}
-                    label={false }
+                    label={false}
                   >
-                    {groupedData[size].map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    {groupedData[size].map((entry) => (
+                      <Cell key={entry.name} fill={colorMap[entry.name]} />
                     ))}
                   </Pie>
                   <Tooltip formatter={(value) => `$${value.toLocaleString()}`} />

@@ -6,6 +6,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsive
 import LoadingPizza from '../components/LoadingPizza';
 import { Button, Paper, Box } from '@mui/material';
 
+// Default filter values for the chart
 const defaultFilters = {
     year: 'all',
     quarter: 'all',
@@ -14,6 +15,7 @@ const defaultFilters = {
     storeId: ''
 };
 
+// Utility to convert data to CSV and trigger download
 const downloadCSV = (data) => {
     if (!data.length) return;
     const header = Object.keys(data[0]).join(',');
@@ -28,10 +30,18 @@ const downloadCSV = (data) => {
     URL.revokeObjectURL(url);
 };
 
+/**
+ * TopCustomersChart component
+ * Displays a vertical bar chart of the top customers by spend.
+ * Allows filtering by year, quarter, month, state, and store.
+ * Clicking a bar navigates to the order history for that customer.
+ * Includes CSV download and reset filters functionality.
+ */
 const TopCustomersChart = () => {
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
 
+    // Get initial filters from URL if present (for drill-down from other charts)
     const getInitialFilters = () => {
         const monthFromUrl = searchParams.get('month');
         if (monthFromUrl) {
@@ -42,6 +52,7 @@ const TopCustomersChart = () => {
         return defaultFilters;
     };
 
+    // State for filters, chart data, and loading status
     const [filters, setFilters] = useState(getInitialFilters());
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -58,6 +69,7 @@ const TopCustomersChart = () => {
         return backendFilters;
     };
 
+    // Fetch chart data from backend API whenever filters change
     useEffect(() => {
         setLoading(true);
         const params = new URLSearchParams();
@@ -78,6 +90,7 @@ const TopCustomersChart = () => {
     // eslint-disable-next-line
     }, [filters]);
 
+    // Handle clicking a bar: navigate to the order history for that customer
     const handleBarClick = (barData) => {
         if (barData && barData.name) {
             const customerId = barData.name;
@@ -92,6 +105,7 @@ const TopCustomersChart = () => {
         }
     };
 
+    // Handle filter dropdown/input changes
     const handleFilterChange = (e) => {
         const { name, value } = e.target;
         setFilters(prev => ({
@@ -100,12 +114,13 @@ const TopCustomersChart = () => {
         }));
     };
 
+    // Reset all filters to default values
     const handleResetFilters = () => {
         setFilters({ ...defaultFilters });
     };
 
+    // Hide ChartPage's back button if present (for embedding in other pages)
     useEffect(() => {
-        // Hide ChartPage's back button if present
         const btns = Array.from(document.querySelectorAll('button'));
         btns.forEach(btn => {
             if (
@@ -127,11 +142,12 @@ const TopCustomersChart = () => {
         };
     }, []);
 
+    // Show loading animation while fetching data
     if (loading) {
         return <LoadingPizza />;
     }
 
-    // Helper for months by quarter
+    // Helper for months by quarter (for month dropdown)
     const QUARTER_MONTHS = {
         '1': [0, 1, 2],   // Jan, Feb, Mar
         '2': [3, 4, 5],   // Apr, May, Jun
@@ -141,6 +157,7 @@ const TopCustomersChart = () => {
 
     return (
         <Paper elevation={3} sx={{ width: '100%', p: 2, mb: 2 }}>
+            {/* Filter controls */}
             <Box
                 sx={{
                     mb: 2,
@@ -166,6 +183,7 @@ const TopCustomersChart = () => {
                         style={{ height: 32, padding: '0 8px' }}
                     />
                 </div>
+                {/* Year filter */}
                 <div>
                     <label>Year: </label>
                     <select name="year" value={filters.year} onChange={handleFilterChange} style={{ padding: '5px' }}>
@@ -175,6 +193,7 @@ const TopCustomersChart = () => {
                         <option value="2022">2022</option>
                     </select>
                 </div>
+                {/* Quarter filter */}
                 <div>
                     <label>Quarter: </label>
                     <select
@@ -191,6 +210,7 @@ const TopCustomersChart = () => {
                         <option value="4">Q4</option>
                     </select>
                 </div>
+                {/* Month filter */}
                 <div>
                     <label>Month: </label>
                     <select
@@ -215,6 +235,7 @@ const TopCustomersChart = () => {
                         }
                     </select>
                 </div>
+                {/* State filter */}
                 <div>
                     <label>State: </label>
                     <select name="state" value={filters.state} onChange={handleFilterChange} style={{ padding: '5px' }}>
@@ -225,6 +246,7 @@ const TopCustomersChart = () => {
                         <option value="UT">Utah</option>
                     </select>
                 </div>
+                {/* Reset filters button */}
                 <Button
                     onClick={handleResetFilters}
                     variant="contained"
@@ -241,6 +263,7 @@ const TopCustomersChart = () => {
                 >
                     Reset Filters
                 </Button>
+                {/* Download CSV button */}
                 <Button
                     onClick={() => downloadCSV(data)}
                     variant="contained"
@@ -259,6 +282,7 @@ const TopCustomersChart = () => {
                     Download Report
                 </Button>
             </Box>
+            {/* Bar chart of top customers */}
             <ResponsiveContainer width="100%" height={400}>
                 <BarChart
                     layout="vertical"
@@ -278,6 +302,7 @@ const TopCustomersChart = () => {
                     <Bar dataKey="spend" name="Total Spend" fill="#faa28a" onClick={handleBarClick} />
                 </BarChart>
             </ResponsiveContainer>
+            {/* Back to Customer Dashboard button */}
             <Box sx={{ display: "flex", justifyContent: "center", mt: 3 }}>
                 <Button
                     component={Link}
@@ -302,6 +327,5 @@ const TopCustomersChart = () => {
         </Paper>
     );
 };
-
 
 export default TopCustomersChart;

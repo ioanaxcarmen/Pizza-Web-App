@@ -1,7 +1,8 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
-  Box, CssBaseline, Paper, useTheme, useMediaQuery, Typography
+  Box, CssBaseline, Paper, useTheme, useMediaQuery, Typography, Button, Divider
 } from '@mui/material';
+import { useNavigate } from 'react-router-dom'; 
 import { motion } from 'framer-motion';
 import ProductCohortSalesLineChart from './ProductCohortSalesLineChart';
 import ProductDistributionPieCharts from './ProductDistributionPieCharts';
@@ -16,6 +17,8 @@ const drawerWidth = 230;
 const ProductsDashboard = (props) => {
   const theme = useTheme();
   const isMdUp = useMediaQuery(theme.breakpoints.up('md'));
+  const navigate = useNavigate(); 
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   // Inject Google Fonts: Inter + Roboto
   useEffect(() => {
@@ -85,111 +88,133 @@ const ProductsDashboard = (props) => {
   );
 
   return (
-    <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: "#f5f7fb", fontFamily: "'Inter', 'Roboto', sans-serif" }}>
-      <CssBaseline />
-      {isMdUp && <Sidebar />}
-      <Box sx={{ flexGrow: 1, ml: { md: `${drawerWidth}px` }, display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-        <TopBar title="Products Dashboard" {...props} />
-        <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', p: { xs: 1, md: 3 } }}>
-          {/* Widget tổng số orders và animation pizza */}
-          <Box
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'flex-start',
-              mt: 5,
-              mb: 3,
-              width: '100%' // Thêm dòng này
-            }}
-          >
-            <OrdersSoldWidget />
-          </Box>
-
-          {/* Các widget biểu đồ */}
-          <Box sx={{ width: '100%' }}>
-            <motion.div
-              initial={{ opacity: 0, y: 24 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.5 }}
-              transition={{ duration: 0.8, delay: 0.1 }}
+    <>
+      <TopBar onMenuClick={() => setMobileOpen(true)} {...props} />
+      <Sidebar mobileOpen={mobileOpen} setMobileOpen={setMobileOpen} />
+      <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: "#f5f7fb", fontFamily: "'Inter', 'Roboto', sans-serif" }}>
+        <CssBaseline />
+        {isMdUp && <Sidebar />}
+        <Box sx={{ flexGrow: 1, ml: { md: `${drawerWidth}px` }, display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+          <TopBar title="Products Dashboard" onMenuClick={() => setMobileOpen(true)} {...props} />
+          <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', p: { xs: 1, md: 3 } }}>
+            {/* Widget tổng số orders và animation pizza */}
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'flex-start',
+                mt: 5,
+                mb: 3,
+                width: '100%' // Thêm dòng này
+              }}
             >
-              <Paper elevation={3} sx={{
-                borderRadius: 5,
-                p: 3,
-                mb: 4,
-                boxShadow: "0 4px 16px rgba(250, 162, 138, 0.08)",
-                fontFamily: "'Inter', 'Roboto', sans-serif"
-              }}>
-                <Typography variant="h6" fontWeight="bold" sx={{ mb: 2, fontFamily: "'Inter', 'Roboto', sans-serif" }}>
-                  Product Cohort Sales Over Time
-                </Typography>
-                <ProductCohortSalesLineChart />
-              </Paper>
-            </motion.div>
+              <OrdersSoldWidget />
+            </Box>
 
-            <motion.div
-              initial={{ opacity: 0, y: 24 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.5 }}
-              transition={{ duration: 0.8, delay: 0.2 }}
-            >
-              <Paper elevation={3} sx={{
-                borderRadius: 5,
-                p: 3,
-                mb: 4,
-                boxShadow: "0 4px 16px rgba(250, 162, 138, 0.08)",
-                fontFamily: "'Inter', 'Roboto', sans-serif"
-              }}>
-                <Typography variant="h6" fontWeight="bold" sx={{ mb: 2, fontFamily: "'Inter', 'Roboto', sans-serif" }}>
-                  Product Revenue Distribution by Category
-                </Typography>
-                <ProductDistributionPieCharts />
-              </Paper>
-            </motion.div>
+            {/* Các widget biểu đồ */}
+            <Box sx={{ width: '100%' }}>
+              <motion.div
+                initial={{ opacity: 0, y: 24 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.5 }}
+                transition={{ duration: 0.8, delay: 0.1 }}
+              >
+                <Paper elevation={3} sx={{
+                  borderRadius: 5,
+                  p: 3,
+                  mb: 4,
+                  boxShadow: "0 4px 16px rgba(250, 162, 138, 0.08)",
+                  fontFamily: "'Inter', 'Roboto', sans-serif"
+                }}>
+                  <Typography variant="h6" fontWeight="bold" sx={{ mb: 2, fontFamily: "'Inter', 'Roboto', sans-serif" }}>
+                    Product Cohort Sales Over Time
+                  </Typography>
+                  <ProductCohortSalesLineChart />
+                </Paper>
+              </motion.div>
 
-            <motion.div
-              initial={{ opacity: 0, y: 24 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.5 }}
-              transition={{ duration: 0.8, delay: 0.3 }}
-            >
-              <Paper elevation={3} sx={{
-                borderRadius: 5,
-                p: 3,
-                mb: 4,
-                boxShadow: "0 4px 16px rgba(250, 162, 138, 0.08)",
-                fontFamily: "'Inter', 'Roboto', sans-serif"
-              }}>
-                <Typography variant="h6" fontWeight="bold" sx={{ mb: 2, fontFamily: "'Inter', 'Roboto', sans-serif" }}>
-                  Product Revenue Distribution by Size
-                </Typography>
-                <ProductRevenuePieBySize />
-              </Paper>
-            </motion.div>
+              <motion.div
+                initial={{ opacity: 0, y: 24 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.5 }}
+                transition={{ duration: 0.8, delay: 0.2 }}
+              >
+                <Paper elevation={3} sx={{
+                  borderRadius: 5,
+                  p: 3,
+                  mb: 4,
+                  boxShadow: "0 4px 16px rgba(250, 162, 138, 0.08)",
+                  fontFamily: "'Inter', 'Roboto', sans-serif"
+                }}>
+                  <Typography variant="h6" fontWeight="bold" sx={{ mb: 2, fontFamily: "'Inter', 'Roboto', sans-serif" }}>
+                    Product Revenue Distribution by Category
+                  </Typography>
+                  <ProductDistributionPieCharts />
+                </Paper>
+              </motion.div>
 
-            <motion.div
-              initial={{ opacity: 0, y: 24 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.5 }}
-              transition={{ duration: 0.8, delay: 0.4 }}
-            >
-              <Paper elevation={3} sx={{
-                borderRadius: 5,
-                p: 3,
-                mb: 4,
-                boxShadow: "0 4px 16px rgba(250, 162, 138, 0.08)",
-                fontFamily: "'Inter', 'Roboto', sans-serif"
-              }}>
-                <Typography variant="h6" fontWeight="bold" sx={{ mb: 2, fontFamily: "'Inter', 'Roboto', sans-serif" }}>
-                  Top Selling Products
-                </Typography>
-                <TopSellingProductsChart />
-              </Paper>
-            </motion.div>
+              <motion.div
+                initial={{ opacity: 0, y: 24 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.5 }}
+                transition={{ duration: 0.8, delay: 0.3 }}
+              >
+                <Paper elevation={3} sx={{
+                  borderRadius: 5,
+                  p: 3,
+                  mb: 4,
+                  boxShadow: "0 4px 16px rgba(250, 162, 138, 0.08)",
+                  fontFamily: "'Inter', 'Roboto', sans-serif"
+                }}>
+                  <Typography variant="h6" fontWeight="bold" sx={{ mb: 2, fontFamily: "'Inter', 'Roboto', sans-serif" }}>
+                    Product Revenue Distribution by Size
+                  </Typography>
+                  <ProductRevenuePieBySize />
+                </Paper>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 24 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.5 }}
+                transition={{ duration: 0.8, delay: 0.4 }}
+              >
+                <Paper elevation={3} sx={{
+                  borderRadius: 5,
+                  p: 3,
+                  mb: 4,
+                  boxShadow: "0 4px 16px rgba(250, 162, 138, 0.08)",
+                  fontFamily: "'Inter', 'Roboto', sans-serif"
+                }}>
+                  <Typography variant="h6" fontWeight="bold" sx={{ mb: 2, fontFamily: "'Inter', 'Roboto', sans-serif" }}>
+                    Top Selling Products
+                  </Typography>
+                  <TopSellingProductsChart />
+                </Paper>
+              </motion.div>
+            </Box>
+
+            <Divider sx={{ my: 4 }} />
+
+            {/* Back to Main Menu button */}
+            <Box sx={{ display: "flex", justifyContent: "center" }}>
+              <Button
+                variant="contained"
+                sx={{
+                  background: "#faa28a",
+                  borderRadius: "32px",
+                  color: "#fff",
+                  '&:hover': { background: "#fa7a1c" }
+                }}
+                onClick={() => navigate("/dashboard")}
+              >
+                Back to Main Menu
+              </Button>
+            </Box>
           </Box>
         </Box>
       </Box>
-    </Box>
+    </>
   );
 };
 

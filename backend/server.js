@@ -826,10 +826,7 @@ app.get('/api/kpi/churn-risk', async (req, res) => {
     }
 });
 
-//origianl localhost
-// app.listen(port, () => {
-//     console.log(`Backend server running at http://localhost:${port}`);
-// });
+// Store Performance Ranking (NEW)
 app.get('/api/kpi/store-performance-ranking', async (req, res) => {
     let connection;
     const binds = {};
@@ -1003,7 +1000,7 @@ app.get('/api/kpi/avg-order-value-by-store', async (req, res) => {
     }
 });
 
-
+// Top Stores by Products Sold KPI
 app.get('/api/kpi/top-stores-by-products-sold', async (req, res) => {
     let connection;
     const binds = {};
@@ -1074,6 +1071,36 @@ app.get('/api/kpi/top-stores-by-products-sold', async (req, res) => {
     }
 });
 
+// Total Stores Count KPI
+app.get('/api/kpi/total-stores-count', async (req, res) => {
+    let connection;
+    try {
+        connection = await oracledb.getConnection(dbConfig);
+
+        const query = `
+            SELECT COUNT(DISTINCT STOREID) AS TOTAL_STORES
+            FROM STORES
+        `;
+
+        console.log("Executing Total Stores Count Query:", query);
+        const result = await connection.execute(query, [], { outFormat: oracledb.OUT_FORMAT_ARRAY });
+        console.log("Total Stores Count Query result rows:", result.rows);
+
+        // The result will be a single row with one column: [ [count] ]
+        const totalStores = result.rows.length > 0 ? Number(result.rows[0][0]) : 0;
+
+        res.json({ totalStores: totalStores });
+
+    } catch (err) {
+        console.error("Error in /total-stores-count:", err);
+        res.status(500).json({ error: 'Failed to fetch total stores count.', details: err.message });
+    } finally {
+        if (connection) {
+            try { await connection.close(); } catch (e) { console.error(e); }
+        }
+    }
+});
+
 // Product Monthly Sales Since Launch
 app.get('/api/kpi/product-monthly-sales-since-launch', async (req, res) => {
     let connection;
@@ -1114,6 +1141,7 @@ app.get('/api/kpi/product-monthly-sales-since-launch', async (req, res) => {
         if (connection) { try { await connection.close(); } catch (e) { console.error(e); } }
     }
 });
+
 // Product Sales Distribution KPI
 app.get('/api/kpi/product-sales-distribution', async (req, res) => {
     let connection;

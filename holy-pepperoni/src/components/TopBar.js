@@ -17,24 +17,33 @@ import BellAnimation from "./BellAnimation";
 
 const drawerWidth = 230;
 
-// Thông báo giả
+// Dummy notifications for the bell dropdown
 const dummyNotifications = [
   { id: 1, title: "New order received", time: "2 minutes ago" },
   { id: 2, title: "Stock level low", time: "10 minutes ago" },
   { id: 3, title: "Pizza of the month updated", time: "1 hour ago" }
 ];
 
-function TopBar({ title = "", onLogout }) {
-  // State cho dropdown chuông
+/**
+ * TopBar component
+ * Displays the top navigation bar with title, notification bell, and user avatar.
+ * Shows a menu button on mobile for opening the sidebar.
+ * Props:
+ *   - title: string, page title to display
+ *   - onLogout: function, called when user clicks logout
+ *   - onMenuClick: function, called when menu button is clicked (mobile)
+ */
+function TopBar({ title = "", onLogout, onMenuClick }) {
+  // State for bell (notification) dropdown menu
   const [anchorBell, setAnchorBell] = useState(null);
-  // State cho dropdown avatar
+  // State for avatar (user) dropdown menu
   const [anchorAvatar, setAnchorAvatar] = useState(null);
 
-  // Mở đóng menu bell
+  // Open/close handlers for bell menu
   const handleBellClick = (event) => setAnchorBell(event.currentTarget);
   const handleBellClose = () => setAnchorBell(null);
 
-  // Mở đóng menu avatar
+  // Open/close handlers for avatar menu
   const handleAvatarClick = (event) => setAnchorAvatar(event.currentTarget);
   const handleAvatarClose = () => setAnchorAvatar(null);
 
@@ -42,8 +51,8 @@ function TopBar({ title = "", onLogout }) {
     <AppBar
       position="fixed"
       sx={{
-        width: { md: `calc(100% - ${drawerWidth}px)` },
-        ml: { md: `${drawerWidth}px` },
+        width: { md: `calc(100% - ${drawerWidth}px)` }, // Responsive width with sidebar
+        ml: { md: `${drawerWidth}px` }, // Margin for sidebar
         background: "linear-gradient(90deg, #faa28a 0%, #fff 100%)",
         color: "#232a37",
         boxShadow: "0 2px 8px rgba(35,42,55,0.04)"
@@ -51,18 +60,22 @@ function TopBar({ title = "", onLogout }) {
       elevation={1}
     >
       <Toolbar sx={{ display: 'flex', justifyContent: 'space-between', minHeight: 68 }}>
+        {/* Left: Menu button (mobile) and page title */}
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <IconButton color="inherit" sx={{ display: { md: 'none' } }}>
+          {/* Menu icon only visible on mobile */}
+          <IconButton color="inherit" sx={{ display: { md: 'none' } }} onClick={onMenuClick}>
             <MenuIcon />
           </IconButton>
+          {/* Page title */}
           {title && (
             <Typography variant="h6" sx={{ fontWeight: 700, fontFamily: "'Inter', 'Roboto', sans-serif" }}>
               {title}
             </Typography>
           )}
         </Box>
+        {/* Right: Notification bell and user avatar */}
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          {/* Bell icon với dropdown */}
+          {/* Bell icon with dropdown notifications */}
           <IconButton color="inherit" onClick={handleBellClick}>
             <BellAnimation />
           </IconButton>
@@ -78,6 +91,7 @@ function TopBar({ title = "", onLogout }) {
           >
             <Typography sx={{ p: 2, fontWeight: 700 }}>Notifications</Typography>
             <Divider />
+            {/* Show notifications or a message if none */}
             {dummyNotifications.length === 0 ? (
               <MenuItem disabled>
                 <ListItemText primary="No notifications" />
@@ -93,7 +107,7 @@ function TopBar({ title = "", onLogout }) {
               ))
             )}
           </Menu>
-          {/* Avatar với menu logout */}
+          {/* Avatar with dropdown menu for logout */}
           <IconButton color="inherit" onClick={handleAvatarClick} sx={{ ml: 1 }}>
             <Avatar sx={{ bgcolor: "#faa28a", width: 36, height: 36 }}>
               <AccountCircle sx={{ color: "#fff" }} />
@@ -109,6 +123,7 @@ function TopBar({ title = "", onLogout }) {
             anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
             transformOrigin={{ vertical: 'top', horizontal: 'right' }}
           >
+            {/* Logout menu item */}
             <MenuItem onClick={() => { handleAvatarClose(); onLogout && onLogout(); }}>
               <ListItemText primary="Logout" />
             </MenuItem>

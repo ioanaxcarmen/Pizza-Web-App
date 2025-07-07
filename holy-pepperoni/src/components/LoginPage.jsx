@@ -2,9 +2,10 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../firebase";
-import logo from './logo.png'; // Adjust the path as necessary
+import logo from './logo.png'; 
 import { DotLottieReact } from '@lottiefiles/dotlottie-react';
 
+// Inline styles for the login page and its elements
 const styles = {
     page: {
         minHeight: "100vh",
@@ -76,32 +77,41 @@ const styles = {
 };
 
 const LoginPage = () => {
+    // State for email and password input fields
     const [email, setEmail] = useState("admin@pizza.com");
     const [password, setPassword] = useState("pizza1"); 
+    // State for error messages
     const [error, setError] = useState("");
-    const [loginState, setLoginState] = useState('idle'); // 'idle', 'loading', 'success'
+    // State for login process: 'idle', 'loading', or 'success'
+    const [loginState, setLoginState] = useState('idle');
     const navigate = useNavigate();
 
+    // Redirect to dashboard after successful login, with a short delay for animation
     useEffect(() => {
         if (loginState === 'success') {
             const timer = setTimeout(() => {
                 navigate("/dashboard");
-            }, 1500); 
+            }, 1500); // 1.5 second delay for success animation
             return () => clearTimeout(timer);
         }
     }, [loginState, navigate]);
 
+    // Handles the login form submission
     const handleLogin = async (e) => {
         e.preventDefault();
         setError("");
         setLoginState('loading');
 
         try {
+            // Attempt to sign in with Firebase authentication
             const userCredential = await signInWithEmailAndPassword(auth, email, password);
+            // Get the user's authentication token
             const token = await userCredential.user.getIdToken();
+            // Store the token in localStorage for session management
             localStorage.setItem("authToken", token);
             setLoginState('success');
         } catch (err) {
+            // Show error message if login fails
             setError("Invalid email or password");
             setLoginState('idle');
         }
@@ -109,6 +119,7 @@ const LoginPage = () => {
 
     return (
         <div style={styles.page}>
+            {/* Show success animation if login was successful */}
             {loginState === 'success' ? (
                 <div className="lottie-container">
                     <DotLottieReact
@@ -119,12 +130,16 @@ const LoginPage = () => {
                 </div>
             ) : (
                 <>
+                    {/* App header */}
                     <div style={styles.header}>Holy Pepperoni</div>
+                    {/* Login card */}
                     <div style={styles.card}>
                         <h2 style={{ marginBottom: "12px" }}>Log In</h2>
+                        {/* Logo image */}
                         <div style={styles.logo}>
                             <img src={logo} alt="Logo" style={{ width: "100px", height: "100px", borderRadius: "50%" }} />
                         </div>
+                        {/* Login form */}
                         <form style={{ width: "100%" }} onSubmit={handleLogin}>
                             <div>
                                 <label style={styles.label}>Email</label>
@@ -142,7 +157,9 @@ const LoginPage = () => {
                                     required autoComplete="current-password"
                                 />
                             </div>
+                            {/* Show error message if login fails */}
                             {error && <p style={{ color: 'red', textAlign: 'center' }}>{error}</p>}
+                            {/* Login button, shows loading state if logging in */}
                             <button style={styles.button} type="submit" disabled={loginState === 'loading'}>
                                 {loginState === 'loading' ? 'Logging In...' : 'Log In'}
                             </button>
@@ -151,6 +168,7 @@ const LoginPage = () => {
                 </>
             )}
 
+            {/* Style for the Lottie animation container */}
             <style>
                 {`
                 .lottie-container {
