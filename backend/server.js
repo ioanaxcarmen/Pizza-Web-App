@@ -10,8 +10,8 @@ const port = 3001; // The backend will run on this port
 const dbConfig = {
     user: "PIZZA",
     password: "MyPizza123", // The password you created for the PIZZA user
-    //connectString: "localhost:1521/XE"
-    connectString: "localhost:1521/XEPDB1" //use this if you are using the default Oracle XE database
+    connectString: "localhost:1521/XE"
+    //connectString: "localhost:1521/XEPDB1" //use this if you are using the default Oracle XE database
 };
 
 // A test API endpoint to see if the connection works
@@ -1313,7 +1313,140 @@ app.get('/api/kpi/product-revenue-by-size', async (req, res) => {
     }
 });
 
-// Start the server on the specified port local IP address
-app.listen(port, '0.0.0.0', () => {
+// Store summary endpoint
+app.get('/api/kpi/store-summary', async (req, res) => {
+    let connection;
+    try {
+        connection = await oracledb.getConnection(dbConfig);
+        const binds = {
+            state: req.query.state && req.query.state !== 'all' ? req.query.state : 'all'
+        };
+
+        const query = `
+            SELECT 
+                storeid,
+                city,
+                state,
+                (33 - revenue_rank)        AS revenue_point,
+                (33 - avg_value_rank)      AS avg_value_point,
+                (33 - order_count_rank)    AS order_count_point,
+                (33 - active_cust_rank)    AS active_cust_point,
+                (33 - customer_share_rank) AS customer_share_point
+            FROM v_store_performance_rank
+            WHERE (:state = 'all' OR state = :state)
+            ORDER BY revenue_point DESC
+        `;
+
+        const result = await connection.execute(query, binds);
+
+        const data = result.rows.map(row => ({
+            storeid: row[0],
+            city: row[1],
+            state: row[2],
+            revenue_point: row[3],
+            avg_value_point: row[4],
+            order_count_point: row[5],
+            active_cust_point: row[6],
+            customer_share_point: row[7],
+        }));
+
+        res.json(data);
+    } catch (err) {
+        console.error("Error fetching store summary:", err);
+        res.status(500).json({ error: 'Failed to fetch store summary.' });
+    } finally {
+        if (connection) { try { await connection.close(); } catch (e) { } }
+    }
+});
+
+// New endpoint: Items by Category and Hour
+app.get('/api/kpi/items-by-category-hour', async (req, res) => {
+    let connection;
+    try {
+        connection = await oracledb.getConnection(dbConfig);
+
+        // Lấy tổng số items theo category và giờ đặt hàng
+        const query = `
+            SELECT
+                EXTRACT(HOUR FROM o.ORDERDATE) AS order_hour,
+                c.NAME AS category,
+                SUM(oi.QUANTITY) AS total_items
+            FROM
+                ORDERS o
+            JOIN
+                ORDER_ITEMS oi ON o.ID = oi.ORDERID
+            JOIN
+                PRODUCTS p ON oi.SKU = p.SKU
+            JOIN
+                CATEGORIES c ON p.CATEGORY_ID = c.ID
+            GROUP BY
+                EXTRACT(HOUR FROM o.ORDERDATE), c.NAME
+            ORDER BY
+                order_hour, category
+        `;
+
+        const result = await connection.execute(query);
+
+        // Format lại dữ liệu cho frontend: [{ order_hour, category, total_items }]
+        const data = result.rows.map(row => ({
+            order_hour: Number(row[0]),
+            category: row[1],
+            total_items: Number(row[2])
+        }));
+
+        res.json(data);
+    } catch (err) {
+        console.error("Error fetching items by category and hour:", err);
+        res.status(500).json({ error: 'Failed to fetch items by category and hour.' });
+    } finally {
+        if (connection) { try { await connection.close(); } catch (e) { } }
+    }
+});
+
+// New endpoint: Items by Size and Hour
+app.get('/api/kpi/items-by-size-hour', async (req, res) => {
+    let connection;
+    try {
+        connection = await oracledb.getConnection(dbConfig);
+
+        // Lấy tổng số items theo size và giờ đặt hàng
+        const query = `
+            SELECT
+                EXTRACT(HOUR FROM o.ORDERDATE) AS order_hour,
+                ps.NAME AS "size",
+                SUM(oi.QUANTITY) AS total_items
+            FROM
+                ORDERS o
+            JOIN
+                ORDER_ITEMS oi ON o.ID = oi.ORDERID
+            JOIN
+                PRODUCTS p ON oi.SKU = p.SKU
+            JOIN
+                PRODUCTSIZES ps ON p.SIZE_ID = ps.ID
+            GROUP BY
+                EXTRACT(HOUR FROM o.ORDERDATE), ps.NAME
+            ORDER BY
+                order_hour, "size"
+        `;
+
+        const result = await connection.execute(query);
+
+        // Format lại dữ liệu cho frontend: [{ order_hour, size, total_items }]
+        const data = result.rows.map(row => ({
+            order_hour: Number(row[0]),
+            size: row[1],
+            total_items: Number(row[2])
+        }));
+
+        res.json(data);
+    } catch (err) {
+        console.error("Error fetching items by size and hour:", err);
+        res.status(500).json({ error: 'Failed to fetch items by size and hour.' });
+    } finally {
+        if (connection) { try { await connection.close(); } catch (e) { } }
+    }
+});
+
+app.listen(port, () => {
     console.log(`Backend server running at http://localhost:${port}`);
 });

@@ -29,8 +29,8 @@ const StoreKPIRadarChart = () => {
         setLoading(true);
         const params = new URLSearchParams();
         params.append('state', filters.state);
-        // Expected API: Returns an array of store summary objects with keys:
-        // storeid, city, state, total_orders, total_revenue, avg_order_value, active_customers, customer_share_pct
+        // API: Returns an array of store summary objects with keys:
+        // storeid, city, state, total_orders, total_revenue, avg_order_value, active_customers, customer_share_pct, revenue_rank
         axios.get(`${process.env.REACT_APP_API_URL}/api/kpi/store-summary?${params.toString()}`)
             .then(response => {
                 setRawData(response.data);
@@ -52,11 +52,11 @@ const StoreKPIRadarChart = () => {
             return;
         }
         const kpiLabels = [
-            { label: 'Total Orders', key: 'total_orders' },
-            { label: 'Total Revenue', key: 'total_revenue' },
-            { label: 'Avg Order Value', key: 'avg_order_value' },
-            { label: 'Active Customers', key: 'active_customers' },
-            { label: 'Customer Share (%)', key: 'customer_share_pct' }
+          { label: 'Revenue', key: 'revenue_point' },
+          { label: 'Avg Order Value', key: 'avg_value_point' },
+          { label: 'Order Count', key: 'order_count_point' },
+          { label: 'Active Customers', key: 'active_cust_point' },
+         { label: 'Customer Share (%)', key: 'customer_share_point' }
         ];
         // Initialize pivot array with one row per KPI
         const pivot = kpiLabels.map(item => ({ kpi: item.label }));
@@ -98,10 +98,10 @@ const StoreKPIRadarChart = () => {
                     >
                         <option value="all">All</option>
                         {/* Replace the static list with dynamic states if available */}
-                        <option value="CA">CA</option>
-                        <option value="NV">NV</option>
-                        <option value="AZ">AZ</option>
-                        <option value="UT">UT</option>
+                        <option value="California">California</option>
+                        <option value="Nevada">Nevada</option>
+                        <option value="Arizona">Arizona</option>
+                        <option value="Utah">Utah</option>
                     </select>
                 </label>
             </div>

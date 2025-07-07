@@ -136,11 +136,13 @@ const IngredientsConsumeOverTimeChart = () => {
     const getCustomDot = (ingredient) => (props) => {
         const { cx, cy, value } = props;
         const stats = ingredientStats[ingredient];
-        if (!stats) return <circle cx={cx} cy={cy} r={4} fill={lineColors[filters.ingredient.indexOf(ingredient) % lineColors.length]} />;
+        if (!stats) return null;
         if (value > stats.mean + 2 * stats.std || value < stats.mean - 2 * stats.std) {
+            // Highlight outlier node in red
             return <circle cx={cx} cy={cy} r={8} fill="red" stroke="black" />;
         }
-        return <circle cx={cx} cy={cy} r={4} fill={lineColors[filters.ingredient.indexOf(ingredient) % lineColors.length]} />;
+        // All other nodes: default color (do not override)
+        return null;
     };
 
     // Average line data
@@ -160,6 +162,20 @@ const IngredientsConsumeOverTimeChart = () => {
     const handleGranularityChange = (e) => {
         setFilters(prev => ({ ...prev, granularity: e.target.value }));
     };
+
+    let mergedChartData = chartData;
+    if (showAverage && chartData.length > 0 && filters.ingredient.length > 0) {
+        mergedChartData = chartData.map(row => {
+            const keys = filters.ingredient.length === 1
+                ? ['total_consumed']
+                : Object.keys(row).filter(key => key !== 'time');
+            const values = keys.map(k => Number(row[k]) || 0);
+            const avg = values.length ? values.reduce((a, b) => a + b, 0) / values.length : 0;
+            return { ...row, average: avg };
+        });
+    } else {
+        mergedChartData = chartData;
+    }
 
     return (
         <div style={{ width: '100%', position: 'relative', padding: '20px' }}>
@@ -241,7 +257,7 @@ const IngredientsConsumeOverTimeChart = () => {
                 <LoadingPizza />
             ) : (
                 <ResponsiveContainer width="100%" height={400}>
-                    <LineChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                    <LineChart data={mergedChartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
                         <CartesianGrid strokeDasharray="3 3" />
                         <XAxis dataKey="time" />
                         <YAxis />
@@ -253,18 +269,18 @@ const IngredientsConsumeOverTimeChart = () => {
                                 dataKey="total_consumed"
                                 name="Total Consumed"
                                 stroke="#8884d8"
-                                dot={enableOutlierDetection ? getCustomDot('total_consumed') : undefined}
+                                dot={enableOutlierDetection ? getCustomDot('total_consumed') : true}
                             />
                         ) : (
-                            chartData.length > 0 &&
-                            Object.keys(chartData[0]).filter(key => key !== 'time').map((ingredient, index) => (
+                            mergedChartData.length > 0 &&
+                            Object.keys(mergedChartData[0]).filter(key => key !== 'time').map((ingredient, index) => (
                                 <Line
                                     key={ingredient}
                                     type="monotone"
                                     dataKey={ingredient}
                                     name={ingredient}
                                     stroke={lineColors[index % lineColors.length]}
-                                    dot={enableOutlierDetection ? getCustomDot(ingredient) : undefined}
+                                    dot={enableOutlierDetection ? getCustomDot(ingredient) : true}
                                 />
                             ))
                         )}

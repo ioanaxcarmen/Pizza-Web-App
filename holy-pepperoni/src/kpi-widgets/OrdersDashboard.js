@@ -6,6 +6,8 @@ import Sidebar from '../components/Sidebar';
 import TopBar from '../components/TopBar';
 import OrdersDistributionWeekdayChart from './OrdersDistributionWeekdayChart';
 import OrdersDistributionWeekdaySizeChart from './OrdersDistributionWeekdaySizeChart';
+import OrdersDistributionHourlyCategory from './OrdersDistributionHourlyCategory';
+import OrdersDistributionHourlySize from './OrdersDistributionHourlySize';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import PizzaLottie from '../components/PizzaLottie';
@@ -92,9 +94,10 @@ const OrdersDashboard = (props) => {
           <Box sx={{ mb: 3, width: '100%' }}>
             <OrdersSoldWidget />
           </Box>
-          {/* Chart 1 */}
-          <Box sx={{ mb: 3, width: '100%' }}>
+          {/* Chart 1 & 2: Weekday charts side by side */}
+          <Box sx={{ mb: 3, width: '100%', display: 'flex', gap: 3, flexDirection: { xs: 'column', md: 'row' } }}>
             <Paper elevation={3} sx={{
+              flex: 1,
               borderRadius: 5,
               p: 3,
               boxShadow: "0 4px 16px rgba(250, 162, 138, 0.08)",
@@ -102,16 +105,35 @@ const OrdersDashboard = (props) => {
             }}>
               <OrdersDistributionWeekdayChart />
             </Paper>
-          </Box>
-          {/* Chart 2 */}
-          <Box sx={{ width: '100%' }}>
             <Paper elevation={3} sx={{
+              flex: 1,
               borderRadius: 5,
               p: 3,
               boxShadow: "0 4px 16px rgba(250, 162, 138, 0.08)",
               fontFamily: "'Inter', 'Roboto', sans-serif"
             }}>
               <OrdersDistributionWeekdaySizeChart />
+            </Paper>
+          </Box>
+          {/* Chart 3 & 4: Hourly charts side by side */}
+          <Box sx={{ mb: 3, width: '100%', display: 'flex', gap: 3, flexDirection: { xs: 'column', md: 'row' } }}>
+            <Paper elevation={3} sx={{
+              flex: 1,
+              borderRadius: 5,
+              p: 3,
+              boxShadow: "0 4px 16px rgba(250, 162, 138, 0.08)",
+              fontFamily: "'Inter', 'Roboto', sans-serif"
+            }}>
+              <OrdersDistributionHourlyCategory />
+            </Paper>
+            <Paper elevation={3} sx={{
+              flex: 1,
+              borderRadius: 5,
+              p: 3,
+              boxShadow: "0 4px 16px rgba(250, 162, 138, 0.08)",
+              fontFamily: "'Inter', 'Roboto', sans-serif"
+            }}>
+              <OrdersDistributionHourlySize />
             </Paper>
           </Box>
         </Box>

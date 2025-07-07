@@ -102,13 +102,13 @@ const IngredientsDashboard = (props) => {
         <Box sx={{ mt: 10, p: { xs: 1, md: 3 } }}>
           {/* Stats Widgets */}
           <Grid container spacing={2} sx={{ mb: 3 }}>
-            <Grid item xs={12} sm={4} md={4}>
+            <Grid>
               <DashboardStat label="Total Ingredients" value={stats.totalIngredients} />
             </Grid>
-            <Grid item xs={12} sm={4} md={4}>
+            <Grid>
               <DashboardStat label="Min Ingredients per Product" value={stats.minIngredients} />
             </Grid>
-            <Grid item xs={12} sm={4} md={4}>
+            <Grid>
               <DashboardStat label="Max Ingredients per Product" value={stats.maxIngredients} />
             </Grid>
           </Grid>
@@ -179,8 +179,8 @@ const IngredientsDashboard = (props) => {
             <Typography variant="h6" fontWeight="bold" sx={{ mb: 2 }}>
               Top 5 Ingredients - Total Quantity Used
             </Typography>
-            <Box sx={{ flex: 1, minHeight: 0 }}>
-              <TopIngredientsChart topN={5} />
+            <Box sx={{ flex: 1, minHeight: 600 }}>
+              <TopIngredientsChart />
             </Box>
           </Paper>
 
