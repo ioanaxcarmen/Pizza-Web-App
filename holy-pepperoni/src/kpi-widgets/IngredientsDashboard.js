@@ -38,6 +38,7 @@ const IngredientsDashboard = (props) => {
     maxIngredients: '...'
   });
   const [selectedState, setSelectedState] = useState(null);
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   const handleStateClick = (stateObj) => {
     setSelectedState(stateObj.abbr);
@@ -98,7 +99,7 @@ const IngredientsDashboard = (props) => {
       <CssBaseline />
       {isMdUp && <Sidebar />}
       <Box sx={{ flexGrow: 1, ml: { md: `${drawerWidth}px` } }}>
-        <TopBar title="Ingredients Dashboard" {...props} />
+        <TopBar title="Ingredients Dashboard" onMenuClick={() => setMobileOpen(true)} {...props} />
         <Box sx={{ mt: 10, p: { xs: 1, md: 3 } }}>
           {/* Stats Widgets */}
           <Grid container spacing={2} sx={{ mb: 3 }}>
@@ -206,6 +207,7 @@ const IngredientsDashboard = (props) => {
           </Box>
         </Box>
       </Box>
+      <Sidebar mobileOpen={mobileOpen} setMobileOpen={setMobileOpen} />
     </Box>
   );
 };

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
     Box, CssBaseline, Typography, Paper, Button, Grid, Divider, useTheme, useMediaQuery
 } from '@mui/material';
@@ -21,6 +21,7 @@ const drawerWidth = 230;
 const pageTitle = "Customer Dashboard";
 
 const CustomerDashboard = () => {
+    const [mobileOpen, setMobileOpen] = useState(false);
     const navigate = useNavigate();
     const theme = useTheme();
     const isMdUp = useMediaQuery(theme.breakpoints.up('md'));
@@ -35,13 +36,12 @@ const CustomerDashboard = () => {
     }, []);
 
     return (
-        <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: "#f5f7fb" }}>
-            <CssBaseline />
-            {isMdUp && <Sidebar />}
+        <>
+            <TopBar title={pageTitle} onMenuClick={() => setMobileOpen(true)} />
+
+            <Sidebar mobileOpen={mobileOpen} setMobileOpen={setMobileOpen} />
 
             <Box sx={{ flexGrow: 1, ml: { md: `${drawerWidth}px` } }}>
-                <TopBar title={pageTitle} />
-
                 {/* The content area starts here */}
                 <Box sx={{ mt: 10, p: { xs: 1, md: 3 } }}>
                     <Grid container spacing={3} sx={{ justifyContent: 'center', alignItems: 'center' }}>
@@ -130,7 +130,7 @@ const CustomerDashboard = () => {
                     </Box>
                 </Box>
             </Box>
-        </Box>
+        </>
     );
 };
 

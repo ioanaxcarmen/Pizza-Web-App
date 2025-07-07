@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Box, CssBaseline, useTheme, useMediaQuery, Button, Paper, Typography
 } from '@mui/material';
@@ -15,6 +15,7 @@ const OrdersDashboard = (props) => {
   const theme = useTheme();
   const isMdUp = useMediaQuery(theme.breakpoints.up('md'));
   const navigate = useNavigate(); 
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   // Inject Google Fonts: Inter + Roboto
   useEffect(() => {
@@ -87,7 +88,7 @@ const OrdersDashboard = (props) => {
       <CssBaseline />
       {isMdUp && <Sidebar />}
       <Box sx={{ flexGrow: 1, ml: { md: `${drawerWidth}px` }, display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-        <TopBar title="Orders Dashboard" {...props} />
+        <TopBar title="Orders Dashboard" onMenuClick={() => setMobileOpen(true)} {...props} />
         <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', p: { xs: 1, md: 3 }, width: '100%', pt: { xs: 7, md: 10 } }}>
           <Box sx={{ mb: 3, width: '100%' }}>
             <OrdersSoldWidget />
@@ -132,6 +133,7 @@ const OrdersDashboard = (props) => {
           </Box>
         </Box>
       </Box>
+      <Sidebar mobileOpen={mobileOpen} setMobileOpen={setMobileOpen} />
     </Box>
   );
 };

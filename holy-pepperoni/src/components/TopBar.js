@@ -24,7 +24,7 @@ const dummyNotifications = [
   { id: 3, title: "Pizza of the month updated", time: "1 hour ago" }
 ];
 
-function TopBar({ title = "", onLogout }) {
+function TopBar({ title = "", onLogout, onMenuClick }) {
   // State cho dropdown chuông
   const [anchorBell, setAnchorBell] = useState(null);
   // State cho dropdown avatar
@@ -52,7 +52,7 @@ function TopBar({ title = "", onLogout }) {
     >
       <Toolbar sx={{ display: 'flex', justifyContent: 'space-between', minHeight: 68 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <IconButton color="inherit" sx={{ display: { md: 'none' } }}>
+          <IconButton color="inherit" sx={{ display: { md: 'none' } }} onClick={onMenuClick}>
             <MenuIcon />
           </IconButton>
           {title && (
