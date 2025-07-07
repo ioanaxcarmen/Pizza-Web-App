@@ -1073,6 +1073,34 @@ app.get('/api/kpi/top-stores-by-products-sold', async (req, res) => {
         }
     }
 });
+app.get('/api/kpi/total-stores-count', async (req, res) => {
+    let connection;
+    try {
+        connection = await oracledb.getConnection(dbConfig);
+
+        const query = `
+            SELECT COUNT(DISTINCT STOREID) AS TOTAL_STORES
+            FROM STORES
+        `;
+
+        console.log("Executing Total Stores Count Query:", query);
+        const result = await connection.execute(query, [], { outFormat: oracledb.OUT_FORMAT_ARRAY });
+        console.log("Total Stores Count Query result rows:", result.rows);
+
+        // The result will be a single row with one column: [ [count] ]
+        const totalStores = result.rows.length > 0 ? Number(result.rows[0][0]) : 0;
+
+        res.json({ totalStores: totalStores });
+
+    } catch (err) {
+        console.error("Error in /total-stores-count:", err);
+        res.status(500).json({ error: 'Failed to fetch total stores count.', details: err.message });
+    } finally {
+        if (connection) {
+            try { await connection.close(); } catch (e) { console.error(e); }
+        }
+    }
+});
 
 // Product Monthly Sales Since Launch
 app.get('/api/kpi/product-monthly-sales-since-launch', async (req, res) => {

@@ -1,13 +1,19 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react'; // Added useState for the widget's internal state
 import {
   Box, CssBaseline, Paper, useTheme, useMediaQuery, Typography
 } from '@mui/material';
-import { motion } from 'framer-motion';
-import StorePerformanceRankingChart from './StorePerformanceRankingChart';
 import Sidebar from '../components/Sidebar';
 import TopBar from '../components/TopBar';
+// --- Store-specific chart imports ---
+import StorePerformanceRankingChart from '../kpi-widgets/StorePerformanceRankingChart';
+import TopStoresByProductsSoldChart from '../kpi-widgets/TopStoresByProductsSoldChart';
+// Removed TotalStoresWidget import as its functionality is now merged
+// import TotalStoresWidget from '../kpi-widgets/TotalStoresWidget'; 
+
+// Assuming PizzaLottie is used somewhere else or you want to keep it for a future widget
 import PizzaLottie from '../components/PizzaLottie';
-import TopStoresByProductsSoldChart from './TopStoresByProductsSoldChart';
+import { motion } from 'framer-motion';
+import TotalStoresWidget from './TotalStoresWidget';
 
 
 const drawerWidth = 230;
@@ -16,7 +22,7 @@ const StoreDashboards = (props) => {
   const theme = useTheme();
   const isMdUp = useMediaQuery(theme.breakpoints.up('md'));
 
-  // Inject Google Fonts: Inter + Roboto
+  // Inject Google Fonts: Inter + Roboto (Important for consistent styling)
   useEffect(() => {
     const preconnect1 = document.createElement('link');
     preconnect1.rel = 'preconnect';
@@ -41,115 +47,210 @@ const StoreDashboards = (props) => {
     };
   }, []);
 
-  // Widget Orders Sold với PizzaLottie
-  const OrdersSoldWidget = () => (
-    <Paper
-      elevation={2}
-      sx={{
-        p: 3,
-        borderRadius: 5,
-        bgcolor: "#fff7f0",
-        boxShadow: "0 2px 12px rgba(250, 162, 138, 0.12)",
-        fontFamily: "'Inter', 'Roboto', sans-serif",
-        width: '100%',
-        display: 'flex',
-        alignItems: 'center',
-        gap: 3,
-        color: "#fa7a1c"
-      }}
-    >
-      <Box sx={{ flex: 1 }}>
-        <Typography variant="subtitle2" sx={{ color: "#fa7a1c", fontWeight: 700 }}>
-          🎉 Amazing milestone!
-        </Typography>
-        <Typography
-          variant="h4"
-          fontWeight="bold"
-          sx={{ color: "#fa7a1c", fontFamily: "'Inter', 'Roboto', sans-serif", mt: 0.5 }}
-        >
-          2,916,015
-        </Typography>
-        <Typography
-          variant="body1"
-          color="text.secondary"
-          sx={{ fontFamily: "'Inter', 'Roboto', sans-serif" }}
-        >
-          Pizzas Sold!
-        </Typography>
-      </Box>
-      <Box sx={{ width: 150, height: 150 }}>
-        <PizzaLottie style={{ width: "100%", height: "100%" }} />
-      </Box>
-    </Paper>
-  );
+  // --- MODIFIED WIDGET: Now displays Total Stores with PizzaLottie animation ---
+  const TotalStoresAnimatedWidget = () => {
+    const [totalStores, setTotalStores] = useState(0);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
- return (
+    useEffect(() => {
+      const fetchTotalStores = async () => {
+        setLoading(true);
+        setError(null);
+        try {
+          const url = `http://localhost:3001/api/kpi/total-stores-count`; // API endpoint for total stores
+          console.log("Fetching Total Stores Count for Widget from URL:", url);
+
+          const response = await fetch(url);
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          const data = await response.json();
+          console.log("Received Total Stores Count for Widget data:", data);
+          setTotalStores(data.totalStores);
+
+        } catch (err) {
+          console.error("Error fetching total stores count for widget:", err);
+          setError("Failed to load total stores count.");
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      fetchTotalStores();
+    }, []); // Empty dependency array means this runs once on mount
+
+    if (loading) {
+      return (
+        <Paper elevation={2} sx={{ ...widgetStyles, bgcolor: "#fff7f0", color: "#fa7a1c" }}>
+          <Box sx={{ flex: 1 }}>
+            <Typography variant="h6" fontWeight="bold">Loading Stores...</Typography>
+          </Box>
+        </Paper>
+      );
+    }
+
+    if (error) {
+      return (
+        <Paper elevation={2} sx={{ ...widgetStyles, bgcolor: "#ffebee", color: "#d32f2f" }}>
+          <Box sx={{ flex: 1 }}>
+            <Typography variant="h6" fontWeight="bold">{error}</Typography>
+          </Box>
+        </Paper>
+      );
+    }
+
+    return (
+      <Paper
+        elevation={2}
+        sx={{
+          p: 3,
+          borderRadius: 5,
+          bgcolor: "#fff7f0", // Light orange background
+          boxShadow: "0 2px 12px rgba(250, 162, 138, 0.12)",
+          fontFamily: "'Inter', 'Roboto', sans-serif",
+          minWidth: 340,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 3,
+          color: "#fa7a1c"
+        }}
+      >
+        <Box sx={{ flex: 1 }}>
+          <Typography variant="subtitle2" sx={{ color: "#fa7a1c", fontWeight: 700 }}>
+            📍 Our Network
+          </Typography>
+          <Typography
+            variant="h4"
+            fontWeight="bold"
+            sx={{ color: "#fa7a1c", fontFamily: "'Inter', 'Roboto', sans-serif", mt: 0.5 }}
+          >
+            {totalStores.toLocaleString()}
+          </Typography>
+          <Typography
+            variant="body1"
+            color="text.secondary"
+            sx={{ fontFamily: "'Inter', 'Roboto', sans-serif" }}
+          >
+            Stores!
+          </Typography>
+        </Box>
+        <Box sx={{ width: 150, height: 150 }}>
+          <PizzaLottie style={{ width: "100%", height: "100%" }} />
+        </Box>
+      </Paper>
+    );
+  };
+
+  // Styles for the widget (used by TotalStoresAnimatedWidget)
+  const widgetStyles = {
+    p: 3,
+    borderRadius: 5,
+    fontFamily: "'Inter', 'Roboto', sans-serif",
+    minWidth: 300,
+    display: 'flex',
+    alignItems: 'center',
+    gap: 3,
+  };
+  // --- END MODIFIED WIDGET ---
+
+  return (
     <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: "#f5f7fb", fontFamily: "'Inter', 'Roboto', sans-serif" }}>
       <CssBaseline />
       {isMdUp && <Sidebar />}
-      <Box sx={{ flexGrow: 1, ml: { md: `${drawerWidth}px` }, display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-        <TopBar title="Store Menu Page" {...props} />
-        <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', p: { xs: 1, md: 3 } }}>
-          
-          {/* Render the Orders Sold Widget */}
-          <Box sx={{ mb: 4, width: '100%' }}>
-            <OrdersSoldWidget />
-          </Box>
+     
+         
+            <Box sx={{ flexGrow: 1, ml: { md: `${drawerWidth}px` }, display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+              <TopBar title="Stores Dashboard" {...props} />
+              <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', p: { xs: 1, md: 3 } }}>
+                {/* Widget tổng số orders và animation pizza */}
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'flex-start',
+                    mt: 5,
+                    mb: 3,
+                    width: '100%' // Thêm dòng này
+                  }}
+                >
+                  <TotalStoresWidget />
+                </Box>
+              </Box>
 
-          {/* Store Performance Ranking Chart */}
-          <Box sx={{ width: '100%' }}>
+              {/* Store Performance Ranking Chart */}
+              <Box sx={{ width: '100%' }}>
+                <motion.div
+                  initial={{ opacity: 0, y: 24 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, amount: 0.5 }}
+                  transition={{ duration: 0.8, delay: 0.1 }}
+                >
+                  <Paper elevation={3} sx={{
+                    borderRadius: 5,
+                    p: 3,
+                    mb: 4,
+                    boxShadow: "0 4px 16px rgba(250, 162, 138, 0.08)",
+                    fontFamily: "'Inter', 'Roboto', sans-serif"
+                  }}>
+                    <Typography variant="h6" fontWeight="bold" sx={{ mb: 2, fontFamily: "'Inter', 'Roboto', sans-serif" }}>
+                      Store Performance Ranking
+                    </Typography>
+                    <StorePerformanceRankingChart />
+                  </Paper>
+                </motion.div>
+              </Box>
+
+              {/* Top Stores by Products Sold Chart */}
+              <Box sx={{ width: '100%' }}>
+                <motion.div
+                  initial={{ opacity: 0, y: 24 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, amount: 0.5 }}
+                  transition={{ duration: 0.8, delay: 0.2 }}
+                >
+                  <Paper elevation={3} sx={{
+                    borderRadius: 5,
+                    p: 3,
+                    mb: 4,
+                    boxShadow: "0 4px 16px rgba(250, 162, 138, 0.08)",
+                    fontFamily: "'Inter', 'Roboto', sans-serif"
+                  }}>
+                    <Typography variant="h6" fontWeight="bold" sx={{ mb: 2, fontFamily: "'Inter', 'Roboto', sans-serif" }}>
+                      Top Stores by Products Sold
+                    </Typography>
+                    <TopStoresByProductsSoldChart />
+                  </Paper>
+                </motion.div>
+              </Box>
+
+              {/* You can add more store-related charts here, e.g.: */}
+              {/* <Box sx={{ width: '100%' }}>
             <motion.div
               initial={{ opacity: 0, y: 24 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, amount: 0.5 }}
-              transition={{ duration: 0.8, delay: 0.1 }}
+              transition={{ duration: 0.8, delay: 0.3 }}
             >
               <Paper elevation={3} sx={{
                 borderRadius: 5,
                 p: 3,
-                mb: 4, // Add margin-bottom to separate from next chart
+                mb: 4, 
                 boxShadow: "0 4px 16px rgba(250, 162, 138, 0.08)",
                 fontFamily: "'Inter', 'Roboto', sans-serif"
               }}>
                 <Typography variant="h6" fontWeight="bold" sx={{ mb: 2, fontFamily: "'Inter', 'Roboto', sans-serif" }}>
-                  Store Performance Ranking
+                  Store Rank by Active Customers
                 </Typography>
-                <StorePerformanceRankingChart />
+                <StoreRankByCustomersChart />
               </Paper>
             </motion.div>
-          </Box>
+          </Box> */}
 
-          {/* --- ADD THE NEW CHART HERE --- */}
-          {/* Top Stores by Products Sold Chart */}
-          <Box sx={{ width: '100%' }}>
-            <motion.div
-              initial={{ opacity: 0, y: 24 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.5 }}
-              transition={{ duration: 0.8, delay: 0.2 }} 
+            </Box>
+          </Box>
         
-            >
-              <Paper elevation={3} sx={{
-                borderRadius: 5,
-                p: 3,
-                mb: 4, // Add margin-bottom for spacing
-                boxShadow: "0 4px 16px rgba(250, 162, 138, 0.08)",
-                fontFamily: "'Inter', 'Roboto', sans-serif"
-              }}>
-                <Typography variant="h6" fontWeight="bold" sx={{ mb: 2, fontFamily: "'Inter', 'Roboto', sans-serif" }}>
-                  Top Stores by Products Sold
-                </Typography>
-                <TopStoresByProductsSoldChart />
-              </Paper>
-            </motion.div>
-          </Box>
-          {/* --- END NEW CHART --- */}
-
-        </Box>
-      </Box>
-    </Box>
-  );
+        );
 };
 
-
-export default StoreDashboards;
+        export default StoreDashboards;
