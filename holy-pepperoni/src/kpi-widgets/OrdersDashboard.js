@@ -6,11 +6,18 @@ import Sidebar from '../components/Sidebar';
 import TopBar from '../components/TopBar';
 import OrdersDistributionWeekdayChart from './OrdersDistributionWeekdayChart';
 import OrdersDistributionWeekdaySizeChart from './OrdersDistributionWeekdaySizeChart';
+import OrdersByHourChart from './OrdersByHourChart'; 
 import PizzaLottie from '../components/PizzaLottie';
 import { useNavigate } from 'react-router-dom'; 
+import ProductPairsTable from './ProductPairsTable'; 
 
 const drawerWidth = 230;
 
+/**
+ * OrdersDashboard component
+ * Displays the orders dashboard with charts, summary widget, and product pairs table.
+ * Includes a "Back to Main Menu" button at the bottom of the page.
+ */
 const OrdersDashboard = (props) => {
   const theme = useTheme();
   const isMdUp = useMediaQuery(theme.breakpoints.up('md'));
@@ -42,13 +49,14 @@ const OrdersDashboard = (props) => {
     };
   }, []);
 
+  // Widget showing total orders sold
   const OrdersSoldWidget = () => (
     <Paper
       elevation={2}
       sx={{
         p: 3,
         borderRadius: 5,
-        bgcolor: "#fff7f0", // cam nhạt
+        bgcolor: "#fff7f0", // light orange
         boxShadow: "0 2px 12px rgba(250, 162, 138, 0.12)",
         fontFamily: "'Inter', 'Roboto', sans-serif",
         minWidth: 340,
@@ -90,10 +98,11 @@ const OrdersDashboard = (props) => {
       <Box sx={{ flexGrow: 1, ml: { md: `${drawerWidth}px` }, display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
         <TopBar title="Orders Dashboard" onMenuClick={() => setMobileOpen(true)} {...props} />
         <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', p: { xs: 1, md: 3 }, width: '100%', pt: { xs: 7, md: 10 } }}>
+          {/* Orders sold summary widget */}
           <Box sx={{ mb: 3, width: '100%' }}>
             <OrdersSoldWidget />
           </Box>
-          {/* Chart 1 */}
+          {/* Chart 1: Orders by weekday and category */}
           <Box sx={{ mb: 3, width: '100%' }}>
             <Paper elevation={3} sx={{
               borderRadius: 5,
@@ -104,8 +113,8 @@ const OrdersDashboard = (props) => {
               <OrdersDistributionWeekdayChart />
             </Paper>
           </Box>
-          {/* Chart 2 */}
-          <Box sx={{ width: '100%' }}>
+          {/* Chart 2: Orders by weekday and pizza size */}
+          <Box sx={{ mb: 3, width: '100%' }}>
             <Paper elevation={3} sx={{
               borderRadius: 5,
               p: 3,
@@ -115,9 +124,25 @@ const OrdersDashboard = (props) => {
               <OrdersDistributionWeekdaySizeChart />
             </Paper>
           </Box>
-
-          {/* Back to Main Menu button */}
-          <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
+          {/* Chart 3: Orders by hour */}
+          <Box sx={{ mb: 3, width: '100%' }}>
+            <Paper elevation={3} sx={{
+              borderRadius: 5,
+              p: 3,
+              boxShadow: "0 4px 16px rgba(250, 162, 138, 0.08)",
+              fontFamily: "'Inter', 'Roboto', sans-serif"
+            }}>
+              <OrdersByHourChart />
+            </Paper>
+          </Box>
+          {/* Table: Product Pairs (replaces ProductNetworkGraph) */}
+          <Box sx={{ mb: 3, width: '100%' }}>
+            <ProductPairsTable />
+          </Box>
+          {/* Spacer to push the button lower */}
+          <Box sx={{ flexGrow: 1 }} />
+          {/* Back to Main Menu button, now lower on the page */}
+          <Box sx={{ display: "flex", justifyContent: "center", mt: 6, mb: 2 }}>
             <Button
               variant="contained"
               sx={{
