@@ -13,12 +13,15 @@ const AverageOrderValuePerStoreChart = () => {
     const [selectedQuarter, setSelectedQuarter] = useState('all');
     const [selectedMonth, setSelectedMonth] = useState('all');
     const [selectedState, setSelectedState] = useState('all');
+    const [selectedStoreId, setSelectedStoreId] = useState('all');
+    
 
     // Filter options (can be global or fetched dynamically if needed)
-    const years = ['all', '2020', '2021', '2022']; 
+    const years = ['all', '2020', '2021', '2022'];
     const quarters = ['all', '1', '2', '3', '4'];
     const months = ['all', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'];
-    const states = ['all', 'CA', 'UT', 'NV', 'AZ']; 
+    const states = ['all', 'CA', 'UT', 'NV', 'AZ'];
+    const [storesList, setStoresList] = useState([]);
 
     useEffect(() => {
         const fetchChartData = async () => {
@@ -30,6 +33,7 @@ const AverageOrderValuePerStoreChart = () => {
                 if (selectedQuarter !== 'all') queryParams.append('quarter', selectedQuarter);
                 if (selectedMonth !== 'all') queryParams.append('month', selectedMonth);
                 if (selectedState !== 'all') queryParams.append('state', selectedState);
+                if (selectedStoreId !== 'all') queryParams.append('storeId', selectedStoreId);
 
                 // This URL corresponds to the backend endpoint for fetching AOV by store
                 const url = `http://localhost:3001/api/kpi/avg-order-value-by-store?${queryParams.toString()}`;
@@ -123,6 +127,22 @@ const AverageOrderValuePerStoreChart = () => {
                         <option key={state} value={state}>{state === 'all' ? 'All States' : state}</option>
                     ))}
                 </select>
+                <label htmlFor="store-id-select" style={{ ...styles.filterLabel, marginLeft: '20px' }}>Store:</label>
+                <select
+                    id="store-id-select"
+                    value={selectedStoreId}
+                    onChange={(e) => setSelectedStoreId(e.target.value)}
+                    style={styles.select}
+                >
+                    <option value="all">All Stores</option>
+                    {/* Map through the fetched storesList to create dropdown options */}
+                    {storesList.map(store => (
+                        <option key={store.storeid} value={store.storeid}>
+                            {store.name}
+                        </option>
+                    ))}
+                </select>
+
             </div>
 
             {chartData.length === 0 ? (
