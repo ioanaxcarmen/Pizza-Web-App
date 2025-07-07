@@ -15,7 +15,8 @@ import StorePerformanceRankingChart from '../kpi-widgets/StorePerformanceRanking
 import AverageOrderValuePerStoreChart from '../kpi-widgets/AverageOrderValuePerStoreChart';
 import StoreDistanceMap from '../kpi-widgets/StoreDistanceMap';
 import TopCustomervsStoreGeoChart from '../kpi-widgets/TopCustomervsStoreGeoChart';
-import ChurnRiskTable from '../kpi-widgets/ChurnRiskTable'; 
+import ChurnRiskTable from '../kpi-widgets/ChurnRiskTable';
+import TopStoresByProductsSoldChart from '../kpi-widgets/TopStoresByProductsSoldChart';
 
 
 // Placeholder for other KPIs
@@ -102,7 +103,7 @@ const ChartPage = () => {
                 chartComponent = <AverageSpendLineChart />;
                 pageTitle = "Average Spend Over Time";
                 break;
-            case 'churn-risk': 
+            case 'churn-risk':
                 chartComponent = <ChurnRiskTable />;
                 pageTitle = "Customers at Risk of Churn";
                 break;
@@ -172,17 +173,21 @@ const ChartPage = () => {
             case 'store-share':
                 chartComponent = <StoreCustomerShareChart />;
                 pageTitle = "Store Customer Share";
-           /* case 'store-distance-map':
-                chartComponent = <StoreDistanceMap />;
-                pageTitle = "Distance Between Top Customer Stores";
+            case 'top-products-sold': // New kpiId for this chart
+                chartComponent = <TopStoresByProductsSoldChart />;
+                pageTitle = "Top Stores by Products Sold";
                 break;
-
-
-
-            default:
-                chartComponent = <div>KPI not found. Please go back.</div>;
-                pageTitle = "KPI Not Found"; 
-        }*/
+            /* case 'store-distance-map':
+                 chartComponent = <StoreDistanceMap />;
+                 pageTitle = "Distance Between Top Customer Stores";
+                 break;
+ 
+ 
+ 
+             default:
+                 chartComponent = <div>KPI not found. Please go back.</div>;
+                 pageTitle = "KPI Not Found"; 
+         }*/
         }
 
     } else if (window.location.pathname.startsWith("/geo")) {
@@ -200,28 +205,28 @@ const ChartPage = () => {
             default:
                 chartComponent = <div>KPI not found. Please go back.</div>;
                 pageTitle = "KPI Not Found";
-            }
         }
-        return (
-            <div style={styles.container}>
-                <div style={styles.header}>{pageTitle}</div>
-                <div style={styles.chartArea}>
-                    <div style={{ width: "100%", padding: '20px', boxSizing: 'border-box' }}>
-                        {chartComponent}
-                    </div>
-                    <div style={{ height: 40 }} />
-                    <button
-                        style={styles.backButton}
-                        onClick={() => navigate(backPath)}
-                    >
-                        Back
-                    </button>
-                </div>
-            </div>
-        );
     }
+    return (
+        <div style={styles.container}>
+            <div style={styles.header}>{pageTitle}</div>
+            <div style={styles.chartArea}>
+                <div style={{ width: "100%", padding: '20px', boxSizing: 'border-box' }}>
+                    {chartComponent}
+                </div>
+                <div style={{ height: 40 }} />
+                <button
+                    style={styles.backButton}
+                    onClick={() => navigate(backPath)}
+                >
+                    Back
+                </button>
+            </div>
+        </div>
+    );
+}
 
-    export default ChartPage;
+export default ChartPage;
 /*else if (window.location.pathname.startsWith("/store")) {
        backPath = "/store";
        switch (kpiId) {

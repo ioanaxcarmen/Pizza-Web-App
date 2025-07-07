@@ -101,6 +101,7 @@ const StoreMenupage = () => {
             <div style={styles.buttonGrid}>
                 {/* Store Performance Ranking */}
                 <Link to="/store/performance-ranking" style={styles.button}>Store Performance Ranking</Link>
+                <Link to="/store/top-stores-by-products-sold" style={styles.button}>Top Stores by Products Sold</Link>
                 {/* Average Order Value Per Store */}
                 <Link to="/store/avg-order-value-by-store" style={styles.button}>Average Order Value Per Store</Link>
                 {/* Store Customer Share */}

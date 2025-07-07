@@ -7,6 +7,8 @@ import StorePerformanceRankingChart from './StorePerformanceRankingChart';
 import Sidebar from '../components/Sidebar';
 import TopBar from '../components/TopBar';
 import PizzaLottie from '../components/PizzaLottie';
+import TopStoresByProductsSoldChart from './TopStoresByProductsSoldChart';
+
 
 const drawerWidth = 230;
 
@@ -81,16 +83,20 @@ const StoreDashboards = (props) => {
     </Paper>
   );
 
-  return (
+ return (
     <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: "#f5f7fb", fontFamily: "'Inter', 'Roboto', sans-serif" }}>
       <CssBaseline />
       {isMdUp && <Sidebar />}
       <Box sx={{ flexGrow: 1, ml: { md: `${drawerWidth}px` }, display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
         <TopBar title="Store Menu Page" {...props} />
         <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', p: { xs: 1, md: 3 } }}>
-         
+          
+          {/* Render the Orders Sold Widget */}
+          <Box sx={{ mb: 4, width: '100%' }}>
+            <OrdersSoldWidget />
+          </Box>
 
-          {/* Các widget biểu đồ */}
+          {/* Store Performance Ranking Chart */}
           <Box sx={{ width: '100%' }}>
             <motion.div
               initial={{ opacity: 0, y: 24 }}
@@ -101,25 +107,49 @@ const StoreDashboards = (props) => {
               <Paper elevation={3} sx={{
                 borderRadius: 5,
                 p: 3,
-                mb: 4,
+                mb: 4, // Add margin-bottom to separate from next chart
                 boxShadow: "0 4px 16px rgba(250, 162, 138, 0.08)",
                 fontFamily: "'Inter', 'Roboto', sans-serif"
               }}>
                 <Typography variant="h6" fontWeight="bold" sx={{ mb: 2, fontFamily: "'Inter', 'Roboto', sans-serif" }}>
-                  Product Cohort Sales Over Time
+                  Store Performance Ranking
                 </Typography>
                 <StorePerformanceRankingChart />
               </Paper>
             </motion.div>
-
-            
-
-           
           </Box>
+
+          {/* --- ADD THE NEW CHART HERE --- */}
+          {/* Top Stores by Products Sold Chart */}
+          <Box sx={{ width: '100%' }}>
+            <motion.div
+              initial={{ opacity: 0, y: 24 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.5 }}
+              transition={{ duration: 0.8, delay: 0.2 }} 
+        
+            >
+              <Paper elevation={3} sx={{
+                borderRadius: 5,
+                p: 3,
+                mb: 4, // Add margin-bottom for spacing
+                boxShadow: "0 4px 16px rgba(250, 162, 138, 0.08)",
+                fontFamily: "'Inter', 'Roboto', sans-serif"
+              }}>
+                <Typography variant="h6" fontWeight="bold" sx={{ mb: 2, fontFamily: "'Inter', 'Roboto', sans-serif" }}>
+                  Top Stores by Products Sold
+                </Typography>
+                <TopStoresByProductsSoldChart />
+              </Paper>
+            </motion.div>
+          </Box>
+          {/* --- END NEW CHART --- */}
+
         </Box>
       </Box>
     </Box>
   );
 };
+
 
 export default StoreDashboards;

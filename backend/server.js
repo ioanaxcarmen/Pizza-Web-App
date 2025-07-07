@@ -455,7 +455,7 @@ app.get('/api/kpi/order-frequency', async (req, res) => {
 
         connection = await oracledb.getConnection(dbConfig);
         const result = await connection.execute(query, binds, { outFormat: oracledb.OUT_FORMAT_OBJECT });
-        
+
         const chartData = result.rows.map(row => ({ name: row.CUSTOMER_TYPE, value: row.COUNT_OF_CUSTOMERS }));
         res.json(chartData);
 
@@ -558,7 +558,7 @@ app.get('/api/kpi/total-customers', async (req, res) => {
         connection = await oracledb.getConnection(dbConfig);
         const result = await connection.execute(`SELECT COUNT(DISTINCT ID) as TOTAL FROM CUSTOMERS`);
         res.json(result.rows[0]);
-    } catch (err) { /* ... error handling ... */ } 
+    } catch (err) { /* ... error handling ... */ }
     finally { if (connection) { /* ... close connection ... */ } }
 });
 
@@ -801,11 +801,11 @@ app.get('/api/kpi/churn-risk', async (req, res) => {
             ORDER BY LAST_ORDER_DATE ASC
             OFFSET :offset ROWS FETCH NEXT :limit ROWS ONLY
         `;
-        
+
         const countQuery = `SELECT COUNT(*) as TOTAL FROM V_CUSTOMER_CHURN`;
 
         connection = await oracledb.getConnection(dbConfig);
-        
+
         // Run both queries
         const dataResult = await connection.execute(dataQuery, { offset, limit }, { outFormat: oracledb.OUT_FORMAT_OBJECT });
         const countResult = await connection.execute(countQuery, {}, { outFormat: oracledb.OUT_FORMAT_OBJECT });
@@ -939,7 +939,7 @@ app.get('/api/kpi/store-performance-ranking', async (req, res) => {
 app.get('/api/kpi/avg-order-value-by-store', async (req, res) => {
     let connection;
     const binds = {};
-    let whereClause = 'WHERE 1=1'; 
+    let whereClause = 'WHERE 1=1';
 
     // Extract filters from query parameters
     const { year, quarter, month, state } = req.query;
@@ -963,8 +963,8 @@ app.get('/api/kpi/avg-order-value-by-store', async (req, res) => {
     }
 
     try {
-       
-        connection = await oracledb.getConnection(dbConfig); 
+
+        connection = await oracledb.getConnection(dbConfig);
 
         const query = `
             SELECT
@@ -996,6 +996,77 @@ app.get('/api/kpi/avg-order-value-by-store', async (req, res) => {
     } catch (err) {
         console.error("Error in /avg-order-value-by-store:", err);
         res.status(500).json({ error: 'Failed to fetch average order value by store.', details: err.message });
+    } finally {
+        if (connection) {
+            try { await connection.close(); } catch (e) { console.error(e); }
+        }
+    }
+});
+
+
+app.get('/api/kpi/top-stores-by-products-sold', async (req, res) => {
+    let connection;
+    const binds = {};
+    let whereClause = 'WHERE 1=1'; // Start with a true condition
+
+    // Filters for year, quarter, month, state (from ORDERS table)
+    const { year, quarter, month, state } = req.query;
+
+    if (year && year !== 'all') {
+        whereClause += ' AND EXTRACT(YEAR FROM o.ORDERDATE) = :year';
+        binds.year = Number(year);
+    }
+    if (quarter && quarter !== 'all') {
+        whereClause += ' AND TO_CHAR(o.ORDERDATE, \'Q\') = :quarter';
+        binds.quarter = quarter;
+    }
+    if (month && month !== 'all') {
+        whereClause += ' AND EXTRACT(MONTH FROM o.ORDERDATE) = :month';
+        binds.month = Number(month);
+    }
+    if (state && state !== 'all') {
+        whereClause += ' AND s.STATE_ABBR = :state';
+        binds.state = state;
+    }
+
+    try {
+        connection = await oracledb.getConnection(dbConfig);
+
+        // SQL Query: Joins ORDERS, STORES, and ORDER_ITEMS to sum up product quantities per store
+        const query = `
+            SELECT
+                s.STOREID,
+                s.CITY || ', ' || s.STATE_ABBR AS STORE_NAME,
+                SUM(oi.QUANTITY) AS TOTAL_PRODUCTS_SOLD
+            FROM
+                ORDERS o
+            JOIN
+                STORES s ON o.STOREID = s.STOREID
+            JOIN
+                ORDER_ITEMS oi ON o.ID = oi.ORDERID -- Join to get individual product quantities
+            ${whereClause}
+            GROUP BY
+                s.STOREID, s.CITY, s.STATE_ABBR
+            ORDER BY
+                TOTAL_PRODUCTS_SOLD DESC
+            FETCH FIRST 10 ROWS ONLY
+        `;
+
+        console.log("Executing Top Stores By Products Sold Query:", query, binds);
+        const result = await connection.execute(query, binds, { outFormat: oracledb.OUT_FORMAT_ARRAY });
+        console.log("Top Stores By Products Sold Query result rows:", result.rows);
+
+        const responseData = result.rows.map(row => ({
+            storeId: row[0],
+            storeName: row[1],
+            productsSold: Number(row[2]) // The total quantity of products sold by the store
+        }));
+
+        res.json(responseData);
+
+    } catch (err) {
+        console.error("Error in /top-stores-by-products-sold:", err);
+        res.status(500).json({ error: 'Failed to fetch top stores by products sold.', details: err.message });
     } finally {
         if (connection) {
             try { await connection.close(); } catch (e) { console.error(e); }
@@ -1216,30 +1287,30 @@ app.get('/api/kpi/orders-distribution-weekday', async (req, res) => {
         console.error("Error fetching orders distribution by weekday:", err);
         res.status(500).json({ error: 'Failed to fetch data.', details: err.message });
     } finally {
-        if (connection) { try { await connection.close(); } catch (e) {} }
+        if (connection) { try { await connection.close(); } catch (e) { } }
     }
 });
 
 // Product revenue by size
 app.get('/api/kpi/product-revenue-by-size', async (req, res) => {
-  let connection;
-  try {
-    connection = await oracledb.getConnection(dbConfig);
-    const result = await connection.execute(`
+    let connection;
+    try {
+        connection = await oracledb.getConnection(dbConfig);
+        const result = await connection.execute(`
       SELECT product_name, "size", total_revenue
       FROM v_order_per_product_by_size
     `);
-    const data = result.rows.map(row => ({
-      product_name: row[0],
-      size: row[1],
-      total_revenue: Number(row[2])
-    }));
-    res.json(data);
-  } catch (err) {
-    res.status(500).json({ error: 'Failed to fetch data.' });
-  } finally {
-    if (connection) try { await connection.close(); } catch (e) {}
-  }
+        const data = result.rows.map(row => ({
+            product_name: row[0],
+            size: row[1],
+            total_revenue: Number(row[2])
+        }));
+        res.json(data);
+    } catch (err) {
+        res.status(500).json({ error: 'Failed to fetch data.' });
+    } finally {
+        if (connection) try { await connection.close(); } catch (e) { }
+    }
 });
 
 // Start the server on the specified port local IP address
