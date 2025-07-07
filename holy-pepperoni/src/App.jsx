@@ -3,7 +3,6 @@ import LoginPage from "./components/LoginPage";
 import Dashboard from "./components/Dashboard";
 import ProtectedRoute from "./components/ProtectedRoute";
 import IngredientMenuPage from "./components/IngredientMenuPage";
-import CustomerMenuPage from "./components/CustomerMenuPage";
 import ChartPage from "./components/ChartPage";
 import ProductMenuPage from "./components/ProductMenuPage"; 
 import GeographicalReportMenuPage from "./components/GeographicalReportMenuPage";
@@ -14,7 +13,7 @@ import IngredientsDashboard from "./kpi-widgets/IngredientsDashboard";
 import ProductsDashboard from "./kpi-widgets/ProductsDashboard";
 import OrdersDashboard from "./kpi-widgets/OrdersDashboard";
 import CustomerDashboard from "./components/CustomerDashboard";
-import SegmentDetailsPage from './components/SegmentDetailsPage'; // Import the new page
+import SegmentDetailsPage from './components/SegmentDetailsPage'; 
 import StoreDashboards from "./kpi-widgets/storeDashboards";
 
 function App() {
