@@ -14,11 +14,19 @@ import {
 import LoadingPizza from '../components/LoadingPizza';
 import { Button } from '@mui/material';
 
+/**
+ * AverageSpendLineChart component
+ * Displays a line chart of average customer spend per month.
+ * Allows CSV download and drill-down to top customers for a month.
+ */
 const AverageSpendLineChart = () => {
+    // State to hold chart data
     const [data, setData] = useState([]);
+    // State to track loading status
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
 
+    // Fetch average spend data from backend API on mount
     useEffect(() => {
         setLoading(true);
         axios.get(`${process.env.REACT_APP_API_URL}/api/kpi/avg-spend-monthly`)
@@ -32,7 +40,10 @@ const AverageSpendLineChart = () => {
             });
     }, []);
 
-    // Utility to convert data to CSV and trigger download
+    /**
+     * Utility to convert data to CSV and trigger download
+     * @param {Array} data - The data to export as CSV
+     */
     const downloadCSV = (data) => {
         if (!data.length) return;
         const header = Object.keys(data[0]).join(',');
@@ -47,7 +58,10 @@ const AverageSpendLineChart = () => {
         URL.revokeObjectURL(url);
     };
 
-    // Custom Dot with hover effect and onClick drill-down
+    /**
+     * Custom Dot component for the line chart
+     * Shows a larger dot on hover and allows clicking to drill down to top customers for that month
+     */
     const CustomDot = (props) => {
         const { cx, cy, payload } = props;
         const [isHovered, setIsHovered] = useState(false);
@@ -57,6 +71,7 @@ const AverageSpendLineChart = () => {
                 style={{ cursor: 'pointer', transition: 'r 0.2s ease-in-out' }}
                 onClick={() => {
                     if (payload && payload.month) {
+                        // Navigate to the Top 10 Customers page for the selected month
                         navigate(`/customer/top-10?month=${payload.month}`);
                     }
                 }}
@@ -76,6 +91,7 @@ const AverageSpendLineChart = () => {
                 overflowX: 'auto'
             }}
         >
+            {/* Download CSV button */}
             <div style={{ marginBottom: '20px', display: 'flex', justifyContent: 'flex-end' }}>
                 <Button
                     onClick={() => downloadCSV(data)}
@@ -96,9 +112,11 @@ const AverageSpendLineChart = () => {
                 </Button>
             </div>
 
+            {/* Show loading animation while fetching data */}
             {loading ? (
                 <LoadingPizza />
             ) : (
+                // Responsive line chart for average spend
                 <ResponsiveContainer width="100%" height={400}>
                     <LineChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
                         <CartesianGrid strokeDasharray="3 3" />

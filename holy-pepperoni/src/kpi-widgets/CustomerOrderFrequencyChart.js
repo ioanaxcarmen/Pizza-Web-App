@@ -5,6 +5,7 @@ import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recha
 import LoadingPizza from '../components/LoadingPizza';
 import { Button } from '@mui/material';
 
+// Default filter values for the chart
 const defaultFilters = {
     year: 'all',
     quarter: 'all',
@@ -29,7 +30,7 @@ const downloadCSV = (data) => {
     URL.revokeObjectURL(url);
 };
 
-// Helper for months by quarter
+// Helper for months by quarter (used for filtering)
 const QUARTER_MONTHS = {
     '1': [0, 1, 2],   // Jan, Feb, Mar
     '2': [3, 4, 5],   // Apr, May, Jun
@@ -37,18 +38,25 @@ const QUARTER_MONTHS = {
     '4': [9, 10, 11], // Oct, Nov, Dec
 };
 
+/**
+ * CustomerOrderFrequencyChart component
+ * Displays a pie chart of customer order frequency with filter controls.
+ * Allows CSV download and dynamic filtering by year, quarter, month, and state.
+ */
 const CustomerOrderFrequencyChart = () => {
     const [searchParams, setSearchParams] = useSearchParams();
 
-    // This function runs once to set initial filters from a URL parameter
+    // Get initial filters (could be extended to read from URL)
     const getInitialFilters = () => {
         return defaultFilters;
     };
 
+    // State for filters, chart data, and loading status
     const [filters, setFilters] = useState(getInitialFilters);
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(true);
 
+    // Fetch chart data from backend API whenever filters change
     useEffect(() => {
         setLoading(true);
         const params = new URLSearchParams();
@@ -66,6 +74,7 @@ const CustomerOrderFrequencyChart = () => {
             });
     }, [filters]);
 
+    // Handle changes to filter dropdowns
     const handleFilterChange = (e) => {
         const { name, value } = e.target;
         let newFilters = { ...filters, [name]: value };
@@ -80,21 +89,25 @@ const CustomerOrderFrequencyChart = () => {
         setFilters(newFilters);
     };
 
+    // Reset all filters to default values and clear URL params
     const handleResetFilters = () => {
         setFilters(defaultFilters);
         setSearchParams({}); // Also clear any URL params
     };
 
+    // Show loading animation while fetching data
     if (loading) {
         return <LoadingPizza />;
     }
 
+    // Colors for the pie chart slices
     const COLORS = ['#ff3d6f', '#ffb5c8'];
 
     return (
         <div style={{ width: '100%', position: 'relative' }}>
+            {/* Filter Controls */}
             <div style={{ marginBottom: '20px', display: 'flex', justifyContent: 'center', gap: '15px', flexWrap: 'wrap', alignItems: 'center' }}>
-                {/* Filter Controls */}
+                {/* Year filter */}
                 <div>
                     <label>Year: </label>
                     <select name="year" value={filters.year} onChange={handleFilterChange} style={{ padding: '5px' }}>
@@ -104,6 +117,7 @@ const CustomerOrderFrequencyChart = () => {
                         <option value="2022">2022</option>
                     </select>
                 </div>
+                {/* Quarter filter */}
                 <div>
                     <label>Quarter: </label>
                     <select name="quarter" value={filters.quarter} onChange={handleFilterChange} style={{ padding: '5px' }} disabled={filters.year === 'all'}>
@@ -111,6 +125,7 @@ const CustomerOrderFrequencyChart = () => {
                         <option value="1">Q1</option><option value="2">Q2</option><option value="3">Q3</option><option value="4">Q4</option>
                     </select>
                 </div>
+                {/* Month filter */}
                 <div>
                     <label>Month: </label>
                     <select
@@ -135,6 +150,7 @@ const CustomerOrderFrequencyChart = () => {
                         }
                     </select>
                 </div>
+                {/* State filter */}
                 <div>
                     <label>State: </label>
                     <select name="state" value={filters.state} onChange={handleFilterChange} style={{ padding: '5px' }}>
@@ -145,6 +161,7 @@ const CustomerOrderFrequencyChart = () => {
                         <option value="UT">Utah</option>
                     </select>
                 </div>
+                {/* Reset filters button */}
                 <Button
                     onClick={handleResetFilters}
                     variant="contained"
@@ -161,6 +178,7 @@ const CustomerOrderFrequencyChart = () => {
                 >
                     Reset
                 </Button>
+                {/* Download CSV button */}
                 <Button
                     onClick={() => downloadCSV(data)}
                     variant="contained"
@@ -180,9 +198,11 @@ const CustomerOrderFrequencyChart = () => {
                 </Button>
             </div>
 
+            {/* Chart Title */}
             <h2 style={{ textAlign: 'center' }}>
                 Customer Order Frequency
             </h2>
+            {/* Responsive Pie Chart */}
             <ResponsiveContainer width="100%" height={400}>
                 <PieChart>
                     <Pie

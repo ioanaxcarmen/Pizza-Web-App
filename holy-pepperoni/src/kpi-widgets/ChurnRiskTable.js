@@ -2,12 +2,22 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Paper, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Button, Box } from '@mui/material';
 
+/**
+ * ChurnRiskTable component
+ * Displays a paginated table of customers at risk of churn.
+ * Allows sending a promotional email to each customer.
+ */
 const ChurnRiskTable = () => {
+    // State to hold the list of churned customers
     const [churnedCustomers, setChurnedCustomers] = useState([]);
+    // State to track loading status
     const [loading, setLoading] = useState(true);
-    const [page, setPage] = useState(1); // State for current page
-    const [totalPages, setTotalPages] = useState(0); // State for total pages
+    // State for current page in pagination
+    const [page, setPage] = useState(1);
+    // State for total number of pages
+    const [totalPages, setTotalPages] = useState(0);
 
+    // Fetch churn risk customers from backend when page changes
     useEffect(() => {
         setLoading(true);
         axios.get(`${process.env.REACT_APP_API_URL}/api/kpi/churn-risk?page=${page}&limit=10`)
@@ -22,8 +32,10 @@ const ChurnRiskTable = () => {
             });
     }, [page]);
 
+    // Utility to generate a fake email address for a customer
     const getCustomerEmail = (customerId) => `${customerId}@example-pizza.com`;
 
+    // Show loading message while fetching data
     if (loading) {
         return <div>Loading Churn Risk Data...</div>;
     }
@@ -35,16 +47,16 @@ const ChurnRiskTable = () => {
             sx={{
                 borderRadius: 5,
                 boxShadow: "0 4px 16px rgba(250, 162, 138, 0.08)",
-                width: '100%',           // Ensure full width
-                minWidth: 0,             // Prevent overflow
-                overflowX: 'auto',       // Allow horizontal scroll if needed
+                width: '100%',           
+                minWidth: 0,             
+                overflowX: 'auto',       
             }}
         >
             <Table
                 aria-label="churn risk table"
                 sx={{
-                    width: '100%',        // Make table fill container
-                    minWidth: 600,        // Optional: set a min width for better layout
+                    width: '100%',        
+                    minWidth: 600,        
                 }}
             >
                 <TableHead sx={{ backgroundColor: '#f8f9fa' }}>
@@ -55,12 +67,14 @@ const ChurnRiskTable = () => {
                     </TableRow>
                 </TableHead>
                 <TableBody>
+                    {/* Render a row for each churned customer, or a message if none */}
                     {churnedCustomers && churnedCustomers.length > 0 ? (
                         churnedCustomers.map((customer) => (
                             <TableRow key={customer.CUSTOMER_ID} hover>
                                 <TableCell>{customer.CUSTOMER_ID}</TableCell>
                                 <TableCell>{new Date(customer.LAST_ORDER_DATE).toLocaleDateString()}</TableCell>
                                 <TableCell sx={{ textAlign: 'center' }}>
+                                    {/* Button to send a promo email to the customer */}
                                     <Button
                                         variant="contained"
                                         size="small"
@@ -86,6 +100,7 @@ const ChurnRiskTable = () => {
                     )}
                 </TableBody>
             </Table>
+            {/* Pagination controls */}
             <Box sx={{ p: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <Button
                     variant="outlined"

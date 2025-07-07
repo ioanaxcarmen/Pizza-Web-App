@@ -14,6 +14,7 @@ import { useTheme } from '@mui/material/styles';
 
 const drawerWidth = 230;
 
+// Navigation items for the sidebar, each with an icon, label, and route path
 const navItems = [
   { icon: <HomeIcon />, label: 'Main Menu', path: '/dashboard' }, 
   { icon: <DashboardIcon />, label: 'Product', path: '/product/dashboard' },
@@ -24,18 +25,28 @@ const navItems = [
   { icon: <MapIcon />, label: 'Geographical Reports', path: '/geo-reports' }, 
 ];
 
+/**
+ * Sidebar component
+ * Renders a responsive navigation drawer for the app.
+ * Shows a permanent drawer on desktop and a temporary drawer with a menu button on mobile.
+ */
 const Sidebar = () => {
   const navigate = useNavigate();
   const theme = useTheme();
+  // Check if the screen size is medium or larger (for desktop)
   const isMdUp = useMediaQuery(theme.breakpoints.up('md'));
+  // State to control mobile drawer open/close
   const [mobileOpen, setMobileOpen] = useState(false);
 
+  // Drawer content: logo, divider, and navigation list
   const drawerContent = (
     <>
+      {/* App logo/title */}
       <Box sx={{ p: 2, mb: 2, textAlign: 'center', fontWeight: 700, fontSize: 20, letterSpacing: 2 }}>
         🍕 HOLY PEPPERONI 🍕
       </Box>
       <Divider sx={{ borderColor: "rgba(255,255,255,0.08)" }} />
+      {/* Navigation links */}
       <List>
         {navItems.map((item) => (
           <ListItem disablePadding key={item.label}>
@@ -61,7 +72,7 @@ const Sidebar = () => {
 
   return (
     <>
-      {/* Show menu icon button on mobile */}
+      {/* Show menu icon button on mobile screens */}
       {!isMdUp && (
         <IconButton
           color="inherit"
@@ -81,7 +92,7 @@ const Sidebar = () => {
           <MenuIcon />
         </IconButton>
       )}
-      {/* Permanent drawer for desktop */}
+      {/* Permanent drawer for desktop screens */}
       {isMdUp ? (
         <Drawer
           variant="permanent"
@@ -92,7 +103,7 @@ const Sidebar = () => {
           {drawerContent}
         </Drawer>
       ) : (
-        // Temporary drawer for mobile
+        // Temporary drawer for mobile screens
         <Drawer
           variant="temporary"
           anchor="left"
