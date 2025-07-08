@@ -214,7 +214,7 @@ const ProductsDashboard = (props) => {
                   fontFamily: "'Inter', 'Roboto', sans-serif"
                 }}>
                   <Typography variant="h6" fontWeight="bold" sx={{ mb: 2, fontFamily: "'Inter', 'Roboto', sans-serif" }}>
-                    Top Products by Lifetime (Months Since Launch)
+                    Top Products 3 Months Since Launch
                   </Typography>
                   <TopProductsTable />
                 </Paper>
