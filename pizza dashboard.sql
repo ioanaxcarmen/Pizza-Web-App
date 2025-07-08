@@ -389,15 +389,26 @@ ORDER BY year, quarter, month, week, total_quantity_used DESC;
 
 
 
-CREATE OR REPLACE VIEW v_top_ingredients_by_store AS
+CREATE OR REPLACE VIEW "PIZZA"."V_TOP_INGREDIENTS_BY_STORE" (
+    "STOREID", 
+    "STORE_NAME", 
+    "CITY", 
+    "STATE", 
+    "MONTH", 
+    "QUARTER", 
+    "WEEK", 
+    "YEAR", 
+    "INGREDIENT_NAME", 
+    "TOTAL_QUANTITY_USED"
+) AS 
 SELECT
     o.storeid,
     (s.city || ', ' || s.state_abbr) AS store_name,
     s.city,
     s.state_abbr AS state,
-    TO_CHAR(o.orderdate, 'YYYY-MM') AS month,
-    TO_CHAR(o.orderdate, 'YYYY-"Q"Q') AS quarter,
-    TO_CHAR(o.orderdate, 'IYYY-IW') AS week,
+    TO_CHAR(o.orderdate, 'MM') AS month,         
+    TO_CHAR(o.orderdate, 'Q') AS quarter,       
+    TO_CHAR(o.orderdate, 'IW') AS week,          
     TO_CHAR(o.orderdate, 'YYYY') AS year,
     i.name AS ingredient_name,
     SUM(oi.quantity) AS total_quantity_used
@@ -411,9 +422,9 @@ GROUP BY
     o.storeid,
     s.city,
     s.state_abbr,
-    TO_CHAR(o.orderdate, 'YYYY-MM'),
-    TO_CHAR(o.orderdate, 'YYYY-"Q"Q'),
-    TO_CHAR(o.orderdate, 'IYYY-IW'),
+    TO_CHAR(o.orderdate, 'MM'),
+    TO_CHAR(o.orderdate, 'Q'),
+    TO_CHAR(o.orderdate, 'IW'),
     TO_CHAR(o.orderdate, 'YYYY'),
     i.name
 ORDER BY storeid, year DESC, month DESC, total_quantity_used DESC;
