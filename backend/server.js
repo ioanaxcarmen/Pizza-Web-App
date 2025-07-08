@@ -10,8 +10,8 @@ const port = 3001; // The backend will run on this port
 const dbConfig = {
     user: "PIZZA",
     password: "MyPizza123", // The password you created for the PIZZA user
-    connectString: "localhost:1521/XE"
-    //connectString: "localhost:1521/XEPDB1" //use this if you are using the default Oracle XE database
+   // connectString: "localhost:1521/XE"
+    connectString: "localhost:1521/XEPDB1" //use this if you are using the default Oracle XE database
 };
 
 // A test API endpoint to see if the connection works
@@ -707,13 +707,13 @@ app.get('/api/kpi/store-list', async (req, res) => {
     }
 });
 
-// Top Selling Products 
+// Top Selling Products Endpoints
 app.get('/api/kpi/top-products', async (req, res) => {
     let connection;
     let whereClause = 'WHERE 1=1';
     const binds = {};
 
-    // This logic now correctly handles all filters coming from your component
+    // Dynamic Filter Setting for Chart 
     if (req.query.year && req.query.year !== 'all') {
         whereClause += ' AND EXTRACT(YEAR FROM o.ORDERDATE) = :year';
         binds.year = req.query.year;
@@ -723,7 +723,6 @@ app.get('/api/kpi/top-products', async (req, res) => {
         binds.quarter = req.query.quarter;
     }
     if (req.query.month && req.query.month !== 'all') {
-        // This now correctly uses the simple month number (e.g., 5)
         whereClause += ' AND EXTRACT(MONTH FROM o.ORDERDATE) = :month';
         binds.month = req.query.month;
     }
@@ -735,7 +734,6 @@ app.get('/api/kpi/top-products', async (req, res) => {
         whereClause += ' AND o.STOREID = :storeId';
         binds.storeId = req.query.storeId;
     }
-    // Add other filters like storeId if needed
 
     try {
         connection = await oracledb.getConnection(dbConfig);
@@ -744,7 +742,8 @@ app.get('/api/kpi/top-products', async (req, res) => {
         if (req.query.sort === 'quantity') {
             sortField = 'TOTAL_QUANTITY';
         }
-
+        // SQL-Query JOIN ORDERS, ORDERS_ITEMS, PRODUCTS, PRODUCTSIZES, and STORES
+        //-> to get top products based on either quantity or revenue
         const query = `
              SELECT
                 p.SKU,
@@ -786,112 +785,6 @@ app.get('/api/kpi/top-products', async (req, res) => {
     }
 });
 
-//Top Selling Products from Lauch (integrated in top selling products)
-app.get('/api/kpi/top-products-since-launch', async (req, res) => {
-    let connection;
-    try {
-        connection = await oracledb.getConnection(dbConfig);
-        
-        // Enhanced query with product details and standard filters
-        let query = `
-            SELECT
-                p.name AS product_name,
-                ps.name AS product_size,
-                p.launch AS product_launch_date,
-                SUM(vp.total_quantity) AS total_quantity,
-                SUM(vp.total_revenue) AS total_revenue,
-                COUNT(DISTINCT vp.month_since_launch) as months_available
-            FROM v_product_monthly_sales_since_launch vp
-            JOIN products p ON vp.sku = p.sku
-            JOIN productsizes ps ON p.size_id = ps.id
-            JOIN orders o ON vp.sku = o.sku  -- For time filters
-            JOIN stores s ON o.storeid = s.storeid
-            WHERE vp.month_since_launch <= 12 -- First year only for fair comparison
-        `;
-        
-        const queryParams = {};
-        //let whereClause = 'WHERE 1=1'; // Start with a condition that is always true
-
-
-
-        
-        // Add product launch date filters
-        if (req.query.productLaunchYear && req.query.productLaunchYear !== 'all') {
-            query += ` AND EXTRACT(YEAR FROM p.launch) = :launchYear`;
-            queryParams.launchYear = parseInt(req.query.productLaunchYear);
-        }
-        
-        if (req.query.productLaunchMonth && req.query.productLaunchMonth !== 'all') {
-            query += ` AND EXTRACT(MONTH FROM p.launch) = :launchMonth`;
-            queryParams.launchMonth = parseInt(req.query.productLaunchMonth);
-        }
-        
-        // Add standard filters - need JOIN with orders and stores for these
-        const needsOrderJoin = req.query.year || req.query.quarter || req.query.month || req.query.state || req.query.storeId;
-        
-        if (needsOrderJoin) {
-            // Add JOINs for standard filters
-            query += `
-            JOIN order_items oi ON vp.sku = oi.sku
-            JOIN orders o ON oi.orderid = o.id
-            JOIN stores s ON o.storeid = s.storeid
-            `;
-            
-            // Add standard time and location filters
-            if (req.query.year && req.query.year !== 'all') {
-                whereClause += ` AND EXTRACT(YEAR FROM o.orderdate) = :year`;
-                queryParams.year = parseInt(req.query.year);
-            }
-            
-            if (req.query.quarter && req.query.quarter !== 'all') {
-                whereClause += ` AND TO_CHAR(o.orderdate, 'Q') = :quarter`;
-                queryParams.quarter = req.query.quarter;
-            }
-            
-            if (req.query.month && req.query.month !== 'all') {
-                whereClause += ` AND EXTRACT(MONTH FROM o.orderdate) = :month`;
-                queryParams.month = parseInt(req.query.month);
-            }
-            
-            if (req.query.state && req.query.state !== 'all') {
-                whereClause += ` AND s.state_abbr = :state`;
-                queryParams.state = req.query.state;
-            }
-            
-            if (req.query.storeId && req.query.storeId !== 'all') {
-                whereClause += ` AND s.storeid = :storeId`;
-                queryParams.storeId = parseInt(req.query.storeId);
-            }
-        }
-        
-        query += whereClause;
-        
-        // Standard filters are now fully supported through JOINs with orders and stores
-        // This allows filtering by order date (year, quarter, month) and location (state, store)
-        
-        query += `
-            GROUP BY p.name, ps.name, p.launch
-            ORDER BY SUM(vp.total_revenue) DESC
-            FETCH FIRST 10 ROWS ONLY
-        `;
-        
-        const result = await connection.execute(query, queryParams);
-        const chartData = result.rows.map(row => ({
-            name: row[0],
-            size: row[1],
-            launch: row[2],
-            quantity: row[3],
-            revenue: row[4],
-            monthsAvailable: row[5]
-        }));
-        res.json(chartData);
-    } catch (err) {
-        console.error('Error in top-products-since-launch:', err);
-        res.status(500).json({ error: 'Failed to fetch data.' });
-    } finally {
-        if (connection) try { await connection.close(); } catch (e) {}
-    }
-});
 
 // Churn Detection KPI using a pre-built Oracle View
 app.get('/api/kpi/churn-risk', async (req, res) => {

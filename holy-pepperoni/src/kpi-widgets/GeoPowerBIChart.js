@@ -50,7 +50,7 @@ const styles = {
     
     }
 };
-
+// Renders a full-page Power BI report with header and navigation
 const GeoPowerBIChart = ({ embedUrl, title }) => {
     const navigate = useNavigate();
 
@@ -59,6 +59,7 @@ const GeoPowerBIChart = ({ embedUrl, title }) => {
             <div style={styles.header}>{title}</div>
             <div style={styles.chartArea}>
                 <div style={{ width: "100%", padding: '10px', boxSizing: 'border-box' }}>
+                    {/* Embed Power BI report using IframeViewer component */}
                     <IframeViewer embedUrl={embedUrl} title={title} />
                 </div>
                 <button

@@ -5,7 +5,6 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import IngredientMenuPage from "./components/IngredientMenuPage";
 import ChartPage from "./components/ChartPage";
 import ProductMenuPage from "./components/ProductMenuPage"; 
-import GeographicalReportMenuPage from "./components/GeographicalReportMenuPage";
 import StoreMenupage from "./components/StoreMenupage";
 import CustomerHistoryPage from "./components/CustomerHistoryPage";
 import ProductDistributionPieCharts from "./kpi-widgets/ProductDistributionPieCharts";
@@ -50,17 +49,16 @@ function App() {
         <Route path="/ingredients/:kpiId" element={<ChartPage />} />
         {/* Product dashboard and menu (protected) */}
         <Route path="/product" element={<ProtectedRoute><ProductMenuPage /></ProtectedRoute>} />
+        <Route path="/product/dashboard" element={<ProductsDashboard />} />
         <Route path="/product/:kpiId" element={<ProtectedRoute><ChartPage /></ProtectedRoute>} />
-        <Route path="/product/top-products-since-launch" element={<ChartPage />} />
         {/* Product distribution chart */}
         <Route path="/product/distributionchart" element={<ProductDistributionPieCharts />} />
-        {/* Ingredients, products, and orders dashboards */}
+        {/* Ingredients and orders dashboards */}
         <Route path="/ingredients/dashboard" element={<IngredientsDashboard />} />
-        <Route path="/product/dashboard" element={<ProductsDashboard />} />
         <Route path="/orders/dashboard" element={<OrdersDashboard />} />
         {/* Geographical reports and dynamic KPI charts */}
-        <Route path="/geo-reports" element={<GeographicalReportMenuPage />} />
         <Route path="/geo/:kpiId" element={<ChartPage />} /> {/* Dynamic KPI charts for geographical reports */}
+        {/*Route for Power BI geographical report with embedded iframe */}
         <Route path="/geo/powerbi-map2"
           element={
             <GeoPowerBIChart
