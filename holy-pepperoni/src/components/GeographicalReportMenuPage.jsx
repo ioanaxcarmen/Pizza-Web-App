@@ -92,10 +92,8 @@ const GeographicalReportsMenuPage = () => {
             <div style={styles.subheading}>Explore location-based insights.</div>
             <div style={styles.buttonGrid}>
                 {/* Link to Distance Between Top Stores map */}
-                <Link to="/geo/store-distance-map" style={styles.button}>Distance Between Top Stores</Link>
-                {/* Link to Top Customer Stores (Map) */}
-                <Link to="/geo/top-customer-store-geo" style={styles.button}>Top Customer Stores (Map)</Link>
-                {/* Add more geographical report links here as needed */}
+                <Link to="/geo/powerbi-map2" style={styles.button}>Geographical Dashboards</Link>
+            
             </div>
             <button
                 style={styles.backButton}

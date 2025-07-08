@@ -51,7 +51,7 @@ const Dashboard = () => {
     ];
     const row3Items = [
         { title: "Ingredients", path: "/ingredients/dashboard", icon: <LocalOfferIcon sx={{ fontSize: 40 }} /> },
-        { title: "Geographical", path: "/geo-reports", icon: <PublicIcon sx={{ fontSize: 40 }} /> },
+        { title: "Geographical", path: "/geo/powerbi-map2", icon: <PublicIcon sx={{ fontSize: 40 }} /> },
     ];
 
     // Animation variants for Framer Motion (card entrance)

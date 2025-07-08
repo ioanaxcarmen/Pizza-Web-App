@@ -52,9 +52,9 @@ function App() {
         <Route path="/product" element={<ProtectedRoute><ProductMenuPage /></ProtectedRoute>} />
         <Route path="/product/:kpiId" element={<ProtectedRoute><ChartPage /></ProtectedRoute>} />
         <Route path="/product/top-products-since-launch" element={<ChartPage />} />
-        {/* Product distribution chart */
+        {/* Product distribution chart */}
         <Route path="/product/distributionchart" element={<ProductDistributionPieCharts />} />
-        {/* Ingredients, products, and orders dashboards */
+        {/* Ingredients, products, and orders dashboards */}
         <Route path="/ingredients/dashboard" element={<IngredientsDashboard />} />
         <Route path="/product/dashboard" element={<ProductsDashboard />} />
         <Route path="/orders/dashboard" element={<OrdersDashboard />} />
@@ -69,7 +69,6 @@ function App() {
             />
           }
         />
-        {/* Customer order history and segment details */
         <Route path="/customer/order-history/:customerId" element={<CustomerHistoryPage />} />
         <Route path="/customer/segment-details" element={<SegmentDetailsPage />} />
       </Routes>
