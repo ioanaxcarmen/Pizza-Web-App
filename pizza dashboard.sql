@@ -116,8 +116,6 @@ CREATE INDEX idx_stores_state             ON stores(state);
 
 -- 1. Store Summary View
 -- Aggregates store-level metrics: total orders, revenue, average order value, unique customers (active customers), customer share.
--- Business Case: Enables quick evaluation and ranking of store performance for managers; supports network optimization, benchmarking, and identification of high/low-performing stores.
--- Power BI Usage: Main source for store leaderboard, map, performance dashboards, and KPI cards.
 
 CREATE OR REPLACE VIEW v_store_summary AS
 SELECT 
@@ -138,9 +136,7 @@ GROUP BY s.storeid, s.city, s.state
 ORDER BY total_revenue DESC;
 
 -- 2. Store Performance Multi-Rank
--- Ranks stores by revenue, average order value, active customers, and customer share, using multiple KPIs.
--- Business Case: Enables instant leaderboard and store benchmarking; helps management prioritize support or intervention.
--- Power BI Usage: Useful for dynamic top/bottom store cards, ranking visuals, competitive benchmarking.
+-- Ranks stores by revenue, average order value, active customers, and customer share, using multiple KPIs (use in the project for a Radar Chart and a Bar Chart).
 -- Why Separate: Ranking logic is often expensive and best pre-computed for fast dashboarding.
 
 CREATE OR REPLACE VIEW v_store_performance_rank AS
@@ -163,10 +159,8 @@ FROM v_store_summary;
 -- ============= PRODUCT, CATEGORY AND SALES TREND =============
 
 -- 3. Sales Product Time View
--- Provides sales stats (order count, quantity, revenue) for each product and category by month, quarter, year.
+-- Provides sales stats (order count, quantity, revenue) for each product and category by month, quarter, year. An all-rounder view for good filtering. 
 -- Business Case: Crucial for trend analysis, seasonality, forecasting, and product life cycle management.
--- Power BI Usage: Used for time-series charts, forecasting visuals, category/product comparison over time.
--- Why Separate: Time-based aggregation enables efficient trend and cohort analysis.
 
 CREATE MATERIALIZED VIEW mv_sales_product_time AS
 SELECT
@@ -190,10 +184,8 @@ GROUP BY
 ORDER BY year, quarter, month, total_revenue DESC;
 
 -- 4. Orders Distribution by Weekday, Category, and Size
--- Aggregates order counts and revenue by weekday, product category, and size.
--- Business Case: Helps understand weekly sales patterns, category performance, and size preferences; supports staffing and inventory planning.
--- Power BI Usage: Useful for heatmaps, bar charts, and category/size distribution visuals.
--- Why Separate: Weekday analysis is distinct from time-based sales trends; provides a different perspective on sales patterns.
+-- Aggregates order counts and revenue by weekday, product category, and size. This is used on Orders Dashboard, Stacked Bar Chart and Area Chart. 
+
 CREATE MATERIALIZED VIEW mv_orders_distribution_weekday_category_size_en AS
 SELECT
     TO_CHAR(o.orderdate, 'D') AS weekday,
@@ -218,10 +210,7 @@ ORDER BY
     s.name;
 
 -- 4. Order Per Product By Size View
--- Shows order counts and revenue for each product and its size variant.
--- Business Case: Supports inventory, assortment, and supply chain decisions; helps optimize product portfolio.
--- Power BI Usage: Use for bar charts comparing product-size combinations; helps visualize product mix.
--- Why Separate: Provides a detailed product breakdown needed for operations and marketing.
+-- Shows order counts and revenue for each product and its size variant. A specific view for aggrgates that helps with performance. 
 
 CREATE OR REPLACE VIEW v_order_per_product_by_size AS
   SELECT 
@@ -236,10 +225,7 @@ GROUP BY p.name, s.name
 ORDER BY total_revenue DESC;
 
 -- 5. Orders Per Category View
--- Aggregates order count and revenue by product category.
--- Business Case: Category performance tracking, informs marketing focus and product development.
--- Power BI Usage: Pie/donut/category ranking visuals.
--- Why Separate: Categories are key management and reporting dimension.
+-- Aggregates order count and revenue by product category. The same as the Orders Per Product by Size view, but for categories.
 
 CREATE OR REPLACE VIEW v_orders_per_category AS
 SELECT 
@@ -274,10 +260,7 @@ GROUP BY p.sku, p.name, p.launch
 ORDER BY revenue_3months DESC;
 
 -- 7. Product Sales by Month Since Launch
--- Shows monthly sales cohort for each product starting from its launch.
--- Business Case: Enables cohort analysis, compares product growth trajectories, and detects "slow burn" products.
--- Power BI Usage: Cohort, waterfall, and time-to-peak analysis.
--- Why Separate: This analysis is only meaningful relative to launch date, not calendar time.
+-- Shows monthly sales cohort for each product starting from its launch. This view is used for cohort analysis and product growth tracking on Products Dashboard.
 
 CREATE OR REPLACE VIEW v_product_monthly_sales_since_launch AS
 SELECT
@@ -301,10 +284,7 @@ ORDER BY
     month_since_launch;
 
 -- 8. Product Pair Sales Analysis View
--- Identifies pairs of products that are frequently purchased together (market basket analysis).
--- Business Case: Supports cross-sell/upsell strategy, combo deal design, and menu optimization.
--- Power BI Usage: Visualize top product pairs, recommend combos, and optimize promotions.
--- Why Separate: Enables discovery of product affinity and customer buying patterns beyond single products.
+-- Identifies pairs of products that are frequently purchased together (market basket analysis). This view is used for a table in Products dashboard. 
 
 CREATE OR REPLACE VIEW V_PRODUCT_PAIR_SALES AS
 SELECT
@@ -323,16 +303,6 @@ HAVING
 
 -- 9. Sales By Time View (Daily Granularity)
 -- Provides detailed daily sales metrics by product and category, including quantity, total orders, total revenue, day of the week, and weekday number.
--- Business Case:
---   - Enables daily performance tracking, peak/off-peak analysis, and detection of sales anomalies.
---   - Supports operational decision-making (e.g., staffing, inventory adjustment, daily campaign monitoring).
---   - Useful for evaluating the impact of specific events, holidays, or promotions on sales.
--- Power BI Usage:
---   - Supports heatmaps, daily KPI dashboards, and weekday trend analysis.
---   - Allows deep-dive drilldown from high-level trends to daily operational detail.
--- Why Separate:
---   - Preserves high-resolution data for root cause analysis and short-term tactical planning.
---   - Complements the monthly/quarterly/yearly aggregates in `mv_sales_product_time` for a full-spectrum analytics solution.
 
 CREATE OR REPLACE VIEW v_sales_time_category_product AS
 SELECT
@@ -362,9 +332,6 @@ ORDER BY order_date, product_name;
 
 -- 10. Most Used Ingredients Time View
 -- Tracks total quantity of each ingredient used by week, month, quarter, year.
--- Business Case: Supports demand planning, cost control, and supply chain optimization.
--- Power BI Usage: Ingredient trends, supplier forecasts, cost analysis visuals.
--- Why Separate: Ingredients are a cross-product dimension, often analyzed independently.
 
 CREATE OR REPLACE VIEW v_most_used_ingredients_time AS
 SELECT
@@ -387,17 +354,29 @@ GROUP BY
     i.name
 ORDER BY year, quarter, month, week, total_quantity_used DESC;
 
+--11. Top Ingredients by Store View
+-- Shows total quantity of each ingredient used by store, month, quarter, week, year. This separate view is used in the pie chart in Ingredients Dashboard.
 
-
-CREATE OR REPLACE VIEW v_top_ingredients_by_store AS
+CREATE OR REPLACE VIEW "PIZZA"."V_TOP_INGREDIENTS_BY_STORE" (
+    "STOREID", 
+    "STORE_NAME", 
+    "CITY", 
+    "STATE", 
+    "MONTH", 
+    "QUARTER", 
+    "WEEK", 
+    "YEAR", 
+    "INGREDIENT_NAME", 
+    "TOTAL_QUANTITY_USED"
+) AS 
 SELECT
     o.storeid,
     (s.city || ', ' || s.state_abbr) AS store_name,
     s.city,
     s.state_abbr AS state,
-    TO_CHAR(o.orderdate, 'YYYY-MM') AS month,
-    TO_CHAR(o.orderdate, 'YYYY-"Q"Q') AS quarter,
-    TO_CHAR(o.orderdate, 'IYYY-IW') AS week,
+    TO_CHAR(o.orderdate, 'MM') AS month,         
+    TO_CHAR(o.orderdate, 'Q') AS quarter,       
+    TO_CHAR(o.orderdate, 'IW') AS week,          
     TO_CHAR(o.orderdate, 'YYYY') AS year,
     i.name AS ingredient_name,
     SUM(oi.quantity) AS total_quantity_used
@@ -411,20 +390,17 @@ GROUP BY
     o.storeid,
     s.city,
     s.state_abbr,
-    TO_CHAR(o.orderdate, 'YYYY-MM'),
-    TO_CHAR(o.orderdate, 'YYYY-"Q"Q'),
-    TO_CHAR(o.orderdate, 'IYYY-IW'),
+    TO_CHAR(o.orderdate, 'MM'),
+    TO_CHAR(o.orderdate, 'Q'),
+    TO_CHAR(o.orderdate, 'IW'),
     TO_CHAR(o.orderdate, 'YYYY'),
     i.name
 ORDER BY storeid, year DESC, month DESC, total_quantity_used DESC;
 
 -- ============= CUSTOMER BEHAVIOR AND SEGMENTATION =============
 
--- 11. Avg Spend Per Customer Time View
+-- 12. Avg Spend Per Customer Time View
 -- Tracks each customer’s order frequency, spend, and average order value by month, quarter, year.
--- Business Case: Supports lifetime value (LTV) modeling, detects changing spend patterns, and identifies loyalty trends.
--- Power BI Usage: Time-series cohort, LTV analysis, retention dashboards.
--- Why Separate: Needed for customer-level time trend analysis.
 
 CREATE OR REPLACE VIEW v_avg_spend_customer_time AS
 SELECT
@@ -443,11 +419,8 @@ GROUP BY
     o.customerid
 ORDER BY year, quarter, month, total_revenue DESC;
 
--- 12. Customer Segmentation
--- SSegments customers by order count and spend, with assigned loyalty group.
--- Business Case: Identify, target, and retain key customer groups; enables loyalty marketing and churn analysis.
--- Power BI Usage: Segmentation visuals, customer pyramid, RFM dashboards.
--- Why Separate: Segmentation logic is unique and needed for marketing/CRM campaigns.
+-- 13. Customer Segmentation
+-- Segments customers by order count and spend, with assigned loyalty group. This view is used in a pie chart in Customers Dashboard.
 
 CREATE OR REPLACE VIEW v_customer_segment AS
 SELECT 
@@ -472,11 +445,8 @@ FROM customers c
 LEFT JOIN orders o ON o.customerid = c.id
 GROUP BY c.id;
 
--- 13. Monthly New Customer Acquisition
+-- 14. Monthly New Customer Acquisition
 -- Shows number of new customers acquired each month based on first purchase.
--- Business Case: Assess marketing and growth effectiveness, spot changes in acquisition trends.
--- Power BI Usage: New customer funnel, monthly acquisition KPI, marketing ROI.
--- Why Separate: Acquisition is a key metric separate from retention or repeat sales.
 
 CREATE OR REPLACE VIEW v_new_customers_monthly AS
 SELECT
@@ -493,7 +463,7 @@ FROM (
 GROUP BY TO_CHAR(first_order, 'YYYY-MM')
 ORDER BY month;
 
--- 14. Customer Churn Detection
+-- 15. Customer Churn Detection
 -- Finds customers who have not placed any orders in the last 3 months.
 -- Business Case: Early warning for retention campaigns and customer re-engagement.
 
@@ -507,11 +477,8 @@ GROUP BY c.id
 HAVING MAX(o.orderdate) < ADD_MONTHS(TRUNC(SYSDATE), -3)
    OR MAX(o.orderdate) IS NULL;
 
--- 15. Customer Lifetime Value (LTV) View
+-- 16. Customer Lifetime Value (LTV) View
 -- Shows total value generated by each customer over their entire lifetime (all-time revenue, total orders, and average order value).
--- Business Case: Supports segmentation, resource allocation, VIP program, and marketing ROI calculation.
--- Power BI Usage: LTV dashboards, customer pyramid, loyalty analysis, and cohort visuals.
--- Why Separate: Needed for all-time summary (not time series); used for strategic decisions.
 
 CREATE OR REPLACE VIEW v_customer_lifetime_value AS
 SELECT
@@ -526,11 +493,9 @@ LEFT JOIN orders o ON o.customerid = c.id
 GROUP BY c.id;
 
 -- ============= GEOGRAPHIC ANALYSIS AND MARKET POTENTIAL=============
--- 16. Nearest Store by Customers
--- For each customer, shows the closest store based on geographic distance.
+-- 17. Nearest Store by Customers
+-- For each stores, show the number of nearby customers. The more the nearby customers is, the bigger is the circle for the store. 
 -- Business Case: Optimize delivery, marketing, and store siting; enables geo-based sales analytics.
--- Power BI Usage: Used for store catchment maps, delivery zones, customer-store flow maps.
--- Why Separate: Geospatial calculations are compute-heavy and best precomputed.
 
 CREATE MATERIALIZED VIEW MV_CUSTOMER_NEAREST_STORE
 BUILD IMMEDIATE
@@ -570,11 +535,8 @@ FROM (
 ) ranked
 WHERE rn = 1;
 
--- 17. Potential Customers and Market Penetration by Store (5km radius)
--- For each store, counts all customers within 5km for whom this is the nearest store, and computes % of local population served.
--- Business Case: Find areas with growth potential, optimize marketing, and support location strategy.
--- Power BI Usage: Store coverage maps, penetration dashboards, and market expansion analysis.
--- Why Separate: Enables unique spatial penetration insights not possible in regular sales data.
+-- 17. Potential Customers and Market Penetration by Store (3km radius)
+-- For each store, counts all customers within 3km for whom this is the nearest store, and computes % of local population served.
 
 ALTER TABLE STORES ADD (POPULATION NUMBER);
 UPDATE STORES SET POPULATION = 392     WHERE STOREID = 'S490972';    -- Tuscarora, Nevada
@@ -651,29 +613,49 @@ WHERE ns.rn = 1
   AND ns.distance_km < 5
 GROUP BY ns.storeid, ns.latitude, ns.longitude, ns.population;
 
--- 18. Store-Customer Density (for Heatmap)
--- For each store, counts customers within 3km, 5km, and 10km. For direct use as a heatmap layer in Power BI.
--- Business Case: Visualize service reach, potential demand, and support location/expansion decisions.
+-- 18. Store-Customer Density
+-- For each store, counts customers within 3km. 
 
-CREATE OR REPLACE VIEW v_store_customer_density AS
+CREATE OR REPLACE VIEW V_STORE_CUSTOMER_DENSITY_MONTH AS
 SELECT
     s.storeid,
     s.latitude AS store_lat,
     s.longitude AS store_long,
-    COUNT(CASE WHEN dist < 3 THEN c.id END) AS customer_3km,
-    COUNT(CASE WHEN dist < 5 THEN c.id END) AS customer_5km,
-    COUNT(CASE WHEN dist < 10 THEN c.id END) AS customer_10km
+    TO_CHAR(c_dist.orderdate, 'YYYY') AS order_year,
+    TO_CHAR(c_dist.orderdate, 'YYYY-Q') AS order_quarter,
+    TO_CHAR(c_dist.orderdate, 'YYYY-MM') AS order_month,
+    COUNT(DISTINCT c_dist.customer_id) AS customer_3km
 FROM stores s
-CROSS JOIN customers c
-CROSS APPLY (
-    SELECT 6371 * 2 * ASIN(SQRT(
-        POWER(SIN(((c.latitude - s.latitude) * 3.141592653589793 / 180) / 2), 2) +
-        COS(s.latitude * 3.141592653589793 / 180) *
-        COS(c.latitude * 3.141592653589793 / 180) *
-        POWER(SIN(((c.longitude - s.longitude) * 3.141592653589793 / 180) / 2), 2)
-    )) AS dist FROM dual
-)
-GROUP BY s.storeid, s.latitude, s.longitude;
+JOIN (
+    SELECT
+        c.id AS customer_id,
+        c.latitude AS customer_lat,
+        c.longitude AS customer_long,
+        o.orderdate,
+        s_inner.storeid,
+        (
+            6371 * 2 * ASIN(SQRT(
+                POWER(SIN(((c.latitude - s_inner.latitude) * 3.141592653589793 / 180) / 2), 2) +
+                COS(s_inner.latitude * 3.141592653589793 / 180) *
+                COS(c.latitude * 3.141592653589793 / 180) *
+                POWER(SIN(((c.longitude - s_inner.longitude) * 3.141592653589793 / 180) / 2), 2)
+            ))
+        ) AS dist
+    FROM customers c
+    JOIN orders o ON o.customerid = c.id
+    JOIN stores s_inner ON 1=1
+    WHERE
+        c.latitude BETWEEN s_inner.latitude - (3/111.0) AND s_inner.latitude + (3/111.0)
+        AND c.longitude BETWEEN s_inner.longitude - (3/(111.0 * COS(s_inner.latitude * 3.141592653589793 / 180))) AND s_inner.longitude + (3/(111.0 * COS(s_inner.latitude * 3.141592653589793 / 180)))
+) c_dist ON s.storeid = c_dist.storeid
+WHERE c_dist.dist < 3
+GROUP BY
+    s.storeid,
+    s.latitude,
+    s.longitude,
+    TO_CHAR(c_dist.orderdate, 'YYYY'),
+    TO_CHAR(c_dist.orderdate, 'YYYY-Q'),
+    TO_CHAR(c_dist.orderdate,'YYYY-MM');
 
 
 

@@ -1458,21 +1458,9 @@ app.get('/api/kpi/store-summary', async (req, res) => {
     let whereClause = 'WHERE 1=1'; // Start with a true condition
 
     // Filters: year, quarter, month, state, storeId
-    const { year, quarter, month, state, storeId } = req.query;
+    const { state, storeId } = req.query;
 
-    // Apply filters to the query
-    if (year && year !== 'all') {
-        whereClause += ' AND YEAR = :year'; // Assuming V_STORE_PERFORMANCE_RANK has YEAR
-        binds.year = Number(year);
-    }
-    if (quarter && quarter !== 'all') {
-        whereClause += ' AND QUARTER = :quarter'; // Assuming V_STORE_PERFORMANCE_RANK has QUARTER
-        binds.quarter = quarter;
-    }
-    if (month && month !== 'all') {
-        whereClause += ' AND MONTH = :month'; // Assuming V_STORE_PERFORMANCE_RANK has MONTH
-        binds.month = Number(month);
-    }
+   
     if (state && state !== 'all') {
         whereClause += ' AND STATE = :state'; // Assuming V_STORE_PERFORMANCE_RANK has STATE
         binds.state = state;
@@ -1763,6 +1751,74 @@ app.get('/api/kpi/product-pairs', async (req, res) => {
     } catch (err) {
         console.error("Error fetching product pairs:", err);
         res.status(500).json({ error: 'Failed to fetch data' });
+    } finally {
+        if (connection) { try { await connection.close(); } catch (e) { console.error(e); } }
+    }
+});
+
+// --- API KPI mới ---
+
+app.get('/api/kpi/top-ingredients-by-store', async (req, res) => {
+    let connection;
+    const binds = {};
+    let whereClause = 'WHERE 1=1';
+
+    try {
+        connection = await oracledb.getConnection(dbConfig);
+
+        // Lấy danh sách storeId (có thể là mảng hoặc 1 giá trị)
+        let storeIds = req.query.storeId;
+        if (!storeIds) {
+            return res.status(400).json({ error: 'Missing storeId parameter.' });
+        }
+        if (!Array.isArray(storeIds)) storeIds = [storeIds];
+
+        // Filter logic (nếu muốn thêm filter khác)
+        if (req.query.week && req.query.week !== 'all') {
+            whereClause += ' AND week = :week';
+            binds.week = req.query.week;
+        }
+        if (req.query.month && req.query.month !== 'all') {
+            whereClause += ' AND month = :month';
+            binds.month = req.query.month;
+        }
+        if (req.query.quarter && req.query.quarter !== 'all') {
+            whereClause += ' AND quarter = :quarter';
+            binds.quarter = req.query.quarter;
+        }
+        if (req.query.year && req.query.year !== 'all') {
+            whereClause += ' AND year = :year';
+            binds.year = req.query.year;
+        }
+        if (req.query.state && req.query.state !== 'all') {
+            whereClause += ' AND state = :state';
+            binds.state = req.query.state;
+        }
+
+        // Trả về object {storeId: [ingredients...]}
+        const resultObj = {};
+        for (const storeId of storeIds) {
+            const query = `
+                SELECT ingredient_name, SUM(total_quantity_used) AS total_quantity_used
+                FROM v_top_ingredients_by_store
+                ${whereClause} AND storeid = :storeId
+                GROUP BY ingredient_name
+                ORDER BY total_quantity_used DESC
+                FETCH FIRST 5 ROWS ONLY
+            `;
+            const result = await connection.execute(query, { ...binds, storeId });
+            const total = result.rows.reduce((sum, row) => sum + row[1], 0);
+            resultObj[String(storeId)] = result.rows.map(row => ({
+                ingredient: row[0],
+                quantity: row[1],
+                percent: total > 0 ? Math.round((row[1] / total) * 1000) / 10 : 0 // 1 decimal
+            }));
+        }
+        res.json(resultObj);
+
+    } catch (err) {
+        console.error("Error fetching top ingredients by store:", err);
+        res.status(500).json({ error: 'Failed to fetch top ingredients by store.', details: err.message });
     } finally {
         if (connection) { try { await connection.close(); } catch (e) { console.error(e); } }
     }

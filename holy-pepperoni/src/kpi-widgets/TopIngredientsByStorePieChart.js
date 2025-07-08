@@ -61,7 +61,7 @@ const TopIngredientsByStorePieChart = ({ filters = {} }) => {
             if (value && value !== 'all') params.append(key, value);
         });
         selectedStores.forEach(store => params.append('storeId', store.value));
-        axios.get(`${process.env.REACT_APP_API_URL}/api/kpi/top-ingredients?${params.toString()}`)
+        axios.get(`${process.env.REACT_APP_API_URL}/api/kpi/top-ingredients-by-store?${params.toString()}`)
             .then(res => {
                 setPieDataByStore(res.data); // {storeId: [{ingredient, quantity, percent}, ...]}
                 setPieLoading(false);

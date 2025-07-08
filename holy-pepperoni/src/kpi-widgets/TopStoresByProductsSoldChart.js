@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
     PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer
 } from 'recharts';
-
+import { Button } from '@mui/material';
 // Define a set of colors for the pie chart slices.
 // You might need more colors if you consistently have 10 stores and want unique colors.
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#AF19FF', '#FF19A0', '#19FFD4', '#FFD419', '#8884d8', '#82ca9d'];
@@ -17,6 +17,21 @@ const TopStoresByProductsSoldChart = () => {
     const [selectedQuarter, setSelectedQuarter] = useState('all');
     const [selectedMonth, setSelectedMonth] = useState('all');
     const [selectedState, setSelectedState] = useState('all');
+     const downloadCSV = (data) => {
+        if (!data.length) return;
+        const header = Object.keys(data[0]).join(',');
+        const rows = data.map(row => Object.values(row).join(','));
+        const csvContent = [header, ...rows].join('\n');
+        const blob = new Blob([csvContent], { type: 'text/csv' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'top-stores-by-products-sold.csv';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    };
 
     // Filter options (adjust years/states based on your actual data)
     const years = ['all', '2020', '2021', '2022'];
@@ -149,6 +164,23 @@ const TopStoresByProductsSoldChart = () => {
                         <option key={state} value={state}>{state === 'all' ? 'All States' : state}</option>
                     ))}
                 </select>
+                 <Button
+                    onClick={() => downloadCSV(chartData)}
+                    variant="contained"
+                    sx={{
+                        background: "#faa28a",
+                        borderRadius: "32px",
+                        color: "#fff",
+                        fontWeight: "bold",
+                        textTransform: "none",
+                        px: 3,
+                        py: 1,
+                        boxShadow: 1,
+                        '&:hover': { background: "#fa7a1c" }
+                    }}
+                >
+                    Download Report
+                </Button>
             </div>
 
             {chartData.length === 0 || totalProductsSold === 0 ? (

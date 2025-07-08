@@ -6,6 +6,7 @@ import { Paper, Typography, Table, TableBody, TableCell, TableContainer, TableHe
  * ChurnRiskTable component
  * Displays a paginated table of customers at risk of churn.
  * Allows sending a promotional email to each customer.
+ * Includes a Download Report button.
  */
 const ChurnRiskTable = () => {
     // State to hold the list of churned customers
@@ -35,6 +36,21 @@ const ChurnRiskTable = () => {
     // Utility to generate a fake email address for a customer
     const getCustomerEmail = (customerId) => `${customerId}@example-pizza.com`;
 
+    // Utility to download the current page as CSV
+    const downloadCSV = (data) => {
+        if (!data.length) return;
+        const header = Object.keys(data[0]).join(',');
+        const rows = data.map(row => Object.values(row).join(','));
+        const csvContent = [header, ...rows].join('\n');
+        const blob = new Blob([csvContent], { type: 'text/csv' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'churn_risk_report.csv';
+        a.click();
+        URL.revokeObjectURL(url);
+    };
+
     // Show loading message while fetching data
     if (loading) {
         return <div>Loading Churn Risk Data...</div>;
@@ -47,16 +63,45 @@ const ChurnRiskTable = () => {
             sx={{
                 borderRadius: 5,
                 boxShadow: "0 4px 16px rgba(250, 162, 138, 0.08)",
-                width: '100%',           
-                minWidth: 0,             
-                overflowX: 'auto',       
+                width: '100%',
+                minWidth: 0,
+                overflowX: 'auto',
+                position: 'relative'
             }}
         >
+            {/* Download Report button - absolute position, does not push table down */}
+            <Box
+                sx={{
+                    position: 'absolute',
+                    top: 2,
+                    bottom: 10,     
+                    right: 16,   
+                    zIndex: 2,
+                }}
+            >
+                <Button
+                    onClick={() => downloadCSV(churnedCustomers)}
+                    variant="contained"
+                    sx={{
+                        background: "#f7d9afff",
+                        color: "#000",
+                        borderRadius: "20px",
+                        fontWeight: "bold",
+                        textTransform: "none",
+                        px: 3,
+                        py: 1,
+                        boxShadow: 1,
+                        '&:hover': { background: "#ffe0b2" }
+                    }}
+                >
+                    Download Report
+                </Button>
+            </Box>
             <Table
                 aria-label="churn risk table"
                 sx={{
-                    width: '100%',        
-                    minWidth: 600,        
+                    width: '100%',
+                    minWidth: 600,
                 }}
             >
                 <TableHead sx={{ backgroundColor: '#f8f9fa' }}>
@@ -79,8 +124,8 @@ const ChurnRiskTable = () => {
                                         variant="contained"
                                         size="small"
                                         href={`mailto:${getCustomerEmail(customer.CUSTOMER_ID)}?subject=We Miss You at Holy Pepperoni!&body=Hi there, we noticed you haven't ordered in a while. Here is a 20% discount code for your next order: WELCOMEBACK20`}
-                                        sx={{ 
-                                            background: "#007bff", 
+                                        sx={{
+                                            background: "#007bff",
                                             '&:hover': { background: "#0056b3" },
                                             borderRadius: '20px',
                                             textTransform: 'none'

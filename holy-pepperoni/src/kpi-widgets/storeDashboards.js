@@ -163,33 +163,12 @@ const StoreDashboards = (props) => {
             </Paper>
           </motion.div>
         </Box>
-        {/* You can add more store-related charts here, e.g.: */}
-        {/* <Box sx={{ width: '100%' }}>
-            <motion.div
-              initial={{ opacity: 0, y: 24 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.5 }}
-              transition={{ duration: 0.8, delay: 0.3 }}
-            >
-              <Paper elevation={3} sx={{
-                borderRadius: 5,
-                p: 3,
-                mb: 4, 
-                boxShadow: "0 4px 16px rgba(250, 162, 138, 0.08)",
-                fontFamily: "'Inter', 'Roboto', sans-serif"
-              }}>
-                <Typography variant="h6" fontWeight="bold" sx={{ mb: 2, fontFamily: "'Inter', 'Roboto', sans-serif" }}>
-                  Store Rank by Active Customers
-                </Typography>
-                <StoreRankByCustomersChart />
-              </Paper>
-            </motion.div>
-          </Box> */}
+
 
 
         <Divider sx={{ my: 4 }} />
 
-        {/* Back to Main Menu button */}
+        {/* Back button to return to main menu */}
         <Box sx={{ display: "flex", justifyContent: "center" }}>
           <Button
             variant="contained"
@@ -197,6 +176,10 @@ const StoreDashboards = (props) => {
               background: "#faa28a",
               borderRadius: "32px",
               color: "#fff",
+              fontSize: "1.1rem",
+              fontWeight: 700,
+              px: 5,
+              py: 1.5,
               '&:hover': { background: "#fa7a1c" }
             }}
             onClick={() => navigate("/dashboard")}
