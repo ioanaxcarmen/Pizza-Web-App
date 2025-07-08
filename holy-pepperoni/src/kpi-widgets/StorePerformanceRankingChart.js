@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
 } from 'recharts';
+import { Button } from '@mui/material';
 
 const StorePerformanceRankingChart = () => {
     // State variables for chart data, loading status, and errors
@@ -15,12 +16,28 @@ const StorePerformanceRankingChart = () => {
     const [selectedQuarter, setSelectedQuarter] = useState('all');
     const [selectedMonth, setSelectedMonth] = useState('all');
     const [selectedState, setSelectedState] = useState('all');
+    // Utility to convert data to CSV and trigger download
+    const downloadCSV = (data) => {
+        if (!data.length) return;
+        const header = Object.keys(data[0]).join(',');
+        const rows = data.map(row => Object.values(row).join(','));
+        const csvContent = [header, ...rows].join('\n');
+        const blob = new Blob([csvContent], { type: 'text/csv' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'StorePerformanceRankingChart.csv';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    };
 
-  
-    const years = ['all', '2020', '2021', '2022']; 
+
+    const years = ['all', '2020', '2021', '2022'];
     const quarters = ['all', '1', '2', '3', '4'];
     const months = ['all', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'];
-    const states = ['all', 'CA', 'UT', 'NV', 'AZ']; 
+    const states = ['all', 'CA', 'UT', 'NV', 'AZ'];
 
     // Options for the "Rank By" dropdown
     const rankingOptions = [
@@ -129,7 +146,7 @@ const StorePerformanceRankingChart = () => {
 
     return (
         <div style={styles.chartContainer}>
-            <h2 style={styles.chartTitle}>Store Performance Ranking</h2>
+            
 
             {/* Filter controls */}
             <div style={styles.filterContainer}>
@@ -197,6 +214,23 @@ const StorePerformanceRankingChart = () => {
                         <option key={state} value={state}>{state === 'all' ? 'All States' : state}</option>
                     ))}
                 </select>
+                <Button
+                    onClick={() => downloadCSV(chartData)}
+                    variant="contained"
+                    sx={{
+                        background: "#faa28a",
+                        borderRadius: "32px",
+                        color: "#fff",
+                        fontWeight: "bold",
+                        textTransform: "none",
+                        px: 3,
+                        py: 1,
+                        boxShadow: 1,
+                        '&:hover': { background: "#fa7a1c" }
+                    }}
+                >
+                    Download Report
+                </Button>
             </div>
 
             {/* Conditional rendering for no data or the chart */}

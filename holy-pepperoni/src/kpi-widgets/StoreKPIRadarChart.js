@@ -10,12 +10,13 @@ import {
     Legend,
     ResponsiveContainer
 } from 'recharts';
+import { Button } from '@mui/material';
 
 // Default filter values
 const defaultFilters = {
     state: 'all',
     city: 'all',
-    storeId: 'all' 
+    storeId: 'all'
 };
 
 const StoreKPIRadarChart = () => {
@@ -23,15 +24,29 @@ const StoreKPIRadarChart = () => {
     const [filters, setFilters] = useState(defaultFilters);
     const [rawData, setRawData] = useState([]);
     const [pivotData, setPivotData] = useState([]);
-    const [loading, setLoading] = useState(true); 
+    const [loading, setLoading] = useState(true);
     const [storesList, setStoresList] = useState([]); // List of stores for the store dropdown
     const [citiesList, setCitiesList] = useState([]); // List of cities for the city dropdown
-
+    const downloadCSV = (data) => {
+        if (!data.length) return;
+        const header = Object.keys(data[0]).join(',');
+        const rows = data.map(row => Object.values(row).join(','));
+        const csvContent = [header, ...rows].join('\n');
+        const blob = new Blob([csvContent], { type: 'text/csv' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'Store-KPIs.csv';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    };
     // Colors for the radar chart lines/fills
     const radarColors = ['#8884d8', '#82ca9d', '#ffc658', '#ff7300', '#0088FE', '#00C49F', '#FFBB28'];
 
     // Filter options (states are hardcoded based on your data, years/quarters/months are removed as requested)
-    const states = ['all', 'AZ', 'NV', 'UT', 'CA']; 
+    const states = ['all', 'AZ', 'NV', 'UT', 'CA'];
 
     // useEffect hook to fetch the list of stores for the dropdown when the component mounts
     useEffect(() => {
@@ -73,7 +88,7 @@ const StoreKPIRadarChart = () => {
         const params = new URLSearchParams();
         // Append only state, city, and storeId filters to the URL
         if (filters.state !== 'all') params.append('state', filters.state);
-        if (filters.city !== 'all') params.append('city', filters.city); 
+        if (filters.city !== 'all') params.append('city', filters.city);
         if (filters.storeId !== 'all') params.append('storeId', filters.storeId);
 
         axios.get(`http://localhost:3001/api/kpi/store-summary?${params.toString()}`)
@@ -115,7 +130,7 @@ const StoreKPIRadarChart = () => {
             const row = { kpi: kpiItem.label }; // Start with the KPI label for this axis
             rawData.forEach(store => {
                 // Use the store's ID (e.g., 'S302800') as the key for its score on this KPI axis
-                const storeIdKey = store.STOREID; 
+                const storeIdKey = store.STOREID;
                 if (storeIdKey) {
                     // Assign the store's KPI point value (from backend) to the corresponding storeIdKey
                     // Use Number() to ensure it's a number, and fallback to 0 if undefined
@@ -220,13 +235,12 @@ const StoreKPIRadarChart = () => {
                 <label htmlFor="city-select" style={{ ...styles.filterLabel, marginLeft: '20px' }}>City:</label>
                 <select
                     id="city-select"
-                    name="city" // Match the filter key
+                    name="city"
                     value={filters.city}
                     onChange={handleFilterChange}
                     style={styles.select}
                 >
                     <option value="all">All Cities</option>
-                    {/* Map through the fetched citiesList to create dropdown options */}
                     {citiesList.map(city => (
                         <option key={city} value={city}>
                             {city}
@@ -238,19 +252,35 @@ const StoreKPIRadarChart = () => {
                 <label htmlFor="store-id-select" style={{ ...styles.filterLabel, marginLeft: '20px' }}>Store:</label>
                 <select
                     id="store-id-select"
-                    name="storeId" // Match the filter key
+                    name="storeId"
                     value={filters.storeId}
                     onChange={handleFilterChange}
                     style={styles.select}
                 >
                     <option value="all">All Stores</option>
-                    {/* Map through the fetched storesList to create dropdown options */}
                     {storesList.map(store => (
                         <option key={store.storeid} value={store.storeid}>
                             {store.name}
                         </option>
                     ))}
                 </select>
+                <Button
+                    onClick={() => downloadCSV(rawData)}
+                    variant="contained"
+                    sx={{
+                        background: "#faa28a",
+                        borderRadius: "32px",
+                        color: "#fff",
+                        fontWeight: "bold",
+                        textTransform: "none",
+                        px: 3,
+                        py: 1,
+                        boxShadow: 1,
+                        '&:hover': { background: "#fa7a1c" }
+                    }}
+                >
+                    Download Report
+                </Button>
             </div>
 
             <ResponsiveContainer width="100%" height={500}>
