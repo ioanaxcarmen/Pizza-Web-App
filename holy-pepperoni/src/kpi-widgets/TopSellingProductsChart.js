@@ -237,6 +237,27 @@ const TopSellingProductsChart = () => {
                                 ? `€${Number(value).toLocaleString()}`
                                 : Number(value).toLocaleString()
                         }
+                        content={({ active, payload }) => {
+                            if (active && payload && payload.length) {
+                                const { name, quantity, revenue, size} = payload[0].payload;
+                                return (
+                                    <div style={{ 
+                                        background: "#fff", 
+                                        padding: 8, 
+                                        border: "1px solid #ccc",
+                                        borderRadius: 4,
+                                        boxShadow: "0 2px 4px rgba(0,0,0,0.1)"
+                                    }}>
+                                        <div><b>{name}</b></div>
+                                        {size && <div>Size: {size}</div>}
+                                        <div>Quantity: {quantity?.toLocaleString()}</div>
+                                        <div>Revenue: €{revenue?.toLocaleString()}</div>
+                
+                                    </div>
+                                );
+                            }
+                            return null;
+                        }}
                     />
                     <Legend />
                     <Bar dataKey="quantity" name="Quantity Sold" fill="#3498db" />

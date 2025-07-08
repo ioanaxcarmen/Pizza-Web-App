@@ -138,6 +138,10 @@ const ChartPage = () => {
                 chartComponent = <TopSellingProductsChart />;
                 pageTitle = "Top Selling Products";
                 break;
+            case 'top-products-since-launch':
+                chartComponent = <TopSellingProductsChart initialMode="sinceLaunch" />;
+                pageTitle = "Top-Produkte seit Launch";
+                break;
             case 'cohortchart':
                 chartComponent = <ProductCohortSalesLineChart />;
                 pageTitle = "Product Cohort Sales Over Time";

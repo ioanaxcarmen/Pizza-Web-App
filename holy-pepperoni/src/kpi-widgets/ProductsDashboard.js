@@ -113,6 +113,27 @@ const ProductsDashboard = (props) => {
 
             {/* Các widget biểu đồ */}
             <Box sx={{ width: '100%' }}>
+
+              <motion.div
+                initial={{ opacity: 0, y: 24 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.5 }}
+                transition={{ duration: 0.8, delay: 0.4 }}
+              >
+                <Paper elevation={3} sx={{
+                  borderRadius: 5,
+                  p: 3,
+                  mb: 4,
+                  boxShadow: "0 4px 16px rgba(250, 162, 138, 0.08)",
+                  fontFamily: "'Inter', 'Roboto', sans-serif"
+                }}>
+                  <Typography variant="h6" fontWeight="bold" sx={{ mb: 2, fontFamily: "'Inter', 'Roboto', sans-serif" }}>
+                    Top Selling Products
+                  </Typography>
+                  <TopSellingProductsChart />
+                </Paper>
+              </motion.div>
+
               <motion.div
                 initial={{ opacity: 0, y: 24 }}
                 whileInView={{ opacity: 1, y: 0 }}
@@ -172,27 +193,8 @@ const ProductsDashboard = (props) => {
                   <ProductRevenuePieBySize />
                 </Paper>
               </motion.div>
-
-              <motion.div
-                initial={{ opacity: 0, y: 24 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, amount: 0.5 }}
-                transition={{ duration: 0.8, delay: 0.4 }}
-              >
-                <Paper elevation={3} sx={{
-                  borderRadius: 5,
-                  p: 3,
-                  mb: 4,
-                  boxShadow: "0 4px 16px rgba(250, 162, 138, 0.08)",
-                  fontFamily: "'Inter', 'Roboto', sans-serif"
-                }}>
-                  <Typography variant="h6" fontWeight="bold" sx={{ mb: 2, fontFamily: "'Inter', 'Roboto', sans-serif" }}>
-                    Top Selling Products
-                  </Typography>
-                  <TopSellingProductsChart />
-                </Paper>
-              </motion.div>
             </Box>
+
 
             <Divider sx={{ my: 4 }} />
 

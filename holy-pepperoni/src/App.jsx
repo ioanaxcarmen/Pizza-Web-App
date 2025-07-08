@@ -15,6 +15,7 @@ import OrdersDashboard from "./kpi-widgets/OrdersDashboard";
 import CustomerDashboard from "./components/CustomerDashboard";
 import SegmentDetailsPage from './components/SegmentDetailsPage'; 
 import StoreDashboards from "./kpi-widgets/storeDashboards";
+import GeoPowerBIChart from './kpi-widgets/GeoPowerBIChart';
 
 /**
  * App component
@@ -50,6 +51,7 @@ function App() {
         {/* Product dashboard and menu (protected) */}
         <Route path="/product" element={<ProtectedRoute><ProductMenuPage /></ProtectedRoute>} />
         <Route path="/product/:kpiId" element={<ProtectedRoute><ChartPage /></ProtectedRoute>} />
+        <Route path="/product/top-products-since-launch" element={<ChartPage />} />
         {/* Product distribution chart */}
         <Route path="/product/distributionchart" element={<ProductDistributionPieCharts />} />
         {/* Ingredients, products, and orders dashboards */}
@@ -58,8 +60,15 @@ function App() {
         <Route path="/orders/dashboard" element={<OrdersDashboard />} />
         {/* Geographical reports and dynamic KPI charts */}
         <Route path="/geo-reports" element={<GeographicalReportMenuPage />} />
-        <Route path="/geo/:kpiId" element={<ChartPage />} />
-        {/* Customer order history and segment details */}
+        <Route path="/geo/:kpiId" element={<ChartPage />} /> {/* Dynamic KPI charts for geographical reports */}
+        <Route path="/geo/powerbi-map2"
+          element={
+            <GeoPowerBIChart
+              embedUrl="https://app.powerbi.com/reportEmbed?reportId=d2c9ef77-bd05-485f-aaa2-692e1dbf1bc6&autoAuth=true&ctid=66c5e13f-8c43-4359-b2e8-51775c6d298d"
+              title="Geographical Power BI Report"
+            />
+          }
+        />
         <Route path="/customer/order-history/:customerId" element={<CustomerHistoryPage />} />
         <Route path="/customer/segment-details" element={<SegmentDetailsPage />} />
       </Routes>
