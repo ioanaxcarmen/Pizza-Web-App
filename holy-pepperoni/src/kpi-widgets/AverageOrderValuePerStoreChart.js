@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
     LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Dot
 } from 'recharts';
+import { Button } from '@mui/material';
 
 const AverageOrderValuePerStoreChart = () => {
     const [chartData, setChartData] = useState([]);
@@ -14,7 +15,23 @@ const AverageOrderValuePerStoreChart = () => {
     const [selectedMonth, setSelectedMonth] = useState('all');
     const [selectedState, setSelectedState] = useState('all');
     const [selectedStoreId, setSelectedStoreId] = useState('all');
-    
+    const downloadCSV = (data) => {
+        if (!data.length) return;
+        const header = Object.keys(data[0]).join(',');
+        const rows = data.map(row => Object.values(row).join(','));
+        const csvContent = [header, ...rows].join('\n');
+        const blob = new Blob([csvContent], { type: 'text/csv' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'average-order-value-per-store.csv';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    };
+
+
 
     // Filter options (can be global or fetched dynamically if needed)
     const years = ['all', '2020', '2021', '2022'];
@@ -142,6 +159,23 @@ const AverageOrderValuePerStoreChart = () => {
                         </option>
                     ))}
                 </select>
+                <Button
+                    onClick={() => downloadCSV(chartData)}
+                    variant="contained"
+                    sx={{
+                        background: "#faa28a",
+                        borderRadius: "32px",
+                        color: "#fff",
+                        fontWeight: "bold",
+                        textTransform: "none",
+                        px: 3,
+                        py: 1,
+                        boxShadow: 1,
+                        '&:hover': { background: "#fa7a1c" }
+                    }}
+                >
+                    Download Report
+                </Button>
 
             </div>
 
