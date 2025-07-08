@@ -833,7 +833,7 @@ app.get('/api/kpi/store-performance-ranking', async (req, res) => {
 
     const { rankingType = 'totalRevenue', year, quarter, month, state } = req.query;
 
-    // --- Dynamic Filters based on request query parameters ---
+    // Filters applied
     if (year && year !== 'all') {
         whereClause += ' AND EXTRACT(YEAR FROM o.ORDERDATE) = :year';
         binds.year = Number(year);
@@ -851,7 +851,7 @@ app.get('/api/kpi/store-performance-ranking', async (req, res) => {
         binds.state = state;
     }
 
-    // --- Determine the aggregation metric and sort order ---
+    
     let selectAggregate;
     let orderByColumn;
 
@@ -878,7 +878,7 @@ app.get('/api/kpi/store-performance-ranking', async (req, res) => {
     try {
         connection = await oracledb.getConnection(dbConfig);
 
-        // --- The new SQL Query to aggregate directly from ORDERS and STORES ---
+        
         const query = `
             SELECT
                 s.STOREID,
@@ -906,17 +906,12 @@ app.get('/api/kpi/store-performance-ranking', async (req, res) => {
 
         console.log("Query result rows (NEW):", result.rows);
 
-        // Map the results to the format expected by your React chart
-        // The column order in SELECT is crucial here for mapping
+        // Map the results 
         const response = result.rows.map(row => ({
-            storeId: row[0],         // s.STOREID
-            storeName: row[1],       // s.CITY || ', ' || s.STATE_ABBR
-            value: Number(row[2])    // The RANK_VALUE_AGG, cast to Number
-            // You can also pass other aggregated values if needed in tooltip or elsewhere
-            // totalRevenue: Number(row[3]),
-            // totalOrders: Number(row[4]),
-            // avgOrderValue: Number(row[5]),
-            // activeCustomers: Number(row[6])
+            storeId: row[0],         
+            storeName: row[1],       
+            value: Number(row[2])    
+         
         }));
 
         res.json(response);
@@ -1009,7 +1004,7 @@ app.get('/api/kpi/top-stores-by-products-sold', async (req, res) => {
     const binds = {};
     let whereClause = 'WHERE 1=1'; // Start with a true condition
 
-    // Filters for year, quarter, month, state (from ORDERS table)
+    // Filters applied
     const { year, quarter, month, state } = req.query;
 
     if (year && year !== 'all') {
@@ -1089,7 +1084,7 @@ app.get('/api/kpi/total-stores-count', async (req, res) => {
         const result = await connection.execute(query, [], { outFormat: oracledb.OUT_FORMAT_ARRAY });
         console.log("Total Stores Count Query result rows:", result.rows);
 
-        // The result will be a single row with one column: [ [count] ]
+       
         const totalStores = result.rows.length > 0 ? Number(result.rows[0][0]) : 0;
 
         res.json({ totalStores: totalStores });
@@ -1432,48 +1427,7 @@ app.get('/api/kpi/store-summary', async (req, res) => {
         }
     }
 });
-/* let connection;
-try {
-    connection = await oracledb.getConnection(dbConfig);
-    const binds = {
-        state: req.query.state && req.query.state !== 'all' ? req.query.state : 'all'
-    };
 
-    const query = `
-        SELECT 
-            storeid,
-            city,
-            state,
-            (33 - revenue_rank)        AS revenue_point,
-            (33 - avg_value_rank)      AS avg_value_point,
-            (33 - order_count_rank)    AS order_count_point,
-            (33 - active_cust_rank)    AS active_cust_point,
-            (33 - customer_share_rank) AS customer_share_point
-        FROM v_store_performance_rank
-        WHERE (:state = 'all' OR state = :state)
-        ORDER BY revenue_point DESC
-    `;
-
-    const result = await connection.execute(query, binds);
-
-    const data = result.rows.map(row => ({
-        storeid: row[0],
-        city: row[1],
-        state: row[2],
-        revenue_point: row[3],
-        avg_value_point: row[4],
-        order_count_point: row[5],
-        active_cust_point: row[6],
-        customer_share_point: row[7],
-    })); */
-
-/*res.json(data);
-} catch (err) {
-console.error("Error fetching store summary:", err);
-res.status(500).json({ error: 'Failed to fetch store summary.' });
-} finally {
-if (connection) { try { await connection.close(); } catch (e) { } }
-}); */
 
 // New endpoint: Items by Category and Hour
 app.get('/api/kpi/items-by-category-hour', async (req, res) => {

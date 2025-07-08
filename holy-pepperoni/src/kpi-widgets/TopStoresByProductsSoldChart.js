@@ -3,8 +3,7 @@ import {
     PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer
 } from 'recharts';
 import { Button } from '@mui/material';
-// Define a set of colors for the pie chart slices.
-// You might need more colors if you consistently have 10 stores and want unique colors.
+
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#AF19FF', '#FF19A0', '#19FFD4', '#FFD419', '#8884d8', '#82ca9d'];
 
 const TopStoresByProductsSoldChart = () => {
@@ -12,7 +11,7 @@ const TopStoresByProductsSoldChart = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    // Filter states, matching the backend's expected parameters
+    
     const [selectedYear, setSelectedYear] = useState('all');
     const [selectedQuarter, setSelectedQuarter] = useState('all');
     const [selectedMonth, setSelectedMonth] = useState('all');
@@ -33,7 +32,7 @@ const TopStoresByProductsSoldChart = () => {
         URL.revokeObjectURL(url);
     };
 
-    // Filter options (adjust years/states based on your actual data)
+    // Filters added
     const years = ['all', '2020', '2021', '2022'];
     const quarters = ['all', '1', '2', '3', '4'];
     const months = ['all', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'];
@@ -64,12 +63,12 @@ const TopStoresByProductsSoldChart = () => {
                 const data = await response.json();
                 console.log("Received Top Stores By Products Sold data:", data);
 
-                // Recharts PieChart expects 'name' and 'value' keys.
-                // Map 'productsSold' to 'value' and 'storeName' to 'name'.
+                
+                
                 const formattedData = data.map(item => ({
                     name: item.storeName,
                     value: item.productsSold,
-                    storeId: item.storeId // Keep storeId for tooltip if needed
+                    storeId: item.storeId 
                 }));
                 setChartData(formattedData || []);
 
@@ -87,7 +86,7 @@ const TopStoresByProductsSoldChart = () => {
     // Custom Tooltip component for the Pie Chart
     const CustomTooltip = ({ active, payload }) => {
         if (active && payload && payload.length) {
-            const data = payload[0]; // Data for the hovered slice
+            const data = payload[0]; 
             return (
                 <div style={styles.tooltip}>
                     <p className="label" style={{ fontWeight: 'bold', color: data.color }}>{`${data.name} (ID: ${data.payload.storeId})`}</p>
@@ -100,7 +99,7 @@ const TopStoresByProductsSoldChart = () => {
         return null;
     };
 
-    // Calculate total products for the "No data available" check
+    
     const totalProductsSold = chartData.reduce((sum, entry) => sum + entry.value, 0);
 
     if (loading) {
@@ -204,7 +203,7 @@ const TopStoresByProductsSoldChart = () => {
                                 <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                             ))}
                         </Pie>
-                        <Tooltip content={<CustomTooltip />} /> {/* Use the custom tooltip component */}
+                        <Tooltip content={<CustomTooltip />} /> 
                         <Legend /> {/* Display labels and colors below the chart */}
                     </PieChart>
                 </ResponsiveContainer>

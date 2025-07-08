@@ -37,8 +37,8 @@ function App() {
             </ProtectedRoute>
           }
         />  
-        {/* Store menu and dashboards */}
-        <Route path="/store" element={<StoreMenupage />} />
+        {/* dashboards */}
+        
         <Route path="/store/:kpiId" element={<ChartPage />} />
         <Route path="/store/dashboard" element={<StoreDashboards />} />
         {/* Customer dashboard and dynamic KPI charts */}
@@ -57,6 +57,8 @@ function App() {
         <Route path="/ingredients/dashboard" element={<IngredientsDashboard />} />
         <Route path="/orders/dashboard" element={<OrdersDashboard />} />
         {/* Geographical reports and dynamic KPI charts */}
+        <Route path="/geo-reports" element={<GeographicalReportMenuPage />} />
+        <Route path="/geo/:kpiId" element={<ChartPage />} /> 
         <Route path="/geo/:kpiId" element={<ChartPage />} /> {/* Dynamic KPI charts for geographical reports */}
         {/*Route for Power BI geographical report with embedded iframe */}
         <Route path="/geo/powerbi-map2"

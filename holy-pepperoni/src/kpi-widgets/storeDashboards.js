@@ -6,14 +6,11 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import Sidebar from '../components/Sidebar';
 import TopBar from '../components/TopBar';
-// --- Store-specific chart imports ---
+// Store specific charts imported
 import StorePerformanceRankingChart from '../kpi-widgets/StorePerformanceRankingChart';
 import TopStoresByProductsSoldChart from '../kpi-widgets/TopStoresByProductsSoldChart';
 import AverageOrderValuePerStoreChart from './AverageOrderValuePerStoreChart';
 import StoreKPIRadarChart from './StoreKPIRadarChart';
-// Removed TotalStoresWidget import as its functionality is now merged
-// import TotalStoresWidget from '../kpi-widgets/TotalStoresWidget'; 
-
 import TotalStoresWidget from './TotalStoresWidget';
 
 
@@ -26,13 +23,13 @@ const StoreDashboards = (props) => {
   const isMdUp = useMediaQuery(theme.breakpoints.up('md'));
   const navigate = useNavigate();
 
-  // Logout logic giống Dashboard
+  // Logout logic 
   const handleLogout = () => {
     localStorage.removeItem("authToken");
     navigate("/");
   };
 
-  // Inject Google Fonts: Inter + Roboto (Important for consistent styling)
+  
   useEffect(() => {
     const preconnect1 = document.createElement('link');
     preconnect1.rel = 'preconnect';
@@ -67,7 +64,7 @@ const StoreDashboards = (props) => {
       
         <TopBar title="Stores Dashboard" onLogout={handleLogout} {...props} />
         <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', p: { xs: 1, md: 3 } }}>
-          {/* Widget tổng số orders và animation pizza */}
+          
           <Box
             sx={{
               display: 'flex',
@@ -149,8 +146,8 @@ const StoreDashboards = (props) => {
             </Paper>
           </motion.div>
         </Box>
-        <Box sx={{ width: '100%', height: '600px' }}> {/* Set a fixed height here */}
-          {/* Ensure motion.div takes full height */}
+        <Box sx={{ width: '100%', height: '600px' }}> 
+          
           <motion.div
             initial={{ opacity: 0, y: 24 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -164,9 +161,9 @@ const StoreDashboards = (props) => {
               mb: 4,
               boxShadow: "0 4px 16px rgba(250, 162, 138, 0.08)",
               fontFamily: "'Inter', 'Roboto', sans-serif",
-              height: '100%', // Ensure Paper takes full height
-              display: 'flex', // Use flex to arrange content
-              flexDirection: 'column', // Stack content vertically
+              height: '100%', 
+              display: 'flex', 
+              flexDirection: 'column', 
             }}>
               <Typography variant="h6" fontWeight="bold" sx={{ mb: 2, fontFamily: "'Inter', 'Roboto', sans-serif" }}>
                 Store KPIs Radar Chart
