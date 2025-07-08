@@ -5,7 +5,6 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import IngredientMenuPage from "./components/IngredientMenuPage";
 import ChartPage from "./components/ChartPage";
 import ProductMenuPage from "./components/ProductMenuPage"; 
-import StoreMenupage from "./components/StoreMenupage";
 import CustomerHistoryPage from "./components/CustomerHistoryPage";
 import ProductDistributionPieCharts from "./kpi-widgets/ProductDistributionPieCharts";
 import IngredientsDashboard from "./kpi-widgets/IngredientsDashboard";
@@ -56,8 +55,7 @@ function App() {
         {/* Ingredients and orders dashboards */}
         <Route path="/ingredients/dashboard" element={<IngredientsDashboard />} />
         <Route path="/orders/dashboard" element={<OrdersDashboard />} />
-        {/* Geographical reports and dynamic KPI charts */}
-        <Route path="/geo-reports" element={<GeographicalReportMenuPage />} />
+        
         <Route path="/geo/:kpiId" element={<ChartPage />} /> 
         <Route path="/geo/:kpiId" element={<ChartPage />} /> {/* Dynamic KPI charts for geographical reports */}
         {/*Route for Power BI geographical report with embedded iframe */}
