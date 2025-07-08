@@ -389,15 +389,26 @@ ORDER BY year, quarter, month, week, total_quantity_used DESC;
 
 
 
-CREATE OR REPLACE VIEW v_top_ingredients_by_store AS
+CREATE OR REPLACE VIEW "PIZZA"."V_TOP_INGREDIENTS_BY_STORE" (
+    "STOREID", 
+    "STORE_NAME", 
+    "CITY", 
+    "STATE", 
+    "MONTH", 
+    "QUARTER", 
+    "WEEK", 
+    "YEAR", 
+    "INGREDIENT_NAME", 
+    "TOTAL_QUANTITY_USED"
+) AS 
 SELECT
     o.storeid,
     (s.city || ', ' || s.state_abbr) AS store_name,
     s.city,
     s.state_abbr AS state,
-    TO_CHAR(o.orderdate, 'YYYY-MM') AS month,
-    TO_CHAR(o.orderdate, 'YYYY-"Q"Q') AS quarter,
-    TO_CHAR(o.orderdate, 'IYYY-IW') AS week,
+    TO_CHAR(o.orderdate, 'MM') AS month,         
+    TO_CHAR(o.orderdate, 'Q') AS quarter,       
+    TO_CHAR(o.orderdate, 'IW') AS week,          
     TO_CHAR(o.orderdate, 'YYYY') AS year,
     i.name AS ingredient_name,
     SUM(oi.quantity) AS total_quantity_used
@@ -411,9 +422,9 @@ GROUP BY
     o.storeid,
     s.city,
     s.state_abbr,
-    TO_CHAR(o.orderdate, 'YYYY-MM'),
-    TO_CHAR(o.orderdate, 'YYYY-"Q"Q'),
-    TO_CHAR(o.orderdate, 'IYYY-IW'),
+    TO_CHAR(o.orderdate, 'MM'),
+    TO_CHAR(o.orderdate, 'Q'),
+    TO_CHAR(o.orderdate, 'IW'),
     TO_CHAR(o.orderdate, 'YYYY'),
     i.name
 ORDER BY storeid, year DESC, month DESC, total_quantity_used DESC;
@@ -655,25 +666,46 @@ GROUP BY ns.storeid, ns.latitude, ns.longitude, ns.population;
 -- For each store, counts customers within 3km, 5km, and 10km. For direct use as a heatmap layer in Power BI.
 -- Business Case: Visualize service reach, potential demand, and support location/expansion decisions.
 
-CREATE OR REPLACE VIEW v_store_customer_density AS
+CREATE OR REPLACE VIEW V_STORE_CUSTOMER_DENSITY_MONTH AS
 SELECT
     s.storeid,
     s.latitude AS store_lat,
     s.longitude AS store_long,
-    COUNT(CASE WHEN dist < 3 THEN c.id END) AS customer_3km,
-    COUNT(CASE WHEN dist < 5 THEN c.id END) AS customer_5km,
-    COUNT(CASE WHEN dist < 10 THEN c.id END) AS customer_10km
+    TO_CHAR(c_dist.orderdate, 'YYYY') AS order_year,
+    TO_CHAR(c_dist.orderdate, 'YYYY-Q') AS order_quarter,
+    TO_CHAR(c_dist.orderdate, 'YYYY-MM') AS order_month,
+    COUNT(DISTINCT c_dist.customer_id) AS customer_3km
 FROM stores s
-CROSS JOIN customers c
-CROSS APPLY (
-    SELECT 6371 * 2 * ASIN(SQRT(
-        POWER(SIN(((c.latitude - s.latitude) * 3.141592653589793 / 180) / 2), 2) +
-        COS(s.latitude * 3.141592653589793 / 180) *
-        COS(c.latitude * 3.141592653589793 / 180) *
-        POWER(SIN(((c.longitude - s.longitude) * 3.141592653589793 / 180) / 2), 2)
-    )) AS dist FROM dual
-)
-GROUP BY s.storeid, s.latitude, s.longitude;
+JOIN (
+    SELECT
+        c.id AS customer_id,
+        c.latitude AS customer_lat,
+        c.longitude AS customer_long,
+        o.orderdate,
+        s_inner.storeid,
+        (
+            6371 * 2 * ASIN(SQRT(
+                POWER(SIN(((c.latitude - s_inner.latitude) * 3.141592653589793 / 180) / 2), 2) +
+                COS(s_inner.latitude * 3.141592653589793 / 180) *
+                COS(c.latitude * 3.141592653589793 / 180) *
+                POWER(SIN(((c.longitude - s_inner.longitude) * 3.141592653589793 / 180) / 2), 2)
+            ))
+        ) AS dist
+    FROM customers c
+    JOIN orders o ON o.customerid = c.id
+    JOIN stores s_inner ON 1=1
+    WHERE
+        c.latitude BETWEEN s_inner.latitude - (3/111.0) AND s_inner.latitude + (3/111.0)
+        AND c.longitude BETWEEN s_inner.longitude - (3/(111.0 * COS(s_inner.latitude * 3.141592653589793 / 180))) AND s_inner.longitude + (3/(111.0 * COS(s_inner.latitude * 3.141592653589793 / 180)))
+) c_dist ON s.storeid = c_dist.storeid
+WHERE c_dist.dist < 3
+GROUP BY
+    s.storeid,
+    s.latitude,
+    s.longitude,
+    TO_CHAR(c_dist.orderdate, 'YYYY'),
+    TO_CHAR(c_dist.orderdate, 'YYYY-Q'),
+    TO_CHAR(c_dist.orderdate,'YYYY-MM');
 
 
 
