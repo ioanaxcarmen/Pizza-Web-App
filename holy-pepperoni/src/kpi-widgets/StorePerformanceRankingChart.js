@@ -5,17 +5,18 @@ import {
 import { Button } from '@mui/material';
 
 const StorePerformanceRankingChart = () => {
-    // State variables for chart data, loading status, and errors
+    
     const [chartData, setChartData] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    // State variables for filters, matching the backend's expected parameters
-    const [rankingType, setRankingType] = useState('totalRevenue'); // Default ranking type
+    // filters added
+    const [rankingType, setRankingType] = useState('totalRevenue'); 
     const [selectedYear, setSelectedYear] = useState('all');
     const [selectedQuarter, setSelectedQuarter] = useState('all');
     const [selectedMonth, setSelectedMonth] = useState('all');
     const [selectedState, setSelectedState] = useState('all');
+
     // Utility to convert data to CSV and trigger download
     const downloadCSV = (data) => {
         if (!data.length) return;
@@ -47,14 +48,14 @@ const StorePerformanceRankingChart = () => {
         { value: 'activeCustomers', label: 'Active Customers' },
     ];
 
-    // useEffect hook to fetch data whenever filter dependencies change
+    
     useEffect(() => {
         const fetchRankingData = async () => {
             setLoading(true); // Set loading to true when fetching starts
             setError(null);    // Clear any previous errors
 
             try {
-                // Construct query parameters based on selected filters
+                
                 const queryParams = new URLSearchParams();
                 queryParams.append('rankingType', rankingType);
                 if (selectedYear !== 'all') queryParams.append('year', selectedYear);
@@ -78,9 +79,8 @@ const StorePerformanceRankingChart = () => {
                 const data = await response.json();
                 console.log("Received Store Performance Ranking data:", data); // For debugging
 
-                // Set the fetched data to the chartData state.
-                // The backend already returns aggregated top 10 data, so no further processing needed here.
-                setChartData(data || []); // Ensure it's an empty array if data is null/undefined
+                
+                setChartData(data || []); 
 
             } catch (err) {
                 console.error("Error fetching store performance ranking data:", err);
@@ -91,20 +91,9 @@ const StorePerformanceRankingChart = () => {
         };
 
         fetchRankingData(); // Call the fetch function
-    }, [rankingType, selectedYear, selectedQuarter, selectedMonth, selectedState]); // Dependencies: re-run effect when any of these change
+    }, [rankingType, selectedYear, selectedQuarter, selectedMonth, selectedState]); 
 
-    // Function to format tooltip values based on the selected ranking type
-    /* const getTooltipFormatter = (value) => {
-        switch (rankingType) {
-            case 'totalRevenue':
-            case 'avgOrderValue':
-                return `$${Number(value).toFixed(2)}`; // Format as currency with 2 decimal places
-            case 'totalOrders':
-            case 'activeCustomers':
-                return Number(value).toLocaleString(); // Format as a localized number
-            default:
-                return value; // Return as-is for other types
-        } */
+   
     const getTooltipFormatter = () => {
         switch (rankingType) {
             case 'totalRevenue':
@@ -129,13 +118,13 @@ const StorePerformanceRankingChart = () => {
 
 
 
-    // Function to get the label for the Y-axis based on the selected ranking type
+    
     const getAxisLabel = () => {
         const selectedOption = rankingOptions.find(opt => opt.value === rankingType);
         return selectedOption ? selectedOption.label : 'Value';
     };
 
-    // Render loading, error, or no data messages
+    
     if (loading) {
         return <div style={styles.loading}>Loading Store Performance Ranking...</div>;
     }
@@ -243,14 +232,14 @@ const StorePerformanceRankingChart = () => {
                         margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
                     >
                         <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
-                        {/* XAxis displays storeName (e.g., "New York, NY") */}
+                        
                         <XAxis dataKey="storeName" angle={-45} textAnchor="end" height={100} stroke="#333" />
-                        {/* YAxis displays the value of the selected ranking type */}
+                        
                         <YAxis label={{ value: getAxisLabel(), angle: -90, position: 'insideLeft', fill: '#555' }} stroke="#333" />
                         <Tooltip
-                            formatter={getTooltipFormatter()} // Use the dynamic formatter
+                            formatter={getTooltipFormatter()} 
                             labelFormatter={(label, payload) => {
-                                // Find the original data item to show storeId along with storeName in tooltip
+                                
                                 if (payload && payload.length > 0) {
                                     const item = chartData.find(d => d.storeName === label);
                                     if (item) {
@@ -263,7 +252,7 @@ const StorePerformanceRankingChart = () => {
                             labelStyle={{ fontWeight: 'bold', color: '#333' }}
                             itemStyle={{ color: '#555' }}
                         />
-                        {/* Bar for the 'value' data key, with styling */}
+                        
                         <Bar dataKey="value" fill="#82ca9d" radius={[10, 10, 0, 0]} />
                     </BarChart>
                 </ResponsiveContainer>

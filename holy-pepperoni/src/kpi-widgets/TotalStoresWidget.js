@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Paper from '@mui/material/Paper';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import StoreIcon from '@mui/icons-material/Store'; // Using MUI icon for stores
+import StoreIcon from '@mui/icons-material/Store'; 
 import PizzaLottie from '../components/PizzaLottie';
 
 const TotalStoresWidget = () => {
@@ -59,7 +59,7 @@ const TotalStoresWidget = () => {
       sx={{
         p: 3,
         borderRadius: 5,
-        bgcolor: "#fff7f0", // cam nhạt
+        bgcolor: "#fff7f0", 
         boxShadow: "0 2px 12px rgba(250, 162, 138, 0.12)",
         fontFamily: "'Inter', 'Roboto', sans-serif",
         minWidth: 340,
@@ -99,7 +99,7 @@ const widgetStyles = {
     p: 3,
     borderRadius: 5,
     fontFamily: "'Inter', 'Roboto', sans-serif",
-    minWidth: 300, // Adjusted minWidth for better layout flexibility
+    minWidth: 300, 
     display: 'flex',
     alignItems: 'center',
     gap: 3,

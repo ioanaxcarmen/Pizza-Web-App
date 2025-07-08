@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios'; // Ensure axios is installed: npm install axios
+import axios from 'axios'; 
 import {
     RadarChart,
     Radar,
@@ -11,7 +11,7 @@ import {
     ResponsiveContainer
 } from 'recharts';
 import { Button } from '@mui/material'; 
-// Default filter values
+
 const defaultFilters = {
     state: 'all',
     city: 'all',
@@ -19,13 +19,13 @@ const defaultFilters = {
 };
 
 const StoreKPIRadarChart = () => {
-    // State variables for filters, raw data from API, pivoted data for chart, loading status, and dropdown lists
+    
     const [filters, setFilters] = useState(defaultFilters);
     const [rawData, setRawData] = useState([]);
     const [pivotData, setPivotData] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [storesList, setStoresList] = useState([]); // List of stores for the store dropdown
-    const [citiesList, setCitiesList] = useState([]); // List of cities for the city dropdown
+    const [storesList, setStoresList] = useState([]); 
+    const [citiesList, setCitiesList] = useState([]); 
     const downloadCSV = (data) => {
         if (!data.length) return;
         const header = Object.keys(data[0]).join(',');
@@ -42,13 +42,13 @@ const StoreKPIRadarChart = () => {
         URL.revokeObjectURL(url);
     };
 
-    // Colors for the radar chart lines/fills
+    
     const radarColors = ['#8884d8', '#82ca9d', '#ffc658', '#ff7300', '#0088FE', '#00C49F', '#FFBB28'];
 
-    // Filter options (states are hardcoded based on your data, years/quarters/months are removed as requested)
+    
     const states = ['all', 'AZ', 'NV', 'UT', 'CA'];
 
-    // useEffect hook to fetch the list of stores for the dropdown when the component mounts
+    
     useEffect(() => {
         const fetchStores = async () => {
             try {
@@ -57,15 +57,15 @@ const StoreKPIRadarChart = () => {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 const data = await response.json();
-                setStoresList(data); // Data format: [{ storeid: 1, name: 'City - State' }]
+                setStoresList(data); 
             } catch (err) {
                 console.error("Error fetching store list for radar chart dropdown:", err);
             }
         };
         fetchStores();
-    }, []); // Empty dependency array means this effect runs only once on mount
+    }, []); 
 
-    // useEffect hook to fetch the list of cities for the dropdown when the component mounts
+    
     useEffect(() => {
         const fetchCities = async () => {
             try {
@@ -74,7 +74,7 @@ const StoreKPIRadarChart = () => {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 const data = await response.json();
-                setCitiesList(data); // Data format: ['City1', 'City2', ...]
+                setCitiesList(data); 
             } catch (err) {
                 console.error("Error fetching city list for radar chart dropdown:", err);
             }
@@ -102,21 +102,19 @@ const StoreKPIRadarChart = () => {
             });
     }, [filters]); // Re-run this effect whenever filters change
 
-    // useEffect hook to pivot the raw data into the specific format required by Recharts RadarChart
+    
     useEffect(() => {
         if (!rawData.length) {
-            setPivotData([]); // If no raw data, clear pivot data
+            setPivotData([]); 
             return;
         }
-        // --- IMPORTANT: Log rawData to check its exact structure and casing ---
-        // This log helps verify that the data keys (e.g., STOREID, REVENUE_POINT) match frontend expectations
+        
         console.log("Raw Data for Radar Chart (from API):", rawData);
-        // ---
+        
 
-        // Define the KPIs that will be displayed on the radar chart axes
+        
         const kpiLabels = [
-            // 'key' must match the exact property name (case-sensitive) from your backend's response (e.g., 'REVENUE_POINT')
-            // 'fullKey' is used in the tooltip to display the original, unnormalized value
+           
             { label: 'Revenue', key: 'REVENUE_POINT', fullKey: 'TOTAL_REVENUE' },
             { label: 'Avg Order Value', key: 'AVG_VALUE_POINT', fullKey: 'AVG_ORDER_VALUE' },
             { label: 'Order Count', key: 'ORDER_COUNT_POINT', fullKey: 'TOTAL_ORDERS' },
@@ -129,22 +127,21 @@ const StoreKPIRadarChart = () => {
         const pivot = kpiLabels.map(kpiItem => {
             const row = { kpi: kpiItem.label }; // Start with the KPI label for this axis
             rawData.forEach(store => {
-                // Use the store's ID (e.g., 'S302800') as the key for its score on this KPI axis
+                
                 const storeIdKey = store.STOREID;
                 if (storeIdKey) {
-                    // Assign the store's KPI point value (from backend) to the corresponding storeIdKey
-                    // Use Number() to ensure it's a number, and fallback to 0 if undefined
+                   
                     row[storeIdKey] = store[kpiItem.key] !== undefined ? Number(store[kpiItem.key]) : 0;
                 }
             });
             return row;
         });
-        setPivotData(pivot); // Update the pivotData state
-    }, [rawData]); // Re-run this effect whenever rawData changes
+        setPivotData(pivot); 
+    }, [rawData]); 
 
     // Handle changes in any of the filter dropdowns
     const handleFilterChange = (e) => {
-        const { name, value } = e.target; // Get the name and value of the changed filter
+        const { name, value } = e.target; 
         setFilters(prevFilters => ({ ...prevFilters, [name]: value })); // Update the filters state
     };
 
@@ -153,8 +150,7 @@ const StoreKPIRadarChart = () => {
         return <div style={styles.loading}>Loading Store KPIs...</div>;
     }
 
-    // Prepare the list of stores that will have radar lines rendered.
-    // This logic filters 'rawData' based on the 'storeId' selected in the dropdown.
+   
     const storesToRender = filters.storeId !== 'all'
         ? rawData.filter(store => store.STOREID == filters.storeId).map((store, index) => ({ // Filter if a specific store is selected
             id: store.STOREID || `fallback-${index}`, // Use STOREID as ID, with fallback for key prop
@@ -165,13 +161,13 @@ const StoreKPIRadarChart = () => {
             name: `${store.CITY || 'Unknown City'} (ID: ${store.STOREID || 'N/A'})` // Robust name for legend and tooltip
         }));
 
-    // Custom Tooltip component for the Recharts RadarChart
+    
     const CustomTooltip = ({ active, payload }) => {
         if (active && payload && payload.length) {
-            const data = payload[0].payload; // The data object for the hovered point (e.g., {kpi: "Revenue", S123: 85})
-            const kpiLabel = data.kpi; // The KPI label (e.g., 'Revenue')
-            const storeId = payload[0].dataKey; // The store ID (e.g., 'S123')
-            const storeData = rawData.find(s => s.STOREID == storeId); // Find the full raw store data using STOREID
+            const data = payload[0].payload; 
+            const kpiLabel = data.kpi; 
+            const storeId = payload[0].dataKey; 
+            const storeData = rawData.find(s => s.STOREID == storeId); 
 
             if (!storeData) return null; // Return null if store data isn't found (shouldn't happen with consistent data)
 
