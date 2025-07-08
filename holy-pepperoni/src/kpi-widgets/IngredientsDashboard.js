@@ -186,7 +186,7 @@ const IngredientsSummaryWidget = ({ total, min, max }) => (
   const isMdUp = useMediaQuery(theme.breakpoints.up('md'));
 
   // Filters for TopIngredientsChart
-  const filters = useMemo(() => selectedState ? { state: selectedState } : undefined, [selectedState]);
+  const filters = useMemo(() => ({ state: selectedState }), [selectedState]);
 
   return (
     <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: "#f5f7fb", fontFamily: "'Inter', 'Roboto', sans-serif" }}>
@@ -235,7 +235,7 @@ const IngredientsSummaryWidget = ({ total, min, max }) => (
               <Typography variant="h6" fontWeight="bold" sx={{ mb: 2, fontFamily: "'Inter', 'Roboto', sans-serif" }}>
                 Top 5 Ingredients by Store
               </Typography>
-              <TopIngredientsByStorePieChart topN={5} groupBy="store" filters={filters} />
+              <TopIngredientsByStorePieChart filters={filters} topN={5} groupBy="store" />
             </Paper>
           </Box>
 
