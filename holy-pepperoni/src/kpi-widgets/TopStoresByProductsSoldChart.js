@@ -113,7 +113,7 @@ const TopStoresByProductsSoldChart = () => {
 
     return (
         <div style={styles.chartContainer}>
-            <h2 style={styles.chartTitle}>Top 10 Stores by Products Sold</h2>
+            
 
             {/* Filter controls */}
             <div style={styles.filterContainer}>

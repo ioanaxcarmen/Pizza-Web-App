@@ -90,7 +90,7 @@ const AverageOrderValuePerStoreChart = () => {
 
     return (
         <div style={styles.chartContainer}>
-            <h2 style={styles.chartTitle}>Average Order Value by Store</h2>
+          
 
             <div style={styles.filterContainer}>
                 {/* Year Dropdown */}
