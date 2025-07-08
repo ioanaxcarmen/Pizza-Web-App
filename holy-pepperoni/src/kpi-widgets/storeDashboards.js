@@ -142,7 +142,7 @@ const StoreDashboards = (props) => {
             </Paper>
           </motion.div>
         </Box>
-        <Box sx={{ width: '100%'  }}>
+        <Box sx={{ width: '100%' }}>
           <motion.div
             initial={{ opacity: 0, y: 24 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -163,12 +163,12 @@ const StoreDashboards = (props) => {
             </Paper>
           </motion.div>
         </Box>
-        
+
 
 
         <Divider sx={{ my: 4 }} />
 
-        {/* Back to Main Menu button */}
+        {/* Back button to return to main menu */}
         <Box sx={{ display: "flex", justifyContent: "center" }}>
           <Button
             variant="contained"
@@ -176,6 +176,10 @@ const StoreDashboards = (props) => {
               background: "#faa28a",
               borderRadius: "32px",
               color: "#fff",
+              fontSize: "1.1rem",
+              fontWeight: 700,
+              px: 5,
+              py: 1.5,
               '&:hover': { background: "#fa7a1c" }
             }}
             onClick={() => navigate("/dashboard")}
