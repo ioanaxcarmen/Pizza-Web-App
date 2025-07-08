@@ -179,79 +179,105 @@ const IngredientsConsumeOverTimeChart = () => {
 
     return (
         <div style={{ width: '100%', position: 'relative', padding: '20px' }}>
-            <div style={{ marginBottom: '20px', textAlign: 'center', display: 'flex', justifyContent: 'center', gap: 20, flexWrap: 'wrap' }}>
-                {/* Ingredient Filter with react-select */}
-                <div style={{ minWidth: 300, display: 'inline-block', marginRight: 20 }}>
-                    <Select
-                        isMulti
-                        options={ingredientOptions}
-                        value={ingredientOptions.filter(opt => filters.ingredient.includes(opt.value))}
-                        onChange={selectedOptions => {
-                            setFilters(prev => ({
-                                ...prev,
-                                ingredient: selectedOptions ? selectedOptions.map(opt => opt.value) : []
-                            }));
-                        }}
-                        placeholder="Select ingredient(s)..."
-                        closeMenuOnSelect={false}
-                        isClearable
-                        styles={{
-                            menu: base => ({ ...base, zIndex: 9999 }),
-                            multiValue: base => ({
-                                ...base,
-                                backgroundColor: '#eaf7e9'
-                            }),
-                        }}
-                    />
+            {/* Filter Controls */}
+            <div
+                style={{
+                    display: 'flex',
+                    flexWrap: 'wrap',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    gap: 16,
+                    marginBottom: 24,
+                    background: '#fff7f0',
+                    borderRadius: 16,
+                    padding: '16px 20px',
+                    boxShadow: '0 2px 8px #f7d9af44'
+                }}
+            >
+                <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 16 }}>
+                    {/* Ingredient Filter with react-select */}
+                    <div style={{ minWidth: 220, maxWidth: 320, width: '100%', display: 'inline-block' }}>
+                        <Select
+                            isMulti
+                            options={ingredientOptions}
+                            value={ingredientOptions.filter(opt => filters.ingredient.includes(opt.value))}
+                            onChange={selectedOptions => {
+                                setFilters(prev => ({
+                                    ...prev,
+                                    ingredient: selectedOptions ? selectedOptions.map(opt => opt.value) : []
+                                }));
+                            }}
+                            placeholder="Select ingredient(s)..."
+                            closeMenuOnSelect={false}
+                            isClearable
+                            styles={{
+                                container: base => ({
+                                    ...base,
+                                    minWidth: 220,
+                                    maxWidth: 320,
+                                    width: '100%',
+                                }),
+                                menu: base => ({ ...base, zIndex: 9999 }),
+                                multiValue: base => ({
+                                    ...base,
+                                    backgroundColor: '#eaf7e9'
+                                }),
+                            }}
+                        />
+                    </div>
+                    {/* Granularity Filter */}
+                    <label style={{ marginRight: 12 }}>
+                        Granularity:
+                        <select
+                            name="granularity"
+                            style={{ marginLeft: '10px', padding: '5px' }}
+                            value={filters.granularity}
+                            onChange={handleGranularityChange}
+                        >
+                            <option value="week">Week</option>
+                            <option value="month">Month</option>
+                            <option value="quarter">Quarter</option>
+                            <option value="year">Year</option>
+                        </select>
+                    </label>
+                    {/* Outlier Detection Toggle */}
+                    <label style={{ marginRight: 12 }}>
+                        <input
+                            type="checkbox"
+                            checked={enableOutlierDetection}
+                            onChange={() => setEnableOutlierDetection(!enableOutlierDetection)}
+                        />
+                        Enable Outlier Detection
+                    </label>
+                    {/* Average Line Toggle */}
+                    <label style={{ marginRight: 12 }}>
+                        <input
+                            type="checkbox"
+                            checked={showAverage}
+                            onChange={() => setShowAverage(!showAverage)}
+                        />
+                        Show Average Line
+                    </label>
                 </div>
-                {/* Granularity Filter */}
-                <label style={{ marginLeft: '20px' }}>
-                    Granularity:
-                    <select
-                        name="granularity"
-                        style={{ marginLeft: '5px', padding: '5px' }}
-                        value={filters.granularity}
-                        onChange={handleGranularityChange}
+                <div>
+                    <button
+                        onClick={() => downloadCSV(chartData)}
+                        style={{
+                            background: '#f7d9afff',
+                            color: '#000',
+                            border: 'none',
+                            borderRadius: '20px',
+                            fontWeight: 'bold',
+                            textTransform: 'none',
+                            padding: '12px 28px',
+                            fontSize: '1rem',
+                            boxShadow: '0 2px 8px #eee',
+                            cursor: 'pointer'
+                        }}
                     >
-                        <option value="week">Week</option>
-                        <option value="month">Month</option>
-                        <option value="quarter">Quarter</option>
-                        <option value="year">Year</option>
-                    </select>
-                </label>
-                {/* Outlier Detection Toggle (always show) */}
-                <label style={{ marginLeft: '20px' }}>
-                    <input
-                        type="checkbox"
-                        checked={enableOutlierDetection}
-                        onChange={() => setEnableOutlierDetection(!enableOutlierDetection)}
-                    />
-                    Enable Outlier Detection
-                </label>
-                {/* Average Line Toggle */}
-                <label style={{ marginLeft: '20px' }}>
-                    <input
-                        type="checkbox"
-                        checked={showAverage}
-                        onChange={() => setShowAverage(!showAverage)}
-                    />
-                    Show Average Line
-                </label>
-                <button
-                    onClick={() => downloadCSV(chartData)}
-                    style={{
-                        marginLeft: '20px',
-                        background: '#f7d9afff',
-                        color: '#000',
-                        border: 'none',
-                        borderRadius: '20px',
-                        padding: '8px 18px',
-                        fontWeight: 'bold',
-                        cursor: 'pointer'
-                    }}
-                >
-                    Download Report
-                </button>
+                        Download Report
+                    </button>
+                </div>
             </div>
             {loading ? (
                 <LoadingPizza />

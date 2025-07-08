@@ -291,26 +291,26 @@ const IngredientsSummaryWidget = ({ total, min, max }) => (
             <IngredientsOrderTable />
           </Paper>
 
-          <Box sx={{ display: "flex", justifyContent: "center" }}>
+          {/* Back to Main Menu button */}
+          <Box sx={{ display: "flex", justifyContent: "center", mt: 6, mb: 2 }}>
             <Button
               variant="contained"
               sx={{
                 background: "#faa28a",
                 borderRadius: "32px",
                 color: "#fff",
+                fontSize: "1.1rem",
                 fontWeight: 700,
                 px: 5,
                 py: 1.5,
-                mt: 3,
-                fontSize: "1.1rem",
-                fontFamily: "'Inter', 'Roboto', sans-serif",
                 '&:hover': { background: "#fa7a1c" }
               }}
               onClick={() => navigate("/dashboard")}
             >
-              Back
+              Back to Main Menu
             </Button>
           </Box>
+
         </Box>
       </Box>
       <Sidebar mobileOpen={mobileOpen} setMobileOpen={setMobileOpen} />

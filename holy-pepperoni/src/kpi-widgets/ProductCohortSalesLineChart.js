@@ -140,58 +140,124 @@ const ProductCohortSalesLineChart = () => {
                 <circle cx={cx} cy={cy} r={7} fill="red" stroke="#fff" strokeWidth={2} />
             );
         }
-        return (
-            <circle cx={cx} cy={cy} r={4} fill="#fff" stroke="#8884d8" strokeWidth={1} />
-        );
+        return null; // Không vẽ dot cho điểm thường
+    };
+
+    // Utility to convert data to CSV and trigger download
+    const downloadCSV = (data) => {
+        if (!data.length) return;
+        const header = Object.keys(data[0]).join(',');
+        const rows = data.map(row => Object.values(row).join(','));
+        const csvContent = [header, ...rows].join('\n');
+        const blob = new Blob([csvContent], { type: 'text/csv' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'product_cohort_sales.csv';
+        a.click();
+        URL.revokeObjectURL(url);
     };
 
     return (
         <div style={{ width: '100%', padding: '20px' }}>
-            {/* Product Cohort Sales Chart */}
-            <div style={{ textAlign: 'center', marginBottom: '20px' }}>
-                <label style={{ marginRight: '20px' }}>
-                    Select Pizza(s):
-                    <div style={{ minWidth: 300, display: 'inline-block', marginLeft: 10 }}>
-                        <Select
-                            isMulti
-                            options={pizzaOptions}
-                            value={pizzaOptions.filter(opt => filters.selectedProducts.includes(opt.value))}
-                            onChange={handleProductChange}
-                            placeholder="Select pizza(s)..."
-                            closeMenuOnSelect={false}
-                            isClearable
+            {/* Filter Controls */}
+            <div
+                style={{
+                    display: 'flex',
+                    flexWrap: 'wrap',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    gap: 16,
+                    marginBottom: 24,
+                    background: '#fff7f0',
+                    borderRadius: 16,
+                    padding: '16px 20px',
+                    boxShadow: '0 2px 8px #f7d9af44'
+                }}
+            >
+                <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 16 }}>
+                    <label style={{ marginRight: 12 }}>
+                        Select Pizza(s):
+                        <div style={{ minWidth: 180, maxWidth: 320, width: '100%', display: 'inline-block', marginLeft: 10 }}>
+                            <Select
+                                isMulti
+                                options={pizzaOptions}
+                                value={
+                                    filters.selectedProducts.length === pizzaOptions.length
+                                        ? null // Nếu chọn tất cả thì không hiển thị gì
+                                        : pizzaOptions.filter(opt => filters.selectedProducts.includes(opt.value))
+                                }
+                                onChange={handleProductChange}
+                                placeholder="Select pizza(s)..."
+                                closeMenuOnSelect={false}
+                                isClearable
+                                styles={{
+                                    container: base => ({
+                                        ...base,
+                                        minWidth: 180,
+                                        maxWidth: 320,
+                                        width: '100%',
+                                    }),
+                                    menu: base => ({ ...base, zIndex: 9999 }),
+                                    multiValue: base => ({
+                                        ...base,
+                                        backgroundColor: '#eaf7e9'
+                                    }),
+                                }}
+                            />
+                        </div>
+                    </label>
+                    <label style={{ marginRight: 12 }}>
+                        Y-Axis Metric:
+                        <select
+                            name="yMetric"
+                            style={{ marginLeft: '10px', padding: '5px' }}
+                            value={filters.yMetric}
+                            onChange={handleMetricChange}
+                        >
+                            <option value="total_quantity">Total Quantity</option>
+                            <option value="total_revenue">Total Revenue (USD)</option>
+                        </select>
+                    </label>
+                    <label style={{ marginRight: 12 }}>
+                        <input
+                            type="checkbox"
+                            checked={showAverage}
+                            onChange={handleAverageToggle}
                         />
-                    </div>
-                </label>
-                <label style={{ marginRight: '20px' }}>
-                    Y-Axis Metric:
-                    <select
-                        name="yMetric"
-                        style={{ marginLeft: '10px', padding: '5px' }}
-                        value={filters.yMetric}
-                        onChange={handleMetricChange}
+                        Show Average Line
+                    </label>
+                    <label style={{ marginRight: 12 }}>
+                        <input
+                            type="checkbox"
+                            checked={enableOutlierDetection}
+                            onChange={e => setEnableOutlierDetection(e.target.checked)}
+                        />
+                        Highlight Outliers
+                    </label>
+                </div>
+                <div>
+                    <button
+                        onClick={() => downloadCSV(extendedData)}
+                        style={{
+                            background: '#f7d9afff',
+                            color: '#000',
+                            border: 'none',
+                            borderRadius: '20px',
+                            fontWeight: 'bold',
+                            textTransform: 'none',
+                            padding: '12px 28px',
+                            fontSize: '1rem',
+                            boxShadow: '0 2px 8px #eee',
+                            cursor: 'pointer',
+                            marginTop: 4
+                        }}
                     >
-                        <option value="total_quantity">Total Quantity</option>
-                        <option value="total_revenue">Total Revenue (USD)</option>
-                    </select>
-                </label>
-                <label style={{ marginRight: '20px' }}>
-                    <input
-                        type="checkbox"
-                        checked={showAverage}
-                        onChange={handleAverageToggle}
-                    />
-                    Show Average Line
-                </label>
-                <label style={{ marginRight: '20px' }}>
-                    <input
-                        type="checkbox"
-                        checked={enableOutlierDetection}
-                        onChange={e => setEnableOutlierDetection(e.target.checked)}
-                    />
-                    Highlight Outliers
-                </label>
+                        Download Report
+                    </button>
+                </div>
             </div>
+            {/* Chart */}
             <ResponsiveContainer width="100%" height={400}>
                 <LineChart data={extendedData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
                     <CartesianGrid strokeDasharray="3 3" />

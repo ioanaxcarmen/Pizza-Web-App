@@ -198,7 +198,7 @@ const ProductsDashboard = (props) => {
 
             <Divider sx={{ my: 4 }} />
 
-            {/* Back to Main Menu button */}
+            {/* Back to Main Menu button, now lower on the page */}
             <Box sx={{ display: "flex", justifyContent: "center" }}>
               <Button
                 variant="contained"
@@ -206,6 +206,10 @@ const ProductsDashboard = (props) => {
                   background: "#faa28a",
                   borderRadius: "32px",
                   color: "#fff",
+                  fontSize: "1.1rem",
+                  fontWeight: 700,
+                  px: 5,
+                  py: 1.5,
                   '&:hover': { background: "#fa7a1c" }
                 }}
                 onClick={() => navigate("/dashboard")}
@@ -213,6 +217,7 @@ const ProductsDashboard = (props) => {
                 Back to Main Menu
               </Button>
             </Box>
+            
           </Box>
         </Box>
       </Box>
