@@ -39,7 +39,7 @@ app.get('/api/sales-by-product', async (req, res) => {
     let connection;
     try {
         connection = await oracledb.getConnection(dbConfig);
-        // We are querying one of the views that was successfully imported
+        // Querying one of the views that was successfully imported
         const result = await connection.execute(
             `SELECT PRODUCT_NAME, TOTAL_REVENUE FROM V_ORDER_PER_PRODUCT_BY_SIZE ORDER BY TOTAL_REVENUE DESC FETCH FIRST 10 ROWS ONLY`
         );
@@ -180,7 +180,7 @@ app.get('/api/kpi/top-customers', async (req, res) => {
     }
 });
 
-// Ingredients Consumed Over Time char// --- Thay đổi trong endpoint Top Ingredients ---
+// Ingredients Consumed Over Time chart
 app.get('/api/kpi/top-ingredients', async (req, res) => {
     let connection;
     const binds = {};
@@ -189,7 +189,7 @@ app.get('/api/kpi/top-ingredients', async (req, res) => {
     try {
         connection = await oracledb.getConnection(dbConfig);
 
-        // Multi-store support: storeId có thể là mảng (storeId=1&storeId=2...) hoặc 1 giá trị
+        // Multi-store support: storeId can be an array (storeId=1&storeId=2...) or a single value
         let storeIds = req.query.storeId;
         if (storeIds && !Array.isArray(storeIds)) storeIds = [storeIds];
 
@@ -215,7 +215,7 @@ app.get('/api/kpi/top-ingredients', async (req, res) => {
             binds.state = req.query.state;
         }
 
-        // Nếu không truyền storeId, trả về top 5 toàn hệ thống
+        // If no storeId is provided, return top 5 for the whole system
         if (!storeIds || storeIds.length === 0) {
             const query = `
                 SELECT ingredient_name, SUM(total_quantity_used) AS total_quantity_used
@@ -233,7 +233,7 @@ app.get('/api/kpi/top-ingredients', async (req, res) => {
             return res.json(chartData);
         }
 
-        // Nếu có nhiều storeId, trả về object {storeId: [ingredients...]}
+        // If there are multiple storeIds, return object {storeId: [ingredients...]}
         const resultObj = {};
         for (const storeId of storeIds) {
             const query = `
@@ -246,7 +246,7 @@ app.get('/api/kpi/top-ingredients', async (req, res) => {
             `;
             const result = await connection.execute(query, { ...binds, storeId });
             const total = result.rows.reduce((sum, row) => sum + row[1], 0);
-            // Đảm bảo key là string
+            // Ensure key is string
             resultObj[String(storeId)] = result.rows.map(row => ({
                 ingredient: row[0],
                 quantity: row[1],
@@ -804,7 +804,7 @@ app.get('/api/kpi/top-products-since-launch', async (req, res) => {
             FROM v_product_monthly_sales_since_launch vp
             JOIN products p ON vp.sku = p.sku
             JOIN productsizes ps ON p.size_id = ps.id
-            JOIN orders o ON vp.sku = o.sku  -- Für Zeitfilter
+            JOIN orders o ON vp.sku = o.sku  -- For time filters
             JOIN stores s ON o.storeid = s.storeid
             WHERE vp.month_since_launch <= 12 -- First year only for fair comparison
         `;
@@ -1053,7 +1053,7 @@ app.get('/api/kpi/avg-order-value-by-store', async (req, res) => {
         binds.year = Number(year);
     }
     if (quarter && quarter !== 'all') {
-        whereClause += ' AND TO_CHAR(o.ORDERDATE, \'Q\') = :quarter';
+        whereClause += ' AND TO_CHAR(o.ORDERDATE) = :quarter';
         binds.quarter = quarter;
     }
     if (month && month !== 'all') {
@@ -1217,8 +1217,8 @@ app.get('/api/kpi/product-monthly-sales-since-launch', async (req, res) => {
     try {
         connection = await oracledb.getConnection(dbConfig);
 
-        // Bạn có thể thêm filter nếu muốn, ví dụ theo category, sku, v.v.
-        // Ở đây lấy toàn bộ dữ liệu từ view
+        // You can add filters here if needed, e.g., by category, sku, etc.
+        // Here we take all data from the view
         const query = `
             SELECT
                 sku,
@@ -1233,7 +1233,7 @@ app.get('/api/kpi/product-monthly-sales-since-launch', async (req, res) => {
 
         const result = await connection.execute(query);
 
-        // Format lại cho frontend
+        // Format again for frontend
         const chartData = result.rows.map(row => ({
             sku: row[0],
             product_name: row[1],
@@ -1258,24 +1258,24 @@ app.get('/api/kpi/product-sales-distribution', async (req, res) => {
     try {
         connection = await oracledb.getConnection(dbConfig);
 
-        // Lấy filter từ query string
-        const metric = req.query.metric || 'revenue'; // 'revenue' hoặc 'orders'
-        const compareBy = req.query.compareBy || 'category'; // 'category' hoặc 'size'
+        // Get filter from query string
+        const metric = req.query.metric || 'revenue'; // 'revenue' or 'orders'
+        const compareBy = req.query.compareBy || 'category'; // 'category' or 'size'
         const timeResolution = req.query.timeResolution || 'month'; // 'month', 'quarter', 'year'
         const timeValue = req.query.timeValue && req.query.timeValue !== 'all' ? req.query.timeValue : null;
 
-        // Xác định cột thời gian
+        // Determine time column
         let timeCol = 'month';
         if (timeResolution === 'quarter') timeCol = 'quarter';
         if (timeResolution === 'year') timeCol = 'year';
 
-        // Xác định cột group
+        // Determine group column
         let groupCol = compareBy === 'size' ? 'size' : 'category';
 
-        // Xác định cột metric
+        // Determine metric column
         let metricCol = metric === 'orders' ? 'total_orders' : 'total_revenue';
 
-        // Query từ view/mv phù hợp
+        // Query from view/mv accordingly
         let query = `
             SELECT
                 ${groupCol},
@@ -1287,7 +1287,7 @@ app.get('/api/kpi/product-sales-distribution', async (req, res) => {
 
         const binds = {};
 
-        // Thêm filter thời gian nếu có
+        // Add time filter if any
         if (timeValue) {
             query += ` AND ${timeCol} = :timeValue`;
             binds.timeValue = timeValue;
@@ -1300,7 +1300,7 @@ app.get('/api/kpi/product-sales-distribution', async (req, res) => {
 
         const result = await connection.execute(query, binds);
 
-        // Format cho frontend: { group, product, value }
+        // Format for frontend: { group, product, value }
         const chartData = result.rows.map(row => ({
             group: row[0],
             product: row[1],
@@ -1316,13 +1316,13 @@ app.get('/api/kpi/product-sales-distribution', async (req, res) => {
     }
 });
 
-// Example: Endpoint trả về tổng số ingredients, min/max ingredients per product
+// Example: Endpoint returns total number of ingredients, min/max ingredients per product
 app.get('/api/kpi/ingredients-dashboard-stats', async (req, res) => {
     let connection;
     try {
         connection = await oracledb.getConnection(dbConfig);
 
-        // Tổng số ingredients
+        // Total number of ingredients
         const totalIngredientsResult = await connection.execute(`SELECT COUNT(*) FROM ingredients`);
         const totalIngredients = totalIngredientsResult.rows[0][0];
 
@@ -1357,7 +1357,7 @@ app.get('/api/kpi/product-size-distribution', async (req, res) => {
     try {
         connection = await oracledb.getConnection(dbConfig);
         const metric = req.query.metric === 'orders' ? 'total_orders' : 'total_revenue';
-        // Lấy dữ liệu từ view, chuẩn hóa tên size về chuẩn "Small", "Medium", "Large", "Extra Large"
+        // Get data from view, normalize size names to standard "Small", "Medium", "Large", "Extra Large"
         const query = `
             SELECT INITCAP(LOWER("size")) AS size, product_name, SUM(${metric}) AS value
             FROM v_order_per_product_by_size
@@ -1580,7 +1580,6 @@ console.error("Error fetching store summary:", err);
 res.status(500).json({ error: 'Failed to fetch store summary.' });
 } finally {
 if (connection) { try { await connection.close(); } catch (e) { } }
-}
 }); */
 
 // New endpoint: Items by Category and Hour
@@ -1823,6 +1822,7 @@ app.get('/api/kpi/top-ingredients-by-store', async (req, res) => {
         if (connection) { try { await connection.close(); } catch (e) { console.error(e); } }
     }
 });
+
 
 app.listen(port, () => {
     console.log(`Backend server running at http://localhost:${port}`);

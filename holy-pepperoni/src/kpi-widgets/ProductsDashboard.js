@@ -11,6 +11,7 @@ import TopSellingProductsChart from './TopSellingProductsChart';
 import Sidebar from '../components/Sidebar';
 import TopBar from '../components/TopBar';
 import PizzaLottie from '../components/PizzaLottie';
+import TopProductsTable from './TopProductsTable';
 
 const drawerWidth = 230;
 
@@ -55,7 +56,7 @@ const ProductsDashboard = (props) => {
         bgcolor: "#fff7f0",
         boxShadow: "0 2px 12px rgba(250, 162, 138, 0.12)",
         fontFamily: "'Inter', 'Roboto', sans-serif",
-        width: '100%', // Thay vì minWidth
+        width: '100%', 
         display: 'flex',
         alignItems: 'center',
         gap: 3,
@@ -87,6 +88,11 @@ const ProductsDashboard = (props) => {
     </Paper>
   );
 
+  const handleLogout = () => {
+    localStorage.removeItem("authToken");
+    navigate("/");
+  };
+
   return (
     <>
       <TopBar onMenuClick={() => setMobileOpen(true)} {...props} />
@@ -95,9 +101,9 @@ const ProductsDashboard = (props) => {
         <CssBaseline />
         {isMdUp && <Sidebar />}
         <Box sx={{ flexGrow: 1, ml: { md: `${drawerWidth}px` }, display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-          <TopBar title="Products Dashboard" onMenuClick={() => setMobileOpen(true)} {...props} />
+          <TopBar title="Products Dashboard" onMenuClick={() => setMobileOpen(true)} onLogout={handleLogout} {...props} />
           <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', p: { xs: 1, md: 3 } }}>
-            {/* Widget tổng số orders và animation pizza */}
+           
             <Box
               sx={{
                 display: 'flex',
@@ -105,15 +111,14 @@ const ProductsDashboard = (props) => {
                 justifyContent: 'flex-start',
                 mt: 5,
                 mb: 3,
-                width: '100%' // Thêm dòng này
+                width: '100%' 
               }}
             >
               <OrdersSoldWidget />
             </Box>
 
-            {/* Các widget biểu đồ */}
+            
             <Box sx={{ width: '100%' }}>
-
               <motion.div
                 initial={{ opacity: 0, y: 24 }}
                 whileInView={{ opacity: 1, y: 0 }}
@@ -191,6 +196,27 @@ const ProductsDashboard = (props) => {
                     Product Revenue Distribution by Size
                   </Typography>
                   <ProductRevenuePieBySize />
+                </Paper>
+              </motion.div>
+
+              
+              <motion.div
+                initial={{ opacity: 0, y: 24 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.5 }}
+                transition={{ duration: 0.8, delay: 0.45 }}
+              >
+                <Paper elevation={3} sx={{
+                  borderRadius: 5,
+                  p: 3,
+                  mb: 4,
+                  boxShadow: "0 4px 16px rgba(250, 162, 138, 0.08)",
+                  fontFamily: "'Inter', 'Roboto', sans-serif"
+                }}>
+                  <Typography variant="h6" fontWeight="bold" sx={{ mb: 2, fontFamily: "'Inter', 'Roboto', sans-serif" }}>
+                    Top Products by Lifetime (Months Since Launch)
+                  </Typography>
+                  <TopProductsTable />
                 </Paper>
               </motion.div>
             </Box>

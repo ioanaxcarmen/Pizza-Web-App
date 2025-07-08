@@ -76,7 +76,7 @@ const ProductCohortSalesLineChart = () => {
             setPivotData([]);
             return;
         }
-        // Chỉ lấy các sản phẩm được chọn
+    
         const productsToShow = filters.selectedProducts.length > 0 ? filters.selectedProducts : pizzaOptions.map(opt => opt.value);
         const pivot = {};
         rawData.forEach(row => {
@@ -140,7 +140,7 @@ const ProductCohortSalesLineChart = () => {
                 <circle cx={cx} cy={cy} r={7} fill="red" stroke="#fff" strokeWidth={2} />
             );
         }
-        return null; // Không vẽ dot cho điểm thường
+        return null; 
     };
 
     // Utility to convert data to CSV and trigger download

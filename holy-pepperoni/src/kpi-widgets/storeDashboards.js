@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'; // Added useState for the widget's internal state
+import React, { useEffect, useState } from 'react';
 import {
   Box, CssBaseline, Paper, useTheme, useMediaQuery, Typography, Button, Divider
 } from '@mui/material';
@@ -24,6 +24,12 @@ const StoreDashboards = (props) => {
   const theme = useTheme();
   const isMdUp = useMediaQuery(theme.breakpoints.up('md'));
   const navigate = useNavigate();
+
+  // Logout logic giống Dashboard
+  const handleLogout = () => {
+    localStorage.removeItem("authToken");
+    navigate("/");
+  };
 
   // Inject Google Fonts: Inter + Roboto (Important for consistent styling)
   useEffect(() => {
@@ -56,9 +62,9 @@ const StoreDashboards = (props) => {
       <CssBaseline />
       {isMdUp && <Sidebar />}
 
-
       <Box sx={{ flexGrow: 1, ml: { md: `${drawerWidth}px` }, display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-        <TopBar title="Stores Dashboard" {...props} />
+      
+        <TopBar title="Stores Dashboard" onLogout={handleLogout} {...props} />
         <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', p: { xs: 1, md: 3 } }}>
           {/* Widget tổng số orders và animation pizza */}
           <Box
@@ -68,7 +74,7 @@ const StoreDashboards = (props) => {
               justifyContent: 'flex-start',
               mt: 5,
               mb: 3,
-              width: '100%' // Thêm dòng này
+              width: '100%'
             }}
           >
             <TotalStoresWidget />

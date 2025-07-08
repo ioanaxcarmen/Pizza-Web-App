@@ -241,23 +241,18 @@ ORDER BY total_revenue DESC;
 
 -- 6. Product Launch 3-Month Performance Leaderboard
 -- Ranks new products by total quantity and revenue in first 3 months after launch.
--- Business Case: Track launch success, optimize marketing spend for new products.
--- Power BI Usage: Product leaderboard visuals, cohort analysis for new launches.
--- Why Separate: Launch phase is a distinct, high-value analytics period.
 
 CREATE OR REPLACE VIEW v_product_launch_leaderboard AS
 SELECT
-    p.sku,
     p.name AS product_name,
-    p.launch,
+    MIN(p.launch) AS launch,
     SUM(oi.quantity) AS quantity_3months,
     SUM(oi.quantity * p.price) AS revenue_3months
 FROM products p
 JOIN order_items oi ON oi.sku = p.sku
 JOIN orders o ON oi.orderid = o.id
 WHERE o.orderdate BETWEEN p.launch AND ADD_MONTHS(p.launch, 3)
-GROUP BY p.sku, p.name, p.launch
-ORDER BY revenue_3months DESC;
+GROUP BY p.name;
 
 -- 7. Product Sales by Month Since Launch
 -- Shows monthly sales cohort for each product starting from its launch. This view is used for cohort analysis and product growth tracking on Products Dashboard.

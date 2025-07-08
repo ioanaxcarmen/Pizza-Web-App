@@ -10,11 +10,11 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Sidebar from '../components/Sidebar';
 import TopBar from '../components/TopBar';
-import PizzaLottie from '../components/PizzaLottie'; // Assuming you have a Lottie component for the pizza animation
+import PizzaLottie from '../components/PizzaLottie';
 
 const drawerWidth = 230;
 
-// Sửa DashboardStat: bỏ motion.div
+
 const DashboardStat = ({ label, value }) => (
   <Paper elevation={2} sx={{
     p: 3,
@@ -69,6 +69,12 @@ const IngredientsDashboard = (props) => {
   const [selectedState, setSelectedState] = useState(null);
   const [mobileOpen, setMobileOpen] = useState(false);
 
+  
+  const handleLogout = () => {
+    localStorage.removeItem("authToken");
+    navigate("/");
+  };
+
   const handleStateClick = (stateObj) => {
     setSelectedState(stateObj.abbr);
   };
@@ -116,8 +122,6 @@ const IngredientsDashboard = (props) => {
         });
       });
   }, []);
-  
-
   
 const IngredientsSummaryWidget = ({ total, min, max }) => (
   <Paper
@@ -176,7 +180,6 @@ const IngredientsSummaryWidget = ({ total, min, max }) => (
         {max}
       </Typography>
     </Box>
-    {/* Icon hoặc hình ảnh */}
     <Box sx={{ width: 150, height: 150 }}>
       <PizzaLottie sx={{ width: '100%', height: '100%', color: '#fa7a1c' }} />
     </Box>
@@ -193,7 +196,7 @@ const IngredientsSummaryWidget = ({ total, min, max }) => (
       <CssBaseline />
       {isMdUp && <Sidebar />}
       <Box sx={{ flexGrow: 1, ml: { md: `${drawerWidth}px` } }}>
-        <TopBar title="Ingredients Dashboard" onMenuClick={() => setMobileOpen(true)} {...props} />
+        <TopBar title="Ingredients Dashboard" onMenuClick={() => setMobileOpen(true)} onLogout={handleLogout} {...props} />
         <Box sx={{ mt: 10, p: { xs: 1, md: 3 } }}>
           {/* Ingredients Summary Widget */}
           <Box sx={{ mb: 3, width: '100%' }}>
@@ -205,7 +208,6 @@ const IngredientsSummaryWidget = ({ total, min, max }) => (
           </Box>
           {/* Stats Widgets */}
          
-
           <Divider sx={{ my: 3 }} />
 
           {/* Charts Section */}
@@ -238,8 +240,6 @@ const IngredientsSummaryWidget = ({ total, min, max }) => (
               <TopIngredientsByStorePieChart filters={filters} topN={5} groupBy="store" />
             </Paper>
           </Box>
-
-          {/* Hiển thị widget Top 5 Ingredients nếu chọn bang */}
           {selectedState && (
             <Paper elevation={3} sx={{
               borderRadius: 5,
@@ -258,7 +258,7 @@ const IngredientsSummaryWidget = ({ total, min, max }) => (
             </Paper>
           )}
 
-          {/* Chỉ giữ lại Top 5 Ingredients - Total Quantity Used */}
+        
           <Paper elevation={3} sx={{
             borderRadius: 5,
             p: 3,
@@ -277,7 +277,7 @@ const IngredientsSummaryWidget = ({ total, min, max }) => (
             </Box>
           </Paper>
 
-          {/* Thêm bảng đặt hàng nguyên liệu */}
+        
           <Paper elevation={3} sx={{
             borderRadius: 5,
             p: 3,

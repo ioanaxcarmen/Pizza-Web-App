@@ -110,7 +110,7 @@ const TopIngredientsByStorePieChart = ({ filters = {} }) => {
                                     <Legend />
                                 </PieChart>
                             </ResponsiveContainer>
-                            {/* Download button dưới mỗi pie chart, căn giữa */}
+                            
                             <div style={{ marginTop: 16, display: 'flex', justifyContent: 'center' }}>
                                 <button
                                     onClick={() => downloadCSV(pieData, store.label)}

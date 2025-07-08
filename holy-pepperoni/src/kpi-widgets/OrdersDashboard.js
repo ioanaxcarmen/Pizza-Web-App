@@ -9,7 +9,7 @@ import OrdersDistributionWeekdaySizeChart from './OrdersDistributionWeekdaySizeC
 import OrdersByHourChart from './OrdersByHourChart'; 
 import PizzaLottie from '../components/PizzaLottie';
 import { useNavigate } from 'react-router-dom'; 
-import ProductPairsTable from './ProductPairsTable'; // <-- Changed import
+import ProductPairsTable from './ProductPairsTable';
 import OrdersDistributionHourlyCategory from './OrdersDistributionHourlyCategory';
 import OrdersDistributionHourlySize from './OrdersDistributionHourlySize';
 
@@ -25,6 +25,12 @@ const OrdersDashboard = (props) => {
   const isMdUp = useMediaQuery(theme.breakpoints.up('md'));
   const navigate = useNavigate(); 
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  // Logout logic giống Dashboard
+  const handleLogout = () => {
+    localStorage.removeItem("authToken");
+    navigate("/");
+  };
 
   // Inject Google Fonts: Inter + Roboto
   useEffect(() => {
@@ -98,7 +104,7 @@ const OrdersDashboard = (props) => {
       <CssBaseline />
       {isMdUp && <Sidebar />}
       <Box sx={{ flexGrow: 1, ml: { md: `${drawerWidth}px` }, display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-        <TopBar title="Orders Dashboard" onMenuClick={() => setMobileOpen(true)} {...props} />
+        <TopBar title="Orders Dashboard" onMenuClick={() => setMobileOpen(true)} onLogout={handleLogout} {...props} />
         <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', p: { xs: 1, md: 3 }, width: '100%', pt: { xs: 7, md: 10 } }}>
           {/* Orders sold summary widget */}
           <Box sx={{ mb: 3, width: '100%' }}>

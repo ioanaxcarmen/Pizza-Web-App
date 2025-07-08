@@ -28,7 +28,7 @@ const ProductRevenuePieBySize = () => {
     colorMap[name] = COLORS[idx % COLORS.length];
   });
 
-  // Pivot dữ liệu cho 4 size cố định, luôn show 4 chart
+
   let groupedData = {};
   SIZE_LIST.forEach(size => { groupedData[size] = []; });
   data.forEach(item => {
