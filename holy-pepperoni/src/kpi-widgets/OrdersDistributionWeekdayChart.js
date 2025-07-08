@@ -69,26 +69,6 @@ const OrdersDistributionWeekdayChart = () => {
 
     return (
         <div style={{ width: '100%', height: 400 }}>
-            {/* Download CSV button */}
-            <div style={{ marginBottom: '20px', display: 'flex', justifyContent: 'flex-end' }}>
-                <Button
-                    onClick={() => downloadCSV(data)}
-                    variant="contained"
-                    sx={{
-                        background: "#f7d9afff",
-                        color: "#000",
-                        borderRadius: "20px",
-                        fontWeight: "bold",
-                        textTransform: "none",
-                        px: 3,
-                        py: 1,
-                        boxShadow: 1,
-                        '&:hover': { background: "#ffe0b2" }
-                    }}
-                >
-                    Download Report
-                </Button>
-            </div>
             {/* Chart title */}
             <h2 style={{ textAlign: 'center' }}>Orders Distribution by Weekday (Stacked by Category)</h2>
             {/* Responsive stacked bar chart */}
@@ -105,6 +85,27 @@ const OrdersDistributionWeekdayChart = () => {
                     ))}
                 </BarChart>
             </ResponsiveContainer>
+            {/* Download Report button centered below chart */}
+            <div style={{ display: 'flex', justifyContent: 'center', marginTop: 24 }}>
+                <Button
+                    onClick={() => downloadCSV(data)}
+                    variant="contained"
+                    sx={{
+                        background: "#f7d9afff",
+                        color: "#000",
+                        borderRadius: "20px",
+                        fontWeight: "bold",
+                        textTransform: "none",
+                        px: 3,
+                        py: 1,
+                        fontSize: "1rem",
+                        boxShadow: 1,
+                        '&:hover': { background: "#ffe0b2" }
+                    }}
+                >
+                    Download Report
+                </Button>
+            </div>
         </div>
     );
 };

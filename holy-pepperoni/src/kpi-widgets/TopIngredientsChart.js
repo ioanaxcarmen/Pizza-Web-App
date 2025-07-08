@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import DashboardFilters from '../components/DashboardFilters';
+import LoadingPizza from '../components/LoadingPizza';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 const defaultFilters = {
@@ -61,26 +62,46 @@ const TopIngredientsChart = ({ filters: parentFilters, topN = 5 }) => {
 
     return (
         <div style={{ width: '100%', minHeight: 500, position: 'relative' }}>
-            <div style={{ display: 'flex', gap: 20, padding: 20, background: '#f0f0f0', flexWrap: 'wrap', alignItems: 'flex-end' }}>
-                <DashboardFilters filters={filters} setFilters={setFilters} onReset={handleResetFilters} />
-                <button
-                    onClick={() => downloadCSV(data)}
-                    style={{
-                        background: '#f7d9afff',
-                        color: '#000',
-                        border: 'none',
-                        borderRadius: '20px',
-                        padding: '8px 18px',
-                        fontWeight: 'bold',
-                        cursor: 'pointer',
-                        marginBottom: window.innerWidth < 600 ? 16 : 0
-                    }}
-                >
-                    Download Report
-                </button>
+            {/* Filter Controls */}
+            <div
+                style={{
+                    display: 'flex',
+                    flexWrap: 'wrap',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    gap: 16,
+                    marginBottom: 24,
+                    background: '#fff7f0',
+                    borderRadius: 16,
+                    padding: '16px 20px',
+                    boxShadow: '0 2px 8px #f7d9af44'
+                }}
+            >
+                <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 16 }}>
+                    <DashboardFilters filters={filters} setFilters={setFilters} onReset={handleResetFilters} />
+                </div>
+                <div>
+                    <button
+                        onClick={() => downloadCSV(data)}
+                        style={{
+                            background: '#f7d9afff',
+                            color: '#000',
+                            border: 'none',
+                            borderRadius: '20px',
+                            fontWeight: 'bold',
+                            textTransform: 'none',
+                            padding: '12px 28px',
+                            fontSize: '1rem',
+                            boxShadow: '0 2px 8px #eee',
+                            cursor: 'pointer'
+                        }}
+                    >
+                        Download Report
+                    </button>
+                </div>
             </div>
             {loading ? (
-                <div>Loading Top Ingredients Chart...</div>
+                <LoadingPizza />
             ) : invalidFilter ? (
                 <div style={{ color: 'red', textAlign: 'center' }}>
                     No data available for the selected filters. Please adjust your filters and try again.

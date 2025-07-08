@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'; // Added useState for the widget's internal state
+import React, { useEffect, useState } from 'react';
 import {
   Box, CssBaseline, Paper, useTheme, useMediaQuery, Typography, Button, Divider
 } from '@mui/material';
@@ -18,12 +18,19 @@ import TotalStoresWidget from './TotalStoresWidget';
 
 
 
+
 const drawerWidth = 230;
 
 const StoreDashboards = (props) => {
   const theme = useTheme();
   const isMdUp = useMediaQuery(theme.breakpoints.up('md'));
   const navigate = useNavigate();
+
+  // Logout logic giống Dashboard
+  const handleLogout = () => {
+    localStorage.removeItem("authToken");
+    navigate("/");
+  };
 
   // Inject Google Fonts: Inter + Roboto (Important for consistent styling)
   useEffect(() => {
@@ -56,9 +63,9 @@ const StoreDashboards = (props) => {
       <CssBaseline />
       {isMdUp && <Sidebar />}
 
-
       <Box sx={{ flexGrow: 1, ml: { md: `${drawerWidth}px` }, display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-        <TopBar title="Stores Dashboard" {...props} />
+      
+        <TopBar title="Stores Dashboard" onLogout={handleLogout} {...props} />
         <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', p: { xs: 1, md: 3 } }}>
           {/* Widget tổng số orders và animation pizza */}
           <Box
@@ -68,7 +75,7 @@ const StoreDashboards = (props) => {
               justifyContent: 'flex-start',
               mt: 5,
               mb: 3,
-              width: '100%' // Thêm dòng này
+              width: '100%'
             }}
           >
             <TotalStoresWidget />
@@ -142,27 +149,36 @@ const StoreDashboards = (props) => {
             </Paper>
           </motion.div>
         </Box>
-        <Box sx={{ width: '100%' }}>
+        <Box sx={{ width: '100%', height: '600px' }}> {/* Set a fixed height here */}
+          {/* Ensure motion.div takes full height */}
           <motion.div
             initial={{ opacity: 0, y: 24 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.5 }}
-            transition={{ duration: 0.8, delay: 0.1 }}
+            transition={{ duration: 0.8, delay: 0.3 }}
+            style={{ height: '100%' }}
           >
             <Paper elevation={3} sx={{
               borderRadius: 5,
               p: 3,
               mb: 4,
               boxShadow: "0 4px 16px rgba(250, 162, 138, 0.08)",
-              fontFamily: "'Inter', 'Roboto', sans-serif"
+              fontFamily: "'Inter', 'Roboto', sans-serif",
+              height: '100%', // Ensure Paper takes full height
+              display: 'flex', // Use flex to arrange content
+              flexDirection: 'column', // Stack content vertically
             }}>
               <Typography variant="h6" fontWeight="bold" sx={{ mb: 2, fontFamily: "'Inter', 'Roboto', sans-serif" }}>
-                Performance Ranking by Store KPIs
+                Store KPIs Radar Chart
               </Typography>
-              <StoreKPIRadarChart />
+              {/* Correctly render the StoreKPIRadarChart component */}
+              <Box sx={{ flexGrow: 1 }}>
+                <StoreKPIRadarChart />
+              </Box>
             </Paper>
           </motion.div>
         </Box>
+
 
 
 

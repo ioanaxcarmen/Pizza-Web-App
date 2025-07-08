@@ -10,8 +10,7 @@ import {
     Legend,
     ResponsiveContainer
 } from 'recharts';
-import { Button } from '@mui/material';
-
+import { Button } from '@mui/material'; 
 // Default filter values
 const defaultFilters = {
     state: 'all',
@@ -42,6 +41,7 @@ const StoreKPIRadarChart = () => {
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
     };
+
     // Colors for the radar chart lines/fills
     const radarColors = ['#8884d8', '#82ca9d', '#ffc658', '#ff7300', '#0088FE', '#00C49F', '#FFBB28'];
 
@@ -215,7 +215,6 @@ const StoreKPIRadarChart = () => {
 
     return (
         <div style={styles.chartContainer}>
-            <h2 style={styles.chartTitle}>Store KPIs Comparison</h2>
             <div style={styles.filterContainer}>
                 {/* State Dropdown */}
                 <label htmlFor="state-select" style={styles.filterLabel}>State:</label>
@@ -282,24 +281,23 @@ const StoreKPIRadarChart = () => {
                     Download Report
                 </Button>
             </div>
-
-            <ResponsiveContainer width="100%" height={500}>
+            <ResponsiveContainer width="100%" height={400}>
                 <RadarChart data={pivotData}>
                     <PolarGrid />
                     <PolarAngleAxis dataKey="kpi" />
-                    <PolarRadiusAxis domain={[0, 100]} /> {/* Scale from 0 to 100 for points */}
-                    <Tooltip content={<CustomTooltip />} />
-                    <Legend />
-                    {storesToRender.map((store, index) => (
+                    <PolarRadiusAxis />
+                    {storesToRender.map((store, idx) => (
                         <Radar
-                            key={store.id} // Use the robust 'id' for the key prop
-                            name={store.name} // Use the robust 'name' for the legend
-                            dataKey={store.id} // Data key is the store ID
-                            stroke={radarColors[index % radarColors.length]}
-                            fill={radarColors[index % radarColors.length]}
-                            fillOpacity={0.6}
+                            key={store.id}
+                            name={store.name}
+                            dataKey={store.id}
+                            stroke={radarColors[idx % radarColors.length]}
+                            fill={radarColors[idx % radarColors.length]}
+                            fillOpacity={0.3}
                         />
                     ))}
+                    <Tooltip content={<CustomTooltip />} />
+                    <Legend />
                 </RadarChart>
             </ResponsiveContainer>
         </div>

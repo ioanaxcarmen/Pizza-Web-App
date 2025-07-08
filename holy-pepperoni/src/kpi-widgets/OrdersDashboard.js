@@ -9,7 +9,7 @@ import OrdersDistributionWeekdaySizeChart from './OrdersDistributionWeekdaySizeC
 import OrdersByHourChart from './OrdersByHourChart'; 
 import PizzaLottie from '../components/PizzaLottie';
 import { useNavigate } from 'react-router-dom'; 
-import ProductPairsTable from './ProductPairsTable'; // <-- Changed import
+import ProductPairsTable from './ProductPairsTable';
 import OrdersDistributionHourlyCategory from './OrdersDistributionHourlyCategory';
 import OrdersDistributionHourlySize from './OrdersDistributionHourlySize';
 
@@ -25,6 +25,12 @@ const OrdersDashboard = (props) => {
   const isMdUp = useMediaQuery(theme.breakpoints.up('md'));
   const navigate = useNavigate(); 
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  // Logout logic giống Dashboard
+  const handleLogout = () => {
+    localStorage.removeItem("authToken");
+    navigate("/");
+  };
 
   // Inject Google Fonts: Inter + Roboto
   useEffect(() => {
@@ -98,7 +104,7 @@ const OrdersDashboard = (props) => {
       <CssBaseline />
       {isMdUp && <Sidebar />}
       <Box sx={{ flexGrow: 1, ml: { md: `${drawerWidth}px` }, display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-        <TopBar title="Orders Dashboard" onMenuClick={() => setMobileOpen(true)} {...props} />
+        <TopBar title="Orders Dashboard" onMenuClick={() => setMobileOpen(true)} onLogout={handleLogout} {...props} />
         <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', p: { xs: 1, md: 3 }, width: '100%', pt: { xs: 7, md: 10 } }}>
           {/* Orders sold summary widget */}
           <Box sx={{ mb: 3, width: '100%' }}>
@@ -106,30 +112,28 @@ const OrdersDashboard = (props) => {
           </Box>
           {/* Chart 1: Orders by weekday and category */}
           <Box sx={{ mb: 3, width: '100%' }}>
-            <Grid container spacing={3}>
-              <Grid item xs={12} md={6}>
-                <Paper elevation={3} sx={{
-                  borderRadius: 5,
-                  p: 3,
-                  boxShadow: "0 4px 16px rgba(250, 162, 138, 0.08)",
-                  fontFamily: "'Inter', 'Roboto', sans-serif",
-                  height: 500
-                }}>
-                  <OrdersDistributionWeekdayChart />
-                </Paper>
-              </Grid>
-              <Grid item xs={12} md={6}>
-                <Paper elevation={3} sx={{
-                  borderRadius: 5,
-                  p: 3,
-                  boxShadow: "0 4px 16px rgba(250, 162, 138, 0.08)",
-                  fontFamily: "'Inter', 'Roboto', sans-serif",
-                  height: '100%'
-                }}>
-                  <OrdersDistributionWeekdaySizeChart />
-                </Paper>
-              </Grid>
-            </Grid>
+            <Paper elevation={3} sx={{
+              borderRadius: 5,
+              p: 3,
+              boxShadow: "0 4px 16px rgba(250, 162, 138, 0.08)",
+              fontFamily: "'Inter', 'Roboto', sans-serif",
+              height: 550,
+              width: '100%'
+            }}>
+              <OrdersDistributionWeekdayChart />
+            </Paper>
+          </Box>
+          <Box sx={{ mb: 3, width: '100%' }}>
+            <Paper elevation={3} sx={{
+              borderRadius: 5,
+              p: 3,
+              boxShadow: "0 4px 16px rgba(250, 162, 138, 0.08)",
+              fontFamily: "'Inter', 'Roboto', sans-serif",
+              height: 550,
+              width: '100%'
+            }}>
+              <OrdersDistributionWeekdaySizeChart />
+            </Paper>
           </Box>
           {/* Chart 3: Orders by hour */}
           <Box sx={{ mb: 3, width: '100%' }}>
@@ -137,37 +141,36 @@ const OrdersDashboard = (props) => {
               borderRadius: 5,
               p: 3,
               boxShadow: "0 4px 16px rgba(250, 162, 138, 0.08)",
-              fontFamily: "'Inter', 'Roboto', sans-serif"
+              fontFamily: "'Inter', 'Roboto', sans-serif",
+              width: '100%'
             }}>
               <OrdersByHourChart />
             </Paper>
           </Box>
           {/* Chart 4: Orders by hour and category/size */}
           <Box sx={{ mb: 3, width: '100%' }}>
-            <Grid container spacing={3}>
-              <Grid item xs={12} md={6}>
-                <Paper elevation={3} sx={{
-                  borderRadius: 5,
-                  p: 3,
-                  boxShadow: "0 4px 16px rgba(250, 162, 138, 0.08)",
-                  fontFamily: "'Inter', 'Roboto', sans-serif",
-                  height: 500
-                }}>
-                  <OrdersDistributionHourlyCategory />
-                </Paper>
-              </Grid>
-              <Grid item xs={12} md={6}>
-                <Paper elevation={3} sx={{
-                  borderRadius: 5,
-                  p: 3,
-                  boxShadow: "0 4px 16px rgba(250, 162, 138, 0.08)",
-                  fontFamily: "'Inter', 'Roboto', sans-serif",
-                  height: 500
-                }}>
-                  <OrdersDistributionHourlySize />
-                </Paper>
-              </Grid>
-            </Grid>
+            <Paper elevation={3} sx={{
+              borderRadius: 5,
+              p: 3,
+              boxShadow: "0 4px 16px rgba(250, 162, 138, 0.08)",
+              fontFamily: "'Inter', 'Roboto', sans-serif",
+              height: 580,
+              width: '100%'
+            }}>
+              <OrdersDistributionHourlyCategory />
+            </Paper>
+          </Box>
+          <Box sx={{ mb: 3, width: '100%' }}>
+            <Paper elevation={3} sx={{
+              borderRadius: 5,
+              p: 3,
+              boxShadow: "0 4px 16px rgba(250, 162, 138, 0.08)",
+              fontFamily: "'Inter', 'Roboto', sans-serif",
+              height: 580,
+              width: '100%'
+            }}>
+              <OrdersDistributionHourlySize />
+            </Paper>
           </Box>
           {/* Table: Product Pairs (replaces ProductNetworkGraph) */}
           <Box sx={{ mb: 3, width: '100%' }}>
@@ -176,13 +179,17 @@ const OrdersDashboard = (props) => {
           {/* Spacer to push the button lower */}
           <Box sx={{ flexGrow: 1 }} />
           {/* Back to Main Menu button, now lower on the page */}
-          <Box sx={{ display: "flex", justifyContent: "center", mt: 6, mb: 2 }}>
+          <Box sx={{ display: "flex", justifyContent: "center" }}>
             <Button
               variant="contained"
               sx={{
                 background: "#faa28a",
                 borderRadius: "32px",
                 color: "#fff",
+                fontSize: "1.1rem",
+                fontWeight: 700,
+                px: 5,
+                py: 1.5,
                 '&:hover': { background: "#fa7a1c" }
               }}
               onClick={() => navigate("/dashboard")}

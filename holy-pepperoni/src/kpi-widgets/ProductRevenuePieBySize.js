@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import LoadingPizza from '../components/LoadingPizza';
 
 const COLORS = ['#8884d8', '#82ca9d', '#ff7300', '#0088FE', '#FFBB28', '#aa4643', '#89A54E', '#e377c2', '#b5bd61'];
 const SIZE_LIST = ['Small', 'Medium', 'Large', 'Extra Large'];
@@ -27,7 +28,7 @@ const ProductRevenuePieBySize = () => {
     colorMap[name] = COLORS[idx % COLORS.length];
   });
 
-  // Pivot dữ liệu cho 4 size cố định, luôn show 4 chart
+
   let groupedData = {};
   SIZE_LIST.forEach(size => { groupedData[size] = []; });
   data.forEach(item => {
@@ -37,46 +38,83 @@ const ProductRevenuePieBySize = () => {
     }
   });
 
+  // Utility to convert data to CSV and trigger download
+  const downloadCSV = (data) => {
+    if (!data.length) return;
+    const header = Object.keys(data[0]).join(',');
+    const rows = data.map(row => Object.values(row).join(','));
+    const csvContent = [header, ...rows].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'product_revenue_by_size.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div style={{ padding: '20px' }}>
       {loading ? (
-        <div>Loading data...</div>
+        <LoadingPizza />
       ) : (
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-          gap: '20px'
-        }}>
-          {SIZE_LIST.map((size) => (
-            <div key={size} style={{ border: '1px solid #ddd', padding: '10px', borderRadius: '8px', background: "#fff" }}>
-              <h3 style={{ textAlign: 'center', fontWeight: 700 }}>{size}</h3>
-              <ResponsiveContainer width="100%" height={400}>
-                <PieChart>
-                  <Pie
-                    data={groupedData[size]}
-                    dataKey="value"
-                    nameKey="name"
-                    cx="50%"
-                    cy="50%"
-                    outerRadius={80}
-                    label={false}
-                  >
-                    {groupedData[size].map((entry) => (
-                      <Cell key={entry.name} fill={colorMap[entry.name]} />
-                    ))}
-                  </Pie>
-                  <Tooltip formatter={(value) => `$${value.toLocaleString()}`} />
-                  <Legend />
-                </PieChart>
-              </ResponsiveContainer>
-              {groupedData[size].length === 0 && (
-                <div style={{ textAlign: "center", color: "#bbb", marginTop: 30 }}>
-                  No data for this size.
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
+        <>
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+            gap: '20px'
+          }}>
+            {SIZE_LIST.map((size) => (
+              <div key={size} style={{ border: '1px solid #ddd', padding: '10px', borderRadius: '8px', background: "#fff" }}>
+                <h3 style={{ textAlign: 'center', fontWeight: 700 }}>{size}</h3>
+                <ResponsiveContainer width="100%" height={400}>
+                  <PieChart>
+                    <Pie
+                      data={groupedData[size]}
+                      dataKey="value"
+                      nameKey="name"
+                      cx="50%"
+                      cy="50%"
+                      outerRadius={80}
+                      label={false}
+                    >
+                      {groupedData[size].map((entry) => (
+                        <Cell key={entry.name} fill={colorMap[entry.name]} />
+                      ))}
+                    </Pie>
+                    <Tooltip formatter={(value) => `$${value.toLocaleString()}`} />
+                    <Legend />
+                  </PieChart>
+                </ResponsiveContainer>
+                {groupedData[size].length === 0 && (
+                  <div style={{ textAlign: "center", color: "#bbb", marginTop: 30 }}>
+                    No data for this size.
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+          {/* Download Report button centered below charts */}
+          <div style={{ display: 'flex', justifyContent: 'center', marginTop: 32 }}>
+            <button
+              onClick={() => downloadCSV(data)}
+              style={{
+                background: '#f7d9afff',
+                color: '#000',
+                border: 'none',
+                borderRadius: '20px',
+                fontWeight: 'bold',
+                textTransform: 'none',
+                padding: '12px 28px',
+                fontSize: '1rem',
+                boxShadow: '0 2px 8px #eee',
+                cursor: 'pointer'
+              }}
+            >
+              Download Report
+            </button>
+          </div>
+        </>
       )}
     </div>
   );
