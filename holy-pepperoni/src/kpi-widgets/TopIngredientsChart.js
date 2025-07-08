@@ -24,34 +24,36 @@ const downloadCSV = (data) => {
     URL.revokeObjectURL(url);
 };
 
-const TopIngredientsChart = () => {
+const TopIngredientsChart = ({ filters: parentFilters, topN = 5 }) => {
     const [filters, setFilters] = useState(defaultFilters);
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(true);
     const [invalidFilter, setInvalidFilter] = useState(false);
 
+    // Use parent filters if provided, otherwise use local filters
+    const effectiveFilters = parentFilters || filters;
+
     useEffect(() => {
         setLoading(true);
         setInvalidFilter(false);
         const params = new URLSearchParams();
-        Object.entries(filters).forEach(([key, value]) => {
+        Object.entries(effectiveFilters).forEach(([key, value]) => {
             if (value && value !== 'all') params.append(key, value);
         });
 
         axios.get(`${process.env.REACT_APP_API_URL}/api/kpi/top-ingredients?${params.toString()}`)
             .then(response => {
-                const mappedData = response.data.slice(0, 5).map(row => ({
+                const mappedData = response.data.slice(0, topN).map(row => ({
                     ingredient: row.ingredient_name,
                     quantityUsed: row.total_quantity_used
                 }));
                 setData(mappedData);
                 setLoading(false);
-                // Bỏ kiểm tra filter storeId
             })
             .catch(() => {
                 setLoading(false);
             });
-    }, [filters]);
+    }, [effectiveFilters, topN]);
 
     const handleResetFilters = () => {
         setFilters(defaultFilters);
