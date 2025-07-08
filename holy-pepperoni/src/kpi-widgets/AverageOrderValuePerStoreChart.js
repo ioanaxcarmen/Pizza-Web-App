@@ -33,7 +33,7 @@ const AverageOrderValuePerStoreChart = () => {
 
 
 
-    // Filter options (can be global or fetched dynamically if needed)
+    // Filter options 
     const years = ['all', '2020', '2021', '2022'];
     const quarters = ['all', '1', '2', '3', '4'];
     const months = ['all', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'];
@@ -52,7 +52,7 @@ const AverageOrderValuePerStoreChart = () => {
                 if (selectedState !== 'all') queryParams.append('state', selectedState);
                 if (selectedStoreId !== 'all') queryParams.append('storeId', selectedStoreId);
 
-                // This URL corresponds to the backend endpoint for fetching AOV by store
+                
                 const url = `http://localhost:3001/api/kpi/avg-order-value-by-store?${queryParams.toString()}`;
                 console.log("Fetching AOV by Store from URL:", url);
 
@@ -208,19 +208,14 @@ const AverageOrderValuePerStoreChart = () => {
                             labelStyle={{ fontWeight: 'bold', color: '#333' }}
                             itemStyle={{ color: '#555' }}
                         />
-                        {/*
-                            Using Line component with stroke={0} and a custom dot to create a "lollipop" like effect.
-                            stroke={0} makes the line invisible.
-                            dot prop renders a circular marker at each data point.
-                            activeDot is for when you hover over a point.
-                        */}
+                        
                         <Line
-                            type="monotone" // This can be 'linear' or 'monotone' (though lines might not be desired for discrete data)
+                            type="monotone" 
                             dataKey="avgOrderValue"
-                            stroke="#8884d8" // Color for the line (if strokeWidth > 0)
-                            strokeWidth={2} // Adjust to 0 if you want only dots, or a small number for thin lines
-                            dot={{ stroke: '#8884d8', strokeWidth: 2, r: 4, fill: '#fff' }} // Styling for the dots
-                            activeDot={{ stroke: '#8884d8', strokeWidth: 2, r: 6, fill: '#8884d8' }} // Styling for the active (hovered) dot
+                            stroke="#8884d8" 
+                            strokeWidth={2} 
+                            dot={{ stroke: '#8884d8', strokeWidth: 2, r: 4, fill: '#fff' }} 
+                            activeDot={{ stroke: '#8884d8', strokeWidth: 2, r: 6, fill: '#8884d8' }} 
                             connectNulls={false} // Prevents line from connecting across missing data points
                         />
                     </LineChart>
