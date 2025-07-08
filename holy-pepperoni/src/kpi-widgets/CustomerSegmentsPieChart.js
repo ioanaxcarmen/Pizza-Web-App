@@ -3,14 +3,33 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import LoadingPizza from '../components/LoadingPizza';
+import { Button, Box } from '@mui/material';
 
 // Colors for each segment in the pie chart
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#AF19FF'];
 
 /**
+ * Utility to convert data to CSV and trigger download
+ */
+const downloadCSV = (data) => {
+    if (!data.length) return;
+    const header = Object.keys(data[0]).join(',');
+    const rows = data.map(row => Object.values(row).join(','));
+    const csvContent = [header, ...rows].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'customer_segments_report.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+};
+
+/**
  * CustomerSegmentsPieChart component
  * Displays a pie chart of customer segments.
  * Allows clicking on a segment to drill down to segment details.
+ * Includes a Download Report button.
  */
 const CustomerSegmentsPieChart = () => {
     // State to hold the segment data
@@ -44,7 +63,35 @@ const CustomerSegmentsPieChart = () => {
     if (loading) return <LoadingPizza />;
 
     return (
-        <div style={{ width: '100%', height: 400 }}>
+        <div style={{ width: '100%', height: 400, position: 'relative' }}>
+            {/* Download Report button - absolute position, does not push chart down */}
+            <Box
+                sx={{
+                    position: 'absolute',
+                    top: 0,
+                    right: 0,
+                    zIndex: 2,
+                    m: 2 // margin for spacing from top/right
+                }}
+            >
+                <Button
+                    onClick={() => downloadCSV(data)}
+                    variant="contained"
+                    sx={{
+                        background: "#f7d9afff",
+                        color: "#000",
+                        borderRadius: "20px",
+                        fontWeight: "bold",
+                        textTransform: "none",
+                        px: 3,
+                        py: 1,
+                        boxShadow: 1,
+                        '&:hover': { background: "#ffe0b2" }
+                    }}
+                >
+                    Download Report
+                </Button>
+            </Box>
             <ResponsiveContainer>
                 <PieChart>
                     <Pie
