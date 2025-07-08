@@ -46,7 +46,7 @@ const ProductsDashboard = (props) => {
     };
   }, []);
 
-  // Widget Orders Sold với PizzaLottie
+  // Widget Orders Sold with PizzaLottie animation
   const OrdersSoldWidget = () => (
     <Paper
       elevation={2}
