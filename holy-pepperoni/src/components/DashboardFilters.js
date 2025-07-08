@@ -7,7 +7,9 @@ const defaultFilters = {
     month: 'all',
     week: 'all',
     state: 'all',
-    storeId: ''
+    storeId: '',
+    productLaunchYear: 'all',
+    productLaunchMonth: 'all'
 };
 
 /**
@@ -137,6 +139,29 @@ const DashboardFilters = ({ filters, setFilters, storeOptions = [] }) => {
                     <option value="NV">Nevada</option>
                     <option value="AZ">Arizona</option>
                     <option value="UT">Utah</option>
+                </select>
+            </div>
+            <div>
+                <label>Product Launch Year: </label>
+                <select name="productLaunchYear" value={filters.productLaunchYear || "all"} onChange={handleFilterChange}>
+                    <option value="all">All Launch Years</option>
+                    <option value="2020">2020</option>
+                    <option value="2021">2021</option>
+                    <option value="2022">2022</option>
+                    <option value="2023">2023</option>
+                    <option value="2024">2024</option>
+                    <option value="2025">2025</option>
+                </select>
+            </div>
+            <div>
+                <label>Product Launch Month: </label>
+                <select name="productLaunchMonth" value={filters.productLaunchMonth || "all"} onChange={handleFilterChange}>
+                    <option value="all">All Launch Months</option>
+                    {[...Array(12)].map((_, i) => (
+                        <option key={i + 1} value={String(i + 1)}>
+                            {new Date(0, i).toLocaleString('en-US', { month: 'long' })}
+                        </option>
+                    ))}
                 </select>
             </div>
             {/* Button to reset all filters */}

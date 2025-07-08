@@ -300,7 +300,6 @@ app.get('/api/kpi/ingredients-consumed-over-time', async (req, res) => {
         }
     }
 
-
     try {
         connection = await oracledb.getConnection(dbConfig);
 
@@ -784,6 +783,60 @@ app.get('/api/kpi/top-products', async (req, res) => {
         res.status(500).json({ error: 'Failed to fetch top selling products.', details: err.message });
     } finally {
         if (connection) { try { await connection.close(); } catch (e) { console.error(e); } }
+    }
+});
+
+//Top Selling Products from Lauch (integrated in top selling products)
+app.get('/api/kpi/top-products-since-launch', async (req, res) => {
+    let connection;
+    try {
+        connection = await oracledb.getConnection(dbConfig);
+        
+        // Base query
+        let query = `
+            SELECT
+                product_name,
+                product_launch_date,
+                SUM(total_quantity) AS total_quantity,
+                SUM(total_revenue) AS total_revenue,
+                COUNT(DISTINCT month_since_launch) as months_available
+            FROM v_product_monthly_sales_since_launch
+            WHERE month_since_launch <= 12 -- First year only for fair comparison
+        `;
+        
+        const queryParams = {};
+        
+        // Add product launch date filters
+        if (req.query.productLaunchYear && req.query.productLaunchYear !== 'all') {
+            query += ` AND EXTRACT(YEAR FROM product_launch_date) = :launchYear`;
+            queryParams.launchYear = parseInt(req.query.productLaunchYear);
+        }
+        
+        if (req.query.productLaunchMonth && req.query.productLaunchMonth !== 'all') {
+            query += ` AND EXTRACT(MONTH FROM product_launch_date) = :launchMonth`;
+            queryParams.launchMonth = parseInt(req.query.productLaunchMonth);
+        }
+        
+        query += `
+            GROUP BY product_name, product_launch_date
+            ORDER BY total_revenue DESC
+            FETCH FIRST 10 ROWS ONLY
+        `;
+        
+        const result = await connection.execute(query, queryParams);
+        const chartData = result.rows.map(row => ({
+            name: row[0],
+            launch: row[1],
+            quantity: row[2],
+            revenue: row[3],
+            monthsAvailable: row[4]
+        }));
+        res.json(chartData);
+    } catch (err) {
+        console.error('Error in top-products-since-launch:', err);
+        res.status(500).json({ error: 'Failed to fetch data.' });
+    } finally {
+        if (connection) try { await connection.close(); } catch (e) {}
     }
 });
 
