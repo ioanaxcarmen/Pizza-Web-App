@@ -46,7 +46,7 @@ const ProductsDashboard = (props) => {
     };
   }, []);
 
-  // Widget Orders Sold với PizzaLottie
+  // Widget to display total pizzas sold with animation
   const OrdersSoldWidget = () => (
     <Paper
       elevation={2}
@@ -88,6 +88,7 @@ const ProductsDashboard = (props) => {
     </Paper>
   );
 
+  // Logout handler for TopBar
   const handleLogout = () => {
     localStorage.removeItem("authToken");
     navigate("/");
@@ -95,15 +96,20 @@ const ProductsDashboard = (props) => {
 
   return (
     <>
+      {/* TopBar for mobile menu */}
       <TopBar onMenuClick={() => setMobileOpen(true)} {...props} />
+      {/* Sidebar navigation */}
       <Sidebar mobileOpen={mobileOpen} setMobileOpen={setMobileOpen} />
       <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: "#f5f7fb", fontFamily: "'Inter', 'Roboto', sans-serif" }}>
         <CssBaseline />
+        {/* Sidebar for desktop */}
         {isMdUp && <Sidebar />}
         <Box sx={{ flexGrow: 1, ml: { md: `${drawerWidth}px` }, display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+          {/* TopBar with title and logout */}
           <TopBar title="Products Dashboard" onMenuClick={() => setMobileOpen(true)} onLogout={handleLogout} {...props} />
           <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', p: { xs: 1, md: 3 } }}>
            
+            {/* Orders sold summary widget */}
             <Box
               sx={{
                 display: 'flex',
@@ -117,8 +123,9 @@ const ProductsDashboard = (props) => {
               <OrdersSoldWidget />
             </Box>
 
-            
+            {/* Main KPI widgets and charts */}
             <Box sx={{ width: '100%' }}>
+              {/* Top selling products bar chart */}
               <motion.div
                 initial={{ opacity: 0, y: 24 }}
                 whileInView={{ opacity: 1, y: 0 }}
@@ -139,6 +146,7 @@ const ProductsDashboard = (props) => {
                 </Paper>
               </motion.div>
 
+              {/* Product cohort sales line chart */}
               <motion.div
                 initial={{ opacity: 0, y: 24 }}
                 whileInView={{ opacity: 1, y: 0 }}
@@ -159,6 +167,7 @@ const ProductsDashboard = (props) => {
                 </Paper>
               </motion.div>
 
+              {/* Product revenue distribution by category pie charts */}
               <motion.div
                 initial={{ opacity: 0, y: 24 }}
                 whileInView={{ opacity: 1, y: 0 }}
@@ -179,6 +188,7 @@ const ProductsDashboard = (props) => {
                 </Paper>
               </motion.div>
 
+              {/* Product revenue distribution by size pie charts */}
               <motion.div
                 initial={{ opacity: 0, y: 24 }}
                 whileInView={{ opacity: 1, y: 0 }}
@@ -199,7 +209,7 @@ const ProductsDashboard = (props) => {
                 </Paper>
               </motion.div>
 
-              
+              {/* Table of top products in the first 3 months since launch */}
               <motion.div
                 initial={{ opacity: 0, y: 24 }}
                 whileInView={{ opacity: 1, y: 0 }}
@@ -221,10 +231,10 @@ const ProductsDashboard = (props) => {
               </motion.div>
             </Box>
 
-
+            {/* Divider before navigation button */}
             <Divider sx={{ my: 4 }} />
 
-            {/* Back to Main Menu button, now lower on the page */}
+            {/* Back to Main Menu button */}
             <Box sx={{ display: "flex", justifyContent: "center" }}>
               <Button
                 variant="contained"

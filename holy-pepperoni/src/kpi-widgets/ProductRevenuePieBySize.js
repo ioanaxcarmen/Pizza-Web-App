@@ -3,13 +3,18 @@ import axios from 'axios';
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import LoadingPizza from '../components/LoadingPizza';
 
+// Color palette for pie chart slices
 const COLORS = ['#8884d8', '#82ca9d', '#ff7300', '#0088FE', '#FFBB28', '#aa4643', '#89A54E', '#e377c2', '#b5bd61'];
+// List of pizza sizes to display
 const SIZE_LIST = ['Small', 'Medium', 'Large', 'Extra Large'];
 
 const ProductRevenuePieBySize = () => {
+  // State to hold fetched data from backend
   const [data, setData] = useState([]);
+  // State to indicate loading status
   const [loading, setLoading] = useState(true);
 
+  // Fetch product revenue by size data from backend API on mount
   useEffect(() => {
     axios.get(`${process.env.REACT_APP_API_URL}/api/kpi/product-revenue-by-size`)
       .then(res => {
@@ -23,12 +28,13 @@ const ProductRevenuePieBySize = () => {
   const allProductNames = Array.from(
     new Set(data.map(item => item.product_name))
   );
+  // Map each product name to a color for consistent coloring across charts
   const colorMap = {};
   allProductNames.forEach((name, idx) => {
     colorMap[name] = COLORS[idx % COLORS.length];
   });
 
-
+  // Group the data by pizza size for rendering multiple pie charts
   let groupedData = {};
   SIZE_LIST.forEach(size => { groupedData[size] = []; });
   data.forEach(item => {
@@ -55,10 +61,12 @@ const ProductRevenuePieBySize = () => {
 
   return (
     <div style={{ padding: '20px' }}>
+      {/* Show loading animation while fetching data */}
       {loading ? (
         <LoadingPizza />
       ) : (
         <>
+          {/* Render a pie chart for each pizza size */}
           <div style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
@@ -78,14 +86,17 @@ const ProductRevenuePieBySize = () => {
                       outerRadius={80}
                       label={false}
                     >
+                      {/* Assign a color to each product slice */}
                       {groupedData[size].map((entry) => (
                         <Cell key={entry.name} fill={colorMap[entry.name]} />
                       ))}
                     </Pie>
+                    {/* Tooltip shows revenue value on hover */}
                     <Tooltip formatter={(value) => `$${value.toLocaleString()}`} />
                     <Legend />
                   </PieChart>
                 </ResponsiveContainer>
+                {/* Show message if there is no data for this size */}
                 {groupedData[size].length === 0 && (
                   <div style={{ textAlign: "center", color: "#bbb", marginTop: 30 }}>
                     No data for this size.

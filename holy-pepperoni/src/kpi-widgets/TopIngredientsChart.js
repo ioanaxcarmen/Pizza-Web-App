@@ -4,6 +4,7 @@ import DashboardFilters from '../components/DashboardFilters';
 import LoadingPizza from '../components/LoadingPizza';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
+// Default filter values for the chart
 const defaultFilters = {
     week: 'all',
     month: 'all',
@@ -11,6 +12,7 @@ const defaultFilters = {
     year: 'all',
 };
 
+// Utility function to convert data to CSV and trigger download
 const downloadCSV = (data) => {
     if (!data.length) return;
     const header = Object.keys(data[0]).join(',');
@@ -25,15 +27,28 @@ const downloadCSV = (data) => {
     URL.revokeObjectURL(url);
 };
 
+/**
+ * TopIngredientsChart
+ * Displays a vertical bar chart of the top N ingredients by total quantity used.
+ * Allows filtering by week, month, quarter, and year.
+ * Includes a download button for exporting the data as CSV.
+ * Shows a loading animation while fetching data.
+ * Shows a message if no data is available for the selected filters.
+ */
 const TopIngredientsChart = ({ filters: parentFilters, topN = 5 }) => {
+    // State for local filters (if parentFilters is not provided)
     const [filters, setFilters] = useState(defaultFilters);
+    // State for chart data
     const [data, setData] = useState([]);
+    // State for loading indicator
     const [loading, setLoading] = useState(true);
+    // State for invalid filter (no data)
     const [invalidFilter, setInvalidFilter] = useState(false);
 
     // Use parent filters if provided, otherwise use local filters
     const effectiveFilters = parentFilters || filters;
 
+    // Fetch data from backend API whenever filters or topN change
     useEffect(() => {
         setLoading(true);
         setInvalidFilter(false);
@@ -44,6 +59,7 @@ const TopIngredientsChart = ({ filters: parentFilters, topN = 5 }) => {
 
         axios.get(`${process.env.REACT_APP_API_URL}/api/kpi/top-ingredients?${params.toString()}`)
             .then(response => {
+                // Map API response to chart data format
                 const mappedData = response.data.slice(0, topN).map(row => ({
                     ingredient: row.ingredient_name,
                     quantityUsed: row.total_quantity_used
@@ -56,13 +72,14 @@ const TopIngredientsChart = ({ filters: parentFilters, topN = 5 }) => {
             });
     }, [effectiveFilters, topN]);
 
+    // Reset filters to default values
     const handleResetFilters = () => {
         setFilters(defaultFilters);
     };
 
     return (
         <div style={{ width: '100%', minHeight: 500, position: 'relative' }}>
-            {/* Filter Controls */}
+            {/* Filter Controls and Download Button */}
             <div
                 style={{
                     display: 'flex',
@@ -78,8 +95,10 @@ const TopIngredientsChart = ({ filters: parentFilters, topN = 5 }) => {
                 }}
             >
                 <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 16 }}>
+                    {/* DashboardFilters component for selecting week, month, quarter, year */}
                     <DashboardFilters filters={filters} setFilters={setFilters} onReset={handleResetFilters} />
                 </div>
+                {/* Download CSV button */}
                 <div>
                     <button
                         onClick={() => downloadCSV(data)}
@@ -100,6 +119,7 @@ const TopIngredientsChart = ({ filters: parentFilters, topN = 5 }) => {
                     </button>
                 </div>
             </div>
+            {/* Show loading animation, error message, or the chart */}
             {loading ? (
                 <LoadingPizza />
             ) : invalidFilter ? (
@@ -118,6 +138,7 @@ const TopIngredientsChart = ({ filters: parentFilters, topN = 5 }) => {
                         <YAxis type="category" dataKey="ingredient" width={120} tick={{ fontSize: 12 }} />
                         <Tooltip formatter={(value) => `${value}`} />
                         <Legend />
+                        {/* Bar for total quantity used */}
                         <Bar dataKey="quantityUsed" name="Total Quantity Used" fill="#82ca9d" />
                     </BarChart>
                 </ResponsiveContainer>

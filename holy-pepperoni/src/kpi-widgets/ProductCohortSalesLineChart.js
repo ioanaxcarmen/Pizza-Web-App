@@ -13,6 +13,7 @@ import {
 } from 'recharts';
 import LoadingPizza from '../components/LoadingPizza';
 
+// List of available pizza options for the select box
 const pizzaOptions = [
     { value: "Margherita Pizza", label: "Margherita Pizza" },
     { value: "Pepperoni Pizza", label: "Pepperoni Pizza" },
@@ -25,36 +26,35 @@ const pizzaOptions = [
     { value: "Oxtail Pizza", label: "Oxtail Pizza" }
 ];
 
-// Default filters:
-// • selectedProducts: an array of product names to compare. Empty means “all”
-// • yMetric: either "total_quantity" or "total_revenue"
+// Default filter values for the chart
+// selectedProducts: array of product names to compare. Empty means "all"
+// yMetric: either "total_quantity" or "total_revenue"
 const defaultFilters = {
     selectedProducts: [],
     yMetric: 'total_quantity'
 };
 
-// Colors for the lines
+// Colors for the lines in the chart
 const lineColors = ['#8884d8', '#82ca9d', '#ff7300', '#0088FE', '#FFBB28', '#aa4643', '#89A54E'];
 
 const ProductCohortSalesLineChart = () => {
+    // State for filters, raw data, pivoted data, loading, and chart options
     const [filters, setFilters] = useState(defaultFilters);
     const [rawData, setRawData] = useState([]);
     const [pivotData, setPivotData] = useState([]);
     const [loading, setLoading] = useState(true);
-    // New state for showing or hiding the average line
     const [showAverage, setShowAverage] = useState(true);
     const [enableOutlierDetection, setEnableOutlierDetection] = useState(false);
 
-    // Fetch raw data from the API.
-    // The endpoint is expected to return rows with:
-    // product_name, category, month_since_launch, total_quantity, total_revenue
+    // Fetch raw data from the API on mount
+    // The endpoint should return rows with: product_name, category, month_since_launch, total_quantity, total_revenue
     useEffect(() => {
         setLoading(true);
         axios.get(`${process.env.REACT_APP_API_URL}/api/kpi/product-monthly-sales-since-launch`)
             .then(response => {
                 setRawData(response.data);
                 setLoading(false);
-                // Nếu chưa chọn sản phẩm thì mặc định chọn tất cả sản phẩm
+                // If no product is selected, select all by default
                 if (filters.selectedProducts.length === 0) {
                     setFilters(prev => ({
                         ...prev,
@@ -70,7 +70,7 @@ const ProductCohortSalesLineChart = () => {
     }, []);
 
     // Pivot the raw data into an array of objects where each object represents a cohort month.
-    // Example pivoted object: { month: 1, 'Product A': 10, 'Product B': 5, ... }
+    // Example: { month: 1, 'Product A': 10, 'Product B': 5, ... }
     useEffect(() => {
         if (rawData.length === 0) {
             setPivotData([]);
@@ -94,7 +94,7 @@ const ProductCohortSalesLineChart = () => {
         setPivotData(pivotArray);
     }, [rawData, filters.selectedProducts, filters.yMetric]);
 
-    // Handler for product multi-select
+    // Handler for product multi-select change
     const handleProductChange = (selectedOptions) => {
         setFilters(prev => ({
             ...prev,
@@ -102,27 +102,29 @@ const ProductCohortSalesLineChart = () => {
         }));
     };
 
-    // Handler for yMetric change.
+    // Handler for changing the Y-axis metric
     const handleMetricChange = (e) => {
         setFilters(prev => ({ ...prev, yMetric: e.target.value }));
     };
 
-    // Handler for average line opt-out/in.
+    // Handler for toggling the average line
     const handleAverageToggle = (e) => {
         setShowAverage(e.target.checked);
     };
 
+    // Show loading animation while data is being fetched
     if (loading) {
         return <LoadingPizza />;
     }
 
-    // Extend pivotData with an "average" key computed from selected products.
+    // Extend pivotData with an "average" key computed from selected products
     const extendedData = pivotData.map(row => {
         const values = filters.selectedProducts.map(product => Number(row[product]) || 0);
         const avg = values.length ? (values.reduce((acc, val) => acc + val, 0) / values.length) : 0;
         return { ...row, average: avg };
     });
 
+    // Utility to get indices of outlier points for a product
     function getOutlierIndices(data, product) {
         const values = data.map(row => Number(row[product]) || 0).filter(v => v > 0);
         if (values.length < 2) return [];
@@ -133,6 +135,7 @@ const ProductCohortSalesLineChart = () => {
         ).filter(idx => idx !== null);
     }
 
+    // Custom dot renderer for outlier points
     const renderCustomDot = (product, outlierIndices) => (props) => {
         const { cx, cy, index } = props;
         if (outlierIndices.includes(index)) {
@@ -176,6 +179,7 @@ const ProductCohortSalesLineChart = () => {
                 }}
             >
                 <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 16 }}>
+                    {/* Multi-select for choosing pizzas to display */}
                     <label style={{ marginRight: 12 }}>
                         Select Pizza(s):
                         <div style={{ minWidth: 180, maxWidth: 320, width: '100%', display: 'inline-block', marginLeft: 10 }}>
@@ -184,7 +188,7 @@ const ProductCohortSalesLineChart = () => {
                                 options={pizzaOptions}
                                 value={
                                     filters.selectedProducts.length === pizzaOptions.length
-                                        ? null // Nếu chọn tất cả thì không hiển thị gì
+                                        ? null 
                                         : pizzaOptions.filter(opt => filters.selectedProducts.includes(opt.value))
                                 }
                                 onChange={handleProductChange}
@@ -207,6 +211,7 @@ const ProductCohortSalesLineChart = () => {
                             />
                         </div>
                     </label>
+                    {/* Dropdown to select Y-axis metric */}
                     <label style={{ marginRight: 12 }}>
                         Y-Axis Metric:
                         <select
@@ -219,6 +224,7 @@ const ProductCohortSalesLineChart = () => {
                             <option value="total_revenue">Total Revenue (USD)</option>
                         </select>
                     </label>
+                    {/* Checkbox to show/hide average line */}
                     <label style={{ marginRight: 12 }}>
                         <input
                             type="checkbox"
@@ -227,6 +233,7 @@ const ProductCohortSalesLineChart = () => {
                         />
                         Show Average Line
                     </label>
+                    {/* Checkbox to enable/disable outlier detection */}
                     <label style={{ marginRight: 12 }}>
                         <input
                             type="checkbox"
@@ -236,6 +243,7 @@ const ProductCohortSalesLineChart = () => {
                         Highlight Outliers
                     </label>
                 </div>
+                {/* Button to download report as CSV */}
                 <div>
                     <button
                         onClick={() => downloadCSV(extendedData)}
@@ -257,7 +265,7 @@ const ProductCohortSalesLineChart = () => {
                     </button>
                 </div>
             </div>
-            {/* Chart */}
+            {/* Line chart for cohort sales */}
             <ResponsiveContainer width="100%" height={400}>
                 <LineChart data={extendedData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
                     <CartesianGrid strokeDasharray="3 3" />
@@ -265,6 +273,7 @@ const ProductCohortSalesLineChart = () => {
                     <YAxis label={{ value: filters.yMetric === 'total_quantity' ? 'Total Quantity' : 'Total Revenue (USD)', angle: -90, position: 'insideLeft' }} />
                     <Tooltip />
                     <Legend />
+                    {/* Render a line for each selected product */}
                     {filters.selectedProducts.map((product, index) => {
                         let outlierIndices = [];
                         if (enableOutlierDetection) {
@@ -282,6 +291,7 @@ const ProductCohortSalesLineChart = () => {
                             />
                         );
                     })}
+                    {/* Render average line if enabled */}
                     {showAverage && (
                         <Line
                             type="monotone"

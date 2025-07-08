@@ -2,12 +2,16 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
+// Define color palette for pie chart slices
 const COLORS = ['#8884d8', '#82ca9d', '#ff7300', '#0088FE', '#FFBB28', '#aa4643', '#89A54E'];
 
 const ProductDistributionPieCharts = () => {
+  // State to hold fetched data
   const [data, setData] = useState([]);
+  // State to indicate loading status
   const [loading, setLoading] = useState(false);
 
+  // Fetch product sales distribution data by category from backend API on mount
   useEffect(() => {
     setLoading(true);
     axios
@@ -22,7 +26,7 @@ const ProductDistributionPieCharts = () => {
       });
   }, []);
 
-  // Group data by category
+  // Group the data by category for rendering multiple pie charts
   const groupedData = data.reduce((acc, curr) => {
     const group = curr.group;
     if (!acc[group]) acc[group] = [];
@@ -30,7 +34,7 @@ const ProductDistributionPieCharts = () => {
     return acc;
   }, {});
 
-  // Utility to convert data to CSV and trigger download
+  // Utility function to export the raw data as CSV
   const downloadCSV = (data) => {
     if (!data.length) return;
     const header = Object.keys(data[0]).join(',');
@@ -47,13 +51,16 @@ const ProductDistributionPieCharts = () => {
 
   return (
     <div style={{ padding: '20px' }}>
+      {/* Show loading indicator while fetching data */}
       {loading ? (
         <div>Loading data...</div>
       ) : (
         Object.keys(groupedData).length === 0 ? (
+          // Show message if no data is available
           <div>No data available.</div>
         ) : (
           <>
+            {/* Render a pie chart for each product category */}
             <div style={{
               display: 'grid',
               gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
@@ -73,6 +80,7 @@ const ProductDistributionPieCharts = () => {
                         outerRadius={80}
                         label={false}
                       >
+                        {/* Assign a color to each slice */}
                         {groupedData[groupKey].map((entry, index) => (
                           <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                         ))}

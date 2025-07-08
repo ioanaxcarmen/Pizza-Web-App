@@ -57,7 +57,7 @@ const OrdersDistributionHourlySize = () => {
   return (
     <div style={{ width: '100%', height: 450 }}>
       {data.length === 0 ? (
-        <LoadingPizza />
+        <LoadingPizza /> // Show loading animation while fetching data
       ) : (
         <>
           <h3 style={{ textAlign: 'center' }}>Orders Distribution by Hour & Size</h3>

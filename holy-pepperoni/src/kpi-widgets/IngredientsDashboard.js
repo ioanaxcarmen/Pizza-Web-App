@@ -14,6 +14,7 @@ import PizzaLottie from '../components/PizzaLottie';
 
 const drawerWidth = 230;
 
+//Dashboard page for Ingredients KPIs
 
 const DashboardStat = ({ label, value }) => (
   <Paper elevation={2} sx={{
@@ -30,6 +31,8 @@ const DashboardStat = ({ label, value }) => (
   </Paper>
 );
 
+//widget for displaying stats in Ingredients Dashboard at the top
+// This widget displays the total number of ingredients, minimum and maximum ingredients per product
 const StatWidget = ({ label, value }) => (
   <Paper
     elevation={2}
@@ -222,7 +225,7 @@ const IngredientsSummaryWidget = ({ total, min, max }) => (
               <Typography variant="h6" fontWeight="bold" sx={{ mb: 2, fontFamily: "'Inter', 'Roboto', sans-serif" }}>
                 Ingredients Consumed Over Time
               </Typography>
-              <IngredientsConsumeOverTimeChart />
+              <IngredientsConsumeOverTimeChart /> 
             </Paper>
           </Box>
 
@@ -237,7 +240,7 @@ const IngredientsSummaryWidget = ({ total, min, max }) => (
               <Typography variant="h6" fontWeight="bold" sx={{ mb: 2, fontFamily: "'Inter', 'Roboto', sans-serif" }}>
                 Top 5 Ingredients by Store
               </Typography>
-              <TopIngredientsByStorePieChart filters={filters} topN={5} groupBy="store" />
+              <TopIngredientsByStorePieChart filters={filters} topN={5} groupBy="store" /> 
             </Paper>
           </Box>
           {selectedState && (

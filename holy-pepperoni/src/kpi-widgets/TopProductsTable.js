@@ -1,5 +1,6 @@
 import React from 'react';
 
+// Sample data for demonstration (replace with API data in production)
 const sampleData = [
   {
     product_name: "Sicilian Pizza",
@@ -28,9 +29,10 @@ const sampleData = [
 ];
 
 const TopProductsTable = () => {
+  // Use sample data for now; replace with fetched data for production
   const data = sampleData;
 
-  // Download CSV utility
+  // Utility function to download the table data as a CSV file
   const downloadCSV = (data) => {
     if (!data.length) return;
     const header = ['Product Name', 'Launch Date', 'Quantity (First 3 Months)', 'Revenue (First 3 Months)'];
@@ -52,6 +54,7 @@ const TopProductsTable = () => {
 
   return (
     <div style={{ padding: 20, background: '#fff', borderRadius: 12, boxShadow: '0 2px 8px #eee' }}>
+      {/* Table displaying top products by launch performance */}
       <div style={{ overflowX: 'auto' }}>
         <table style={{ width: '100%', borderCollapse: 'collapse', background: '#fff' }}>
           <thead>
@@ -63,6 +66,7 @@ const TopProductsTable = () => {
             </tr>
           </thead>
           <tbody>
+            {/* Render each product row */}
             {data.map((row, idx) => (
               <tr key={idx} style={{ borderBottom: '1px solid #f5f5f5' }}>
                 <td style={{ padding: 10 }}>{row.product_name}</td>

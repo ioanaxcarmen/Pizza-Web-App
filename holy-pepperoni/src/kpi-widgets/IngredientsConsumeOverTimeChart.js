@@ -57,6 +57,10 @@ const downloadCSV = (data) => {
     URL.revokeObjectURL(url);
 };
 
+// Main component for Ingredients Consumed Over Time Chart
+// This component fetches data from the API, processes it, and renders a line chart with
+// options for filtering by ingredient and granularity, as well as toggling outlier detection
+// and average line display.
 const IngredientsConsumeOverTimeChart = () => {
     const [filters, setFilters] = useState(defaultFilters);
     const [rawData, setRawData] = useState([]);
@@ -158,7 +162,7 @@ const IngredientsConsumeOverTimeChart = () => {
         });
     }
 
-    // Handler for granularity change
+    // Handler for granularity change (e.g., week, month, etc. )
     const handleGranularityChange = (e) => {
         setFilters(prev => ({ ...prev, granularity: e.target.value }));
     };
@@ -208,7 +212,7 @@ const IngredientsConsumeOverTimeChart = () => {
                                 }));
                             }}
                             placeholder="Select ingredient(s)..."
-                            closeMenuOnSelect={false}
+                            closeMenuOnSelect={false} // Allow multiple selection
                             isClearable
                             styles={{
                                 container: base => ({
@@ -280,7 +284,7 @@ const IngredientsConsumeOverTimeChart = () => {
                 </div>
             </div>
             {loading ? (
-                <LoadingPizza />
+                <LoadingPizza /> // Show loading animation while fetching data
             ) : (
                 <ResponsiveContainer width="100%" height={400}>
                     <LineChart data={mergedChartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
