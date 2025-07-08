@@ -1352,21 +1352,9 @@ app.get('/api/kpi/store-summary', async (req, res) => {
     let whereClause = 'WHERE 1=1'; // Start with a true condition
 
     // Filters: year, quarter, month, state, storeId
-    const { year, quarter, month, state, storeId } = req.query;
+    const { state, storeId } = req.query;
 
-    // Apply filters to the query
-    if (year && year !== 'all') {
-        whereClause += ' AND YEAR = :year'; // Assuming V_STORE_PERFORMANCE_RANK has YEAR
-        binds.year = Number(year);
-    }
-    if (quarter && quarter !== 'all') {
-        whereClause += ' AND QUARTER = :quarter'; // Assuming V_STORE_PERFORMANCE_RANK has QUARTER
-        binds.quarter = quarter;
-    }
-    if (month && month !== 'all') {
-        whereClause += ' AND MONTH = :month'; // Assuming V_STORE_PERFORMANCE_RANK has MONTH
-        binds.month = Number(month);
-    }
+   
     if (state && state !== 'all') {
         whereClause += ' AND STATE = :state'; // Assuming V_STORE_PERFORMANCE_RANK has STATE
         binds.state = state;
