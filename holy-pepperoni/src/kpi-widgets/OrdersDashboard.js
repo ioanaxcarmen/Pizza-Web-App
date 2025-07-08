@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import {
-  Box, CssBaseline, useTheme, useMediaQuery, Button, Paper, Typography
+  Box, CssBaseline, useTheme, useMediaQuery, Button, Paper, Typography, Grid
 } from '@mui/material';
 import Sidebar from '../components/Sidebar';
 import TopBar from '../components/TopBar';
@@ -10,6 +10,8 @@ import OrdersByHourChart from './OrdersByHourChart';
 import PizzaLottie from '../components/PizzaLottie';
 import { useNavigate } from 'react-router-dom'; 
 import ProductPairsTable from './ProductPairsTable'; // <-- Changed import
+import OrdersDistributionHourlyCategory from './OrdersDistributionHourlyCategory';
+import OrdersDistributionHourlySize from './OrdersDistributionHourlySize';
 
 const drawerWidth = 230;
 
@@ -104,25 +106,30 @@ const OrdersDashboard = (props) => {
           </Box>
           {/* Chart 1: Orders by weekday and category */}
           <Box sx={{ mb: 3, width: '100%' }}>
-            <Paper elevation={3} sx={{
-              borderRadius: 5,
-              p: 3,
-              boxShadow: "0 4px 16px rgba(250, 162, 138, 0.08)",
-              fontFamily: "'Inter', 'Roboto', sans-serif"
-            }}>
-              <OrdersDistributionWeekdayChart />
-            </Paper>
-          </Box>
-          {/* Chart 2: Orders by weekday and pizza size */}
-          <Box sx={{ mb: 3, width: '100%' }}>
-            <Paper elevation={3} sx={{
-              borderRadius: 5,
-              p: 3,
-              boxShadow: "0 4px 16px rgba(250, 162, 138, 0.08)",
-              fontFamily: "'Inter', 'Roboto', sans-serif"
-            }}>
-              <OrdersDistributionWeekdaySizeChart />
-            </Paper>
+            <Grid container spacing={3}>
+              <Grid item xs={12} md={6}>
+                <Paper elevation={3} sx={{
+                  borderRadius: 5,
+                  p: 3,
+                  boxShadow: "0 4px 16px rgba(250, 162, 138, 0.08)",
+                  fontFamily: "'Inter', 'Roboto', sans-serif",
+                  height: 500
+                }}>
+                  <OrdersDistributionWeekdayChart />
+                </Paper>
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <Paper elevation={3} sx={{
+                  borderRadius: 5,
+                  p: 3,
+                  boxShadow: "0 4px 16px rgba(250, 162, 138, 0.08)",
+                  fontFamily: "'Inter', 'Roboto', sans-serif",
+                  height: '100%'
+                }}>
+                  <OrdersDistributionWeekdaySizeChart />
+                </Paper>
+              </Grid>
+            </Grid>
           </Box>
           {/* Chart 3: Orders by hour */}
           <Box sx={{ mb: 3, width: '100%' }}>
@@ -134,6 +141,33 @@ const OrdersDashboard = (props) => {
             }}>
               <OrdersByHourChart />
             </Paper>
+          </Box>
+          {/* Chart 4: Orders by hour and category/size */}
+          <Box sx={{ mb: 3, width: '100%' }}>
+            <Grid container spacing={3}>
+              <Grid item xs={12} md={6}>
+                <Paper elevation={3} sx={{
+                  borderRadius: 5,
+                  p: 3,
+                  boxShadow: "0 4px 16px rgba(250, 162, 138, 0.08)",
+                  fontFamily: "'Inter', 'Roboto', sans-serif",
+                  height: 500
+                }}>
+                  <OrdersDistributionHourlyCategory />
+                </Paper>
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <Paper elevation={3} sx={{
+                  borderRadius: 5,
+                  p: 3,
+                  boxShadow: "0 4px 16px rgba(250, 162, 138, 0.08)",
+                  fontFamily: "'Inter', 'Roboto', sans-serif",
+                  height: 500
+                }}>
+                  <OrdersDistributionHourlySize />
+                </Paper>
+              </Grid>
+            </Grid>
           </Box>
           {/* Table: Product Pairs (replaces ProductNetworkGraph) */}
           <Box sx={{ mb: 3, width: '100%' }}>

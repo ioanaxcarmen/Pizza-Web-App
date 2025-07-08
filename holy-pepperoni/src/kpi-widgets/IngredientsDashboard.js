@@ -5,10 +5,12 @@ import {
 import TopIngredientsChart from '../kpi-widgets/TopIngredientsChart';
 import IngredientsConsumeOverTimeChart from '../kpi-widgets/IngredientsConsumeOverTimeChart';
 import TopIngredientsByStorePieChart from '../kpi-widgets/TopIngredientsByStorePieChart';
+import IngredientsOrderTable from '../kpi-widgets/IngredientsOrderTable';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Sidebar from '../components/Sidebar';
 import TopBar from '../components/TopBar';
+import PizzaLottie from '../components/PizzaLottie'; // Assuming you have a Lottie component for the pizza animation
 
 const drawerWidth = 230;
 
@@ -25,6 +27,33 @@ const DashboardStat = ({ label, value }) => (
   }}>
     <Typography variant="h5" fontWeight="bold" sx={{ color: "#fa7a1c", fontFamily: "'Inter', 'Roboto', sans-serif" }}>{value}</Typography>
     <Typography variant="body2" color="text.secondary" sx={{ fontFamily: "'Inter', 'Roboto', sans-serif" }}>{label}</Typography>
+  </Paper>
+);
+
+const StatWidget = ({ label, value }) => (
+  <Paper
+    elevation={2}
+    sx={{
+      p: 3,
+      borderRadius: 5,
+      bgcolor: "#fff7f0",
+      boxShadow: "0 2px 12px rgba(250, 162, 138, 0.12)",
+      fontFamily: "'Inter', 'Roboto', sans-serif",
+      minWidth: 200,
+      textAlign: 'center',
+      color: "#fa7a1c"
+    }}
+  >
+    <Typography variant="subtitle2" sx={{ color: "#fa7a1c", fontWeight: 700 }}>
+      {label}
+    </Typography>
+    <Typography
+      variant="h4"
+      fontWeight="bold"
+      sx={{ color: "#fa7a1c", fontFamily: "'Inter', 'Roboto', sans-serif", mt: 1 }}
+    >
+      {value}
+    </Typography>
   </Paper>
 );
 
@@ -87,7 +116,72 @@ const IngredientsDashboard = (props) => {
         });
       });
   }, []);
+  
 
+  
+const IngredientsSummaryWidget = ({ total, min, max }) => (
+  <Paper
+    elevation={2}
+    sx={{
+      p: 3,
+      borderRadius: 5,
+      bgcolor: "#fff7f0",
+      boxShadow: "0 2px 12px rgba(250, 162, 138, 0.12)",
+      fontFamily: "'Inter', 'Roboto', sans-serif",
+      minWidth: 340,
+      display: 'flex',
+      alignItems: 'center',
+      color: "#fa7a1c"
+    }}
+  >
+    {/* Ingredient Overview */}
+    <Box sx={{ flex: 1, textAlign: 'center' }}>
+      <Typography variant="subtitle2" sx={{ color: "#fa7a1c", fontWeight: 700 }}>
+        🍕 Ingredient Overview
+      </Typography>
+      <Typography
+        variant="h4"
+        fontWeight="bold"
+        sx={{ color: "#fa7a1c", fontFamily: "'Inter', 'Roboto', sans-serif", mt: 1 }}
+      >
+        {total}
+      </Typography>
+      <Typography
+        variant="body1"
+        color="text.secondary"
+        sx={{ fontFamily: "'Inter', 'Roboto', sans-serif", mb: 1 }}
+      >
+        Total Ingredients
+      </Typography>
+    </Box>
+    {/* Divider */}
+    <Divider orientation="vertical" flexItem sx={{ mx: 2, borderColor: "#fa7a1c" }} />
+    {/* Min Ingredients */}
+    <Box sx={{ flex: 1, textAlign: 'center' }}>
+      <Typography variant="subtitle2" sx={{ color: "#fa7a1c", fontWeight: 700 }}>
+        Min Ingredients per Product
+      </Typography>
+      <Typography variant="h4" sx={{ color: "#fa7a1c", fontWeight: 600 }}>
+        {min}
+      </Typography>
+    </Box>
+    {/* Divider */}
+    <Divider orientation="vertical" flexItem sx={{ mx: 2, borderColor: "#fa7a1c" }} />
+    {/* Max Ingredients */}
+    <Box sx={{ flex: 1, textAlign: 'center' }}>
+      <Typography variant="subtitle2" sx={{ color: "#fa7a1c", fontWeight: 700 }}>
+        Max Ingredients per Product
+      </Typography>
+      <Typography variant="h4" sx={{ color: "#fa7a1c", fontWeight: 600 }}>
+        {max}
+      </Typography>
+    </Box>
+    {/* Icon hoặc hình ảnh */}
+    <Box sx={{ width: 150, height: 150 }}>
+      <PizzaLottie sx={{ width: '100%', height: '100%', color: '#fa7a1c' }} />
+    </Box>
+  </Paper>
+);
   const theme = useTheme();
   const isMdUp = useMediaQuery(theme.breakpoints.up('md'));
 
@@ -101,18 +195,16 @@ const IngredientsDashboard = (props) => {
       <Box sx={{ flexGrow: 1, ml: { md: `${drawerWidth}px` } }}>
         <TopBar title="Ingredients Dashboard" onMenuClick={() => setMobileOpen(true)} {...props} />
         <Box sx={{ mt: 10, p: { xs: 1, md: 3 } }}>
+          {/* Ingredients Summary Widget */}
+          <Box sx={{ mb: 3, width: '100%' }}>
+            <IngredientsSummaryWidget
+              total={stats.totalIngredients}
+              min={stats.minIngredients}
+              max={stats.maxIngredients}
+            />
+          </Box>
           {/* Stats Widgets */}
-          <Grid container spacing={2} sx={{ mb: 3 }}>
-            <Grid>
-              <DashboardStat label="Total Ingredients" value={stats.totalIngredients} />
-            </Grid>
-            <Grid>
-              <DashboardStat label="Min Ingredients per Product" value={stats.minIngredients} />
-            </Grid>
-            <Grid>
-              <DashboardStat label="Max Ingredients per Product" value={stats.maxIngredients} />
-            </Grid>
-          </Grid>
+         
 
           <Divider sx={{ my: 3 }} />
 
@@ -183,6 +275,20 @@ const IngredientsDashboard = (props) => {
             <Box sx={{ flex: 1, minHeight: 600 }}>
               <TopIngredientsChart />
             </Box>
+          </Paper>
+
+          {/* Thêm bảng đặt hàng nguyên liệu */}
+          <Paper elevation={3} sx={{
+            borderRadius: 5,
+            p: 3,
+            mb: 4,
+            boxShadow: "0 4px 16px rgba(250, 162, 138, 0.08)",
+            fontFamily: "'Inter', 'Roboto', sans-serif"
+          }}>
+            <Typography variant="h6" fontWeight="bold" sx={{ mb: 2 }}>
+              Order Ingredients
+            </Typography>
+            <IngredientsOrderTable />
           </Paper>
 
           <Box sx={{ display: "flex", justifyContent: "center" }}>

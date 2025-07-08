@@ -306,17 +306,18 @@ ORDER BY
 -- Power BI Usage: Visualize top product pairs, recommend combos, and optimize promotions.
 -- Why Separate: Enables discovery of product affinity and customer buying patterns beyond single products.
 
-CREATE OR REPLACE VIEW v_product_pair_sales AS
+CREATE OR REPLACE VIEW V_PRODUCT_PAIR_SALES AS
 SELECT
     oi1.sku AS product_a,
     oi2.sku AS product_b,
     COUNT(DISTINCT oi1.orderid) AS orders_together
 FROM order_items oi1
-JOIN order_items oi2
-    ON oi1.orderid = oi2.orderid AND oi1.sku < oi2.sku
+JOIN 
+    order_items oi2 ON oi1.orderid = oi2.orderid 
+    AND oi1.sku < oi2.sku
 GROUP BY oi1.sku, oi2.sku
-HAVING COUNT(DISTINCT oi1.orderid) > 5
-ORDER BY orders_together DESC;
+HAVING 
+    COUNT(DISTINCT oi1.orderid) > 1;
 
 -- ============= TIME, WEEKDAY & DAY-LEVEL SALES ANALYSIS =============
 
