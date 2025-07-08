@@ -10,7 +10,7 @@ const styles = {
         padding: "24px 0",
         fontSize: "2.5rem",
         fontWeight: "bold",
-        marginBottom: "32px",
+        marginBottom: "12px",
         marginTop: "30px",
         boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
         textAlign: "center",
@@ -20,7 +20,7 @@ const styles = {
         maxWidth: "100vw",
     },
     container: {
-        background: "#fff",
+        background: "#faf7f0",
         minHeight: "100vh",
         padding: "0",
         position: "relative"
@@ -46,7 +46,8 @@ const styles = {
         cursor: "pointer",
         textDecoration: "none",
         textAlign: "center",
-        margin: "32px auto 0 auto"
+        margin: "8px auto 8 auto"
+    
     }
 };
 
@@ -57,15 +58,14 @@ const GeoPowerBIChart = ({ embedUrl, title }) => {
         <div style={styles.container}>
             <div style={styles.header}>{title}</div>
             <div style={styles.chartArea}>
-                <div style={{ width: "100%", padding: '20px', boxSizing: 'border-box' }}>
+                <div style={{ width: "100%", padding: '10px', boxSizing: 'border-box' }}>
                     <IframeViewer embedUrl={embedUrl} title={title} />
                 </div>
-                <div style={{ height: 40 }} />
                 <button
                     style={styles.backButton}
-                    onClick={() => navigate('/geo-reports')}
+                    onClick={() => navigate('/dashboard')}
                 >
-                    Back
+                    Back to Menu
                 </button>
             </div>
         </div>

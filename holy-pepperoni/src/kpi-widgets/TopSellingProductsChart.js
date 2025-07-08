@@ -61,7 +61,11 @@ const TopSellingProductsChart = () => {
 
         axios.get(`${process.env.REACT_APP_API_URL}/api/kpi/top-products?${params.toString()}`)
             .then(response => {
-                setData(response.data);
+                const formattedData = response.data.map(item => ({
+            ...item,
+            name: item.size ? `${item.name} (${item.size})` : item.name
+            }));
+                setData(formattedData);
                 setLoading(false);
             })
             .catch(error => {
@@ -228,7 +232,7 @@ const TopSellingProductsChart = () => {
                     <YAxis
                         type="category"
                         dataKey="name"
-                        width={80}
+                        width={150}
                         tick={{ fontSize: 12 }}
                     />
                     <Tooltip
@@ -239,7 +243,7 @@ const TopSellingProductsChart = () => {
                         }
                         content={({ active, payload }) => {
                             if (active && payload && payload.length) {
-                                const { name, quantity, revenue, size} = payload[0].payload;
+                                const { name, quantity, revenue} = payload[0].payload;
                                 return (
                                     <div style={{ 
                                         background: "#fff", 
@@ -249,7 +253,7 @@ const TopSellingProductsChart = () => {
                                         boxShadow: "0 2px 4px rgba(0,0,0,0.1)"
                                     }}>
                                         <div><b>{name}</b></div>
-                                        {size && <div>Size: {size}</div>}
+                                        
                                         <div>Quantity: {quantity?.toLocaleString()}</div>
                                         <div>Revenue: €{revenue?.toLocaleString()}</div>
                 
