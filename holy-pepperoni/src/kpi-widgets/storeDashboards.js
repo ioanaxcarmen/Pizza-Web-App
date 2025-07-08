@@ -18,6 +18,7 @@ import TotalStoresWidget from './TotalStoresWidget';
 
 
 
+
 const drawerWidth = 230;
 
 const StoreDashboards = (props) => {
@@ -142,27 +143,36 @@ const StoreDashboards = (props) => {
             </Paper>
           </motion.div>
         </Box>
-        <Box sx={{ width: '100%' }}>
+        <Box sx={{ width: '100%', height: '600px' }}> {/* Set a fixed height here */}
+          {/* Ensure motion.div takes full height */}
           <motion.div
             initial={{ opacity: 0, y: 24 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.5 }}
-            transition={{ duration: 0.8, delay: 0.1 }}
+            transition={{ duration: 0.8, delay: 0.3 }}
+            style={{ height: '100%' }}
           >
             <Paper elevation={3} sx={{
               borderRadius: 5,
               p: 3,
               mb: 4,
               boxShadow: "0 4px 16px rgba(250, 162, 138, 0.08)",
-              fontFamily: "'Inter', 'Roboto', sans-serif"
+              fontFamily: "'Inter', 'Roboto', sans-serif",
+              height: '100%', // Ensure Paper takes full height
+              display: 'flex', // Use flex to arrange content
+              flexDirection: 'column', // Stack content vertically
             }}>
               <Typography variant="h6" fontWeight="bold" sx={{ mb: 2, fontFamily: "'Inter', 'Roboto', sans-serif" }}>
-                Performance Ranking by Store KPIs
+                Store KPIs Radar Chart
               </Typography>
-              <StoreKPIRadarChart />
+              {/* Correctly render the StoreKPIRadarChart component */}
+              <Box sx={{ flexGrow: 1 }}>
+                <StoreKPIRadarChart />
+              </Box>
             </Paper>
           </motion.div>
         </Box>
+
 
 
 
