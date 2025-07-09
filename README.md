@@ -21,7 +21,7 @@ Clone or download the project files into a main directory. This should include:
 - `backend/` (Node.js backend)
 
 ```bash
-git clone <your_repository_url>
+git clone [<your_repository_url>](https://github.com/ioanaxcarmen/Pizza-Web-App)
 cd <your_project_folder>
 ```
 
@@ -86,7 +86,6 @@ const dbConfig = {
 ### 2. Frontend
 
 - Go to the `holy-pepperoni/` directory.
-- Create a `.env` file and add:
 
 ```env
 REACT_APP_API_URL=http://localhost:3001 --> replace localhost with current IP address to make it accessible from other devices
