@@ -106,7 +106,6 @@ const TopIngredientsByStorePieChart = ({ filters = {} }) => {
                                         cx="50%"
                                         cy="50%"
                                         outerRadius={100}
-                                        label={({ name, percent, ingredient }) => `${ingredient || name}: ${percent}%`}
                                     >
                                         {/* Assign a color to each ingredient slice */}
                                         {pieData.map((entry, idx) => (

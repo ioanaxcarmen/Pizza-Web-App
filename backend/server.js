@@ -10,8 +10,8 @@ const port = 3001; // The backend will run on this port
 const dbConfig = {
     user: "PIZZA",
     password: "MyPizza123", // The password you created for the PIZZA user
-   // connectString: "localhost:1521/XE"
-    connectString: "localhost:1521/XEPDB1" //use this if you are using the default Oracle XE database
+    connectString: "localhost:1521/XE"
+    //connectString: "localhost:1521/XEPDB1" //use this if you are using the default Oracle XE database
 };
 
 // A test API endpoint to see if the connection works
