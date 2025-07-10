@@ -420,47 +420,62 @@ app.get('/api/kpi/order-frequency', async (req, res) => {
     let connection;
     try {
         const binds = {};
-        let segmentCte = '';
+        let whereClause = 'WHERE 1=1';
 
-        if (req.query.segment && req.query.segment !== 'all') {
-            segmentCte = `
-                WITH SegmentCustomers AS (
-                    SELECT CUSTOMER_ID FROM V_CUSTOMER_SEGMENT WHERE SEGMENT = :segment
-                )
-            `;
-            binds.segment = req.query.segment;
+        if (req.query.year && req.query.year !== 'all') {
+            whereClause += ' AND EXTRACT(YEAR FROM o.ORDERDATE) = :year';
+            binds.year = req.query.year;
+        }
+        if (req.query.quarter && req.query.quarter !== 'all') {
+            whereClause += ` AND TO_CHAR(o.ORDERDATE, 'Q') = :quarter`;
+            binds.quarter = req.query.quarter;
+        }
+        if (req.query.month && req.query.month !== 'all') {
+            whereClause += ' AND EXTRACT(MONTH FROM o.ORDERDATE) = :month';
+            binds.month = req.query.month;
+        }
+        if (req.query.state && req.query.state !== 'all') {
+            whereClause += ' AND s.STATE_ABBR = :state';
+            binds.state = req.query.state;
         }
 
-        let whereClause = 'WHERE 1=1';
-        if (req.query.year && req.query.year !== 'all') { /* ... add filter ... */ }
-        // Add other filters as needed
-
+        // The SQL query uses the whereClause to filter the results
         const query = `
-            ${segmentCte}
             WITH CustomerOrderCounts AS (
-                SELECT o.CUSTOMERID, COUNT(o.ID) as ORDER_COUNT
+                SELECT
+                    o.CUSTOMERID,
+                    COUNT(o.ID) as ORDER_COUNT
                 FROM ORDERS o
-                ${segmentCte ? 'JOIN SegmentCustomers sc ON o.CUSTOMERID = sc.CUSTOMER_ID' : ''}
-                /* JOIN STORES s ON o.STOREID = s.STOREID if filtering by location */
+                JOIN STORES s ON o.STOREID = s.STOREID -- Join needed for state filter
                 ${whereClause}
                 GROUP BY o.CUSTOMERID
             )
             SELECT
-                CASE WHEN ORDER_COUNT = 1 THEN 'One-Time Buyer' ELSE 'Repeat Buyer' END as CUSTOMER_TYPE,
+                CASE 
+                    WHEN ORDER_COUNT = 1 THEN 'One-Time Buyer' 
+                    ELSE 'Repeat Buyer' 
+                END as CUSTOMER_TYPE,
                 COUNT(CUSTOMERID) as COUNT_OF_CUSTOMERS
             FROM CustomerOrderCounts
-            GROUP BY CASE WHEN ORDER_COUNT = 1 THEN 'One-Time Buyer' ELSE 'Repeat Buyer' END
+            GROUP BY
+                CASE 
+                    WHEN ORDER_COUNT = 1 THEN 'One-Time Buyer' 
+                    ELSE 'Repeat Buyer' 
+                END
         `;
 
         connection = await oracledb.getConnection(dbConfig);
         const result = await connection.execute(query, binds, { outFormat: oracledb.OUT_FORMAT_OBJECT });
-
-        const chartData = result.rows.map(row => ({ name: row.CUSTOMER_TYPE, value: row.COUNT_OF_CUSTOMERS }));
+        
+        const chartData = result.rows.map(row => ({
+            name: row.CUSTOMER_TYPE,
+            value: row.COUNT_OF_CUSTOMERS
+        }));
         res.json(chartData);
 
     } catch (err) {
         console.error("Error fetching order frequency:", err);
-        res.status(500).json({ error: 'Failed to fetch data.' });
+        res.status(500).json({ error: 'Failed to fetch order frequency data.' });
     } finally {
         if (connection) { try { await connection.close(); } catch (e) { console.error(e); } }
     }
