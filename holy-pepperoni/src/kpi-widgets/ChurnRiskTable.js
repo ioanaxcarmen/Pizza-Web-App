@@ -73,10 +73,10 @@ const ChurnRiskTable = () => {
             <Box
                 sx={{
                     position: 'absolute',
-                    top: 2,
-                    bottom: 10,     
-                    right: 16,   
+                    top: 8,     
+                    right: 16,
                     zIndex: 2,
+                   
                 }}
             >
                 <Button
@@ -121,17 +121,19 @@ const ChurnRiskTable = () => {
                                 <TableCell sx={{ textAlign: 'center' }}>
                                     {/* Button to send a promo email to the customer */}
                                     <Button
-                                        variant="contained"
-                                        size="small"
-                                        href={`mailto:${getCustomerEmail(customer.CUSTOMER_ID)}?subject=We Miss You at Holy Pepperoni!&body=Hi there, we noticed you haven't ordered in a while. Here is a 20% discount code for your next order: WELCOMEBACK20`}
-                                        sx={{
-                                            background: "#007bff",
-                                            '&:hover': { background: "#0056b3" },
-                                            borderRadius: '20px',
-                                            textTransform: 'none'
-                                        }}
+                                      variant="contained"
+                                      size="small"
+                                      onClick={() =>
+                                        window.location.href = `mailto:${getCustomerEmail(customer.CUSTOMER_ID)}?subject=We Miss You at Holy Pepperoni!&body=Hi there, we noticed you haven't ordered in a while. Here is a 20% discount code for your next order: WELCOMEBACK20`
+                                      }
+                                      sx={{
+                                        background: "#007bff",
+                                        '&:hover': { background: "#0056b3" },
+                                        borderRadius: '20px',
+                                        textTransform: 'none'
+                                      }}
                                     >
-                                        Send Promo
+                                      Send Promo
                                     </Button>
                                 </TableCell>
                             </TableRow>
