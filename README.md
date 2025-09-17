@@ -1,14 +1,73 @@
-# 🍕 Holy Pepperoni Web App Setup Guide
+# 🍕 Pizza Web App – Holy Pepperoni Dashboard
 
-This guide walks you through setting up the Oracle database, configuring your project, and running both frontend and backend servers.
+[![Made with React](https://img.shields.io/badge/Frontend-React-blue)](https://react.dev/) 
+[![Backend Node.js](https://img.shields.io/badge/Backend-Node.js-green)](https://nodejs.org/) 
+[![Database Oracle](https://img.shields.io/badge/Database-Oracle-red)](https://www.oracle.com/database/)  
+[![Power BI](https://img.shields.io/badge/BI-Power%20BI-yellow)](https://powerbi.microsoft.com/)
 
-## 🚀 Prerequisites
+A **full-stack business analytics application** that visualizes sales and business data for a fictional pizza company.  
+The app connects a **React frontend** with a **Node.js/Express backend** and uses an **Oracle database** to provide **KPIs and interactive dashboards**.
 
-Make sure the following software is installed on your machine:
+---
 
-- **Oracle Database 21c Express Edition (XE)**
-- **Node.js and npm**
-- **Git**
+## 🚀 Features
+
+- **Login / Authentication** (Admin)  
+- **KPI Dashboard**: Revenue, sales figures, product performance, customer data  
+- **Interactive visualizations** with **Recharts**  
+- **Data management** for stores, products, orders, customers  
+- **Filter functions** for detailed analysis  
+- **Responsive UI** for desktop and tablet  
+
+---
+
+## 🖼 Screenshots
+
+![Login Page](screenshots/login.png)
+![Main Menu](screenshots/main_menu.png)  
+![Products](screenshots/top_side.png)
+![Top Products](screenshots/top_products.png)
+![Order Ingredients Option](screenshots/order_ingredients.png)
+![Customers at churn risk](screenshots/Customers_churn.png)
+![Geographical Report](screenshots/geographical.png)
+
+---
+
+## 🛠 Tech Stack
+
+| Layer     | Technology                |
+|-----------|---------------------------|
+| Frontend  | React, Recharts, CSS      |
+| Backend   | Node.js,                  |
+| Database  | Oracle Database           |
+| Tools     | Power BI, Git, npm        |
+
+---
+
+## 📂 Architecture & Data Model
+
+The system is based on a classic **3-tier architecture**:
+
+1. **Frontend** – React app with Recharts for visualization  
+2. **Backend** – Node.js REST API as interface to the DB  
+3. **Database** – Oracle XE with relational schema  
+
+### Database Entities
+
+- **Orders** – Orders with date, quantity, product, store, customer  
+- **Products** – Product data (name, category, price)  
+- **Stores** – Store locations  
+- **Customers** – Customer data 
+- **Ingredients** – Ingredients  
+
+---
+
+## ⚙️ Requirements
+
+- **Node.js** ≥ 14  
+- **npm** ≥ 6  
+- **Oracle Database XE 21c** (or compatible)  
+- Modern browser (Chrome, Edge, Firefox)  
 
 ---
 
